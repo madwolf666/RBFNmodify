@@ -366,6 +366,8 @@ class Main(wx.Frame):
                     a_proc.start()
                 for a_proc in a_procs:
                     a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
                 for a_i in range(a_sum, a_cnt_max):
                     self.g_listBox_11.SetItem(a_count + a_sum , 3, "入力データ作成が完了しました。")
@@ -675,6 +677,8 @@ class Main(wx.Frame):
                 a_proc.start()
             for a_proc in a_procs:
                 a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
 
             print('All process is ended.')
 
@@ -972,9 +976,11 @@ class Main(wx.Frame):
 
         self.g_panel_23 = wx.Panel(self, wx.ID_ANY)
 
+    '''
     def _recalcLimit(self):
         Call GetRecalcLimitData(Me, a_strTmp, a_soilMin, a_rainMax)
         Call RecalcLimitByMesh(Me, Me.Picture1, Me.Picture2, a_sTFolder, a_soilMin, a_rainMax, 1, a_meshList2)
+        '''
 
     def _set_listBox_13_1_year(self):
         global g_meshSum_all
