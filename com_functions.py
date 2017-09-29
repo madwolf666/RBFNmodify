@@ -461,6 +461,230 @@ class ComFunctions:
         self.g_LogLevel = int(self._getInifile(a_inifile, 'LogInfo', 'LogLevel'))
         #print('[self.g_LogLevel]' + str(self.g_LogLevel))
 
+    def GetMeshList(self, h_tyear, h_meshList):
+        a_strErr = "Year=" + str(h_tyear)
+        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetMeshList', a_strErr)
+
+        a_iRet = 0
+
+        try:
+            a_sr = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_tyear) + ".csv", 'r', encoding='shift_jis')
+            # 1行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_iRet = int(a_textline)
+            # 2行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                #print(a_textline)
+                if (a_textline != ''):
+                    # メッシュ番号を書き込み
+                    a_split = a_textline.split(',')
+                    if self.g_TargetRainMesh == 1:
+                        # 1kmメッシュ
+                        h_meshList.append(a_split[1])
+                    else:
+                        # 5kmメッシュ
+                        h_meshList.append(a_split[0])
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sr.close()
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
+
+        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+
+        return a_iRet
+
+    def GetMeshSum(self, h_year, h_RainfallFileName, h_meshList):
+        a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
+        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSum', a_strErr)
+
+        a_iRet = 0
+
+        try:
+            # 解析雨量ファイルを開く。
+            a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
+            # メッシュファイルを開く。
+            a_sw = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_year) + ".csv", "w", encoding='shift_jis')
+            # 1行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            # 2行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_split = a_textline.split(',')
+            # メッシュ数を取得する
+            a_iRet = int(a_split[1])
+            #print(a_iRet)
+            a_sw.write(str(a_iRet) + '\n')
+
+            # 3行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            # 4行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_split = a_textline.split(",")
+            #print(a_split)
+            for a_cnt in range(1, a_iRet + 1):
+                a_sw.write(str(a_split[a_cnt]) + '\n')
+                h_meshList.append(a_split[a_cnt].rstrip('\r\n'))
+            # ファイルをクローズする。(Close)
+            a_sr.close()
+            # ファイルをクローズする。(Close)
+            a_sw.close()
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
+
+        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+
+        return a_iRet
+
+    def GetMeshSum2(self, h_year, h_RainfallFileName, h_meshList):
+        a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
+        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSum2', a_strErr)
+
+        a_iRet = 0
+
+        try:
+            # 解析雨量ファイルを開く。
+            a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
+            # メッシュファイルを開く。
+            a_sw = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_year) + ".csv", "w", encoding='shift_jis')
+            # 1行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            # 2行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_split = a_textline.split(',')
+            # メッシュ数を取得する
+            a_iRet = int(a_split[1])
+            #print(a_iRet)
+            a_sw.write(str(a_iRet) + '\n')
+
+            # 3行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            # 4行目をリスト変数に読み込む。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_split = a_textline.split(",")
+            #print(a_split)
+            for a_cnt in range(1, a_iRet + 1):
+                a_sw.write(str(a_split[a_cnt]) + '\n')
+                if self.g_TargetRainMesh == 1:
+                    # 1kmメッシュ
+                    a_sw.write(a_split[0] + "," + a_split[1] + '\n')
+                    #h_meshList.append(a_split[0] + "," + a_split[1])
+                    h_meshList.append(a_split[1])
+                else:
+                    # 5kmメッシュ
+                    a_sw.write(a_split[0] + '\n')
+                    h_meshList.append(a_split[0])
+
+                    h_meshList.append(a_split[a_cnt].rstrip('\r\n'))
+            # ファイルをクローズする。(Close)
+            a_sr.close()
+            # ファイルをクローズする。(Close)
+            a_sw.close()
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
+
+        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+
+        return a_iRet
+
+    def GetMeshSumFromFile(self, h_year, h_meshList):
+        a_strErr = "Year=" + str(h_year)
+        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', a_strErr)
+
+        a_iRet = 0
+
+        try:
+            # 対象メッシュNoファイルを開く。
+            a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
+            # メッシュ数をカウントする。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                a_iRet += 1
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sr.close()
+            # 対象メッシュNoファイルを開く。
+            a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
+            # メッシュファイルを開く。
+            a_sw = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_year) + ".csv", "w", encoding='shift_jis')
+            # メッシュ数を書込
+            a_sw.write(str(a_iRet) + '\n')
+            # メッシュ番号を取得する。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                #print(a_textline)
+                if (a_textline != ''):
+                    # メッシュ番号を書き込み
+                    a_split = a_textline.split(',')
+                    if self.g_TargetRainMesh == 1:
+                        # 1kmメッシュ
+                        a_sw.write(a_split[0] + "," + a_split[1] + '\n')
+                        h_meshList.append(a_split[0] + "," + a_split[1])
+                    else:
+                        # 5kmメッシュ
+                        a_sw.write(a_split[0] + '\n')
+                        h_meshList.append(a_split[0])
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sw.close()
+            a_sr.close()
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
+
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', 'end')
+
+        return a_iRet
+
+    def GetMeshSumFromFile2(self, h_year, h_meshList):
+        a_strErr = "Year=" + str(h_year)
+        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSumFromFile2', a_strErr)
+
+        a_iRet = 0
+
+        try:
+            # 対象メッシュNoファイルを開く。
+            a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
+            # メッシュ数をカウントする。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                a_iRet += 1
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sr.close()
+            # 対象メッシュNoファイルを開く。
+            a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
+            # メッシュファイルを開く。
+            a_sw = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_year) + ".csv", "w", encoding='shift_jis')
+            # メッシュ数を書込
+            a_sw.write(str(a_iRet) + '\n')
+            # メッシュ番号を取得する。
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                #print(a_textline)
+                if (a_textline != ''):
+                    # メッシュ番号を書き込み
+                    a_split = a_textline.split(',')
+                    if self.g_TargetRainMesh == 1:
+                        # 1kmメッシュ
+                        a_sw.write(a_split[0] + "," + a_split[1] + '\n')
+                        #h_meshList.append(a_split[0] + "," + a_split[1])
+                        h_meshList.append(a_split[1])
+                    else:
+                        # 5kmメッシュ
+                        a_sw.write(a_split[0] + '\n')
+                        h_meshList.append(a_split[0])
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sw.close()
+            a_sr.close()
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
+
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', 'end')
+
+        return a_iRet
+
     # 全降雨の超過数を取得する。
     def GetOccurRainfallSumByMesh(self, h_meshNo):
         a_strErr = "meshNo=" + h_meshNo
