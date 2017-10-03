@@ -877,9 +877,9 @@ class MakeNIGeDaS():
         a_overRBFNVal = []
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
 
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 a_RBFN = -1
 
                 # 既往CLの取り込み
@@ -1168,9 +1168,9 @@ class MakeNIGeDaS_NonOccurCalc():
         a_overRBFNVal = []
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
 
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 a_RBFN = -1
 
                 # 既往CLの取り込み
@@ -1278,9 +1278,9 @@ class MakeOverRainfall2():
         a_TemperatureInfo = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
             a_RBFN = 0
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
                     # 取込あり
@@ -1494,9 +1494,9 @@ class MakeOverRainfall3_1():
         a_strTmp = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
 
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 if (self.soilMin > 0) or (self.rainMax > 0):    # 60分積算雨量上限値の追加
                     a_sFileName = self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_CalcCautionAnnounceReadTimeByMeshSoilMinSymbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
                 else:
@@ -1563,9 +1563,9 @@ class MakeOverRainfall3_2():
         a_overRBFNVal = []
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
 
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
                     # 取込あり
@@ -1855,9 +1855,9 @@ class MakeOverRainfall8():
         a_TemperatureInfo = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
             a_RBFN = 0
-            for a_meshNo in self.meshList:
+            for a_index, a_meshNo in self.meshList:
                 if (self.kind == 0):
                     # 実況雨量の場合、一連の発生降雨の抽出結果を予測のものと同一にする
                     for a_cnt2 in range(self.com.g_TargetStartYear, self.com.g_TargetEndYear + 1):
