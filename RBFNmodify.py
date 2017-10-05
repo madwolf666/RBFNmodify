@@ -65,6 +65,9 @@ class Main(wx.Frame):
     def __init__(self, parent, id, title):
         """ レイアウトの作成 """
         wx.Frame.__init__(self, parent, id, title)
+
+        self.Bind(wx.EVT_CLOSE, self._onClose)
+
         self.SetSize(size=(1024, 768))
         self.g_icon = wx.Icon(".\\images\\RBFNmodify.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.g_icon)
@@ -1367,6 +1370,10 @@ class Main(wx.Frame):
     def _makePanel_23(self):
 
         self.g_panel_23 = wx.Panel(self, wx.ID_ANY)
+
+    def _onClose(self, event):
+        if (wx.MessageBox("プログラムを終了します。\nよろしいですか？", g_System_Title, wx.YES_NO) == wx.YES):
+            self.Destroy()
 
     '''
     def _recalcLimit(self):
