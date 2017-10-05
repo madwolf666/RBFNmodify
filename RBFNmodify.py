@@ -39,6 +39,8 @@ class CheckBoxList(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAuto
         #print(g_meshList_check)
 
 class Main(wx.Frame):
+    g_menu_bar = None
+
     g_panel_11 = None   # RBFNプログラム用入力データ
     g_panel_12 = None   # RBFNプログラムの起動
     g_panel_13 = None   # RBFN出力値の抽出処理
@@ -63,6 +65,7 @@ class Main(wx.Frame):
     def __init__(self, parent, id, title):
         """ レイアウトの作成 """
         wx.Frame.__init__(self, parent, id, title)
+        self.SetSize(size=(1024, 768))
         self.g_icon = wx.Icon(".\\images\\RBFNmodify.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.g_icon)
         self.SetBackgroundColour("#696969")
@@ -76,29 +79,29 @@ class Main(wx.Frame):
         ################################################################################
         # メニューバー
         ################################################################################
-        menu_bar = wx.MenuBar()
+        self.g_menu_bar = wx.MenuBar()
 
         #自動生成
         mnu_MakeAuto = wx.Menu()
         mnu_MakeAuto.Append(11, "RBFNプログラム用入力データ")
         mnu_MakeAuto.Append(12, "RBFNプログラムの起動")
         mnu_MakeAuto.Append(13, "RBFN出力値の抽出処理")
-        menu_bar.Append(mnu_MakeAuto, "自動生成")
-        self.SetMenuBar(menu_bar)
+        self.g_menu_bar.Append(mnu_MakeAuto, "自動生成")
+        self.SetMenuBar(self.g_menu_bar)
 
         #結果表示
         mnu_DispResult = wx.Menu()
         mnu_DispResult.Append(21, "RBFN補正の結果")
         mnu_DispResult.Append(22, "集計結果")
         mnu_DispResult.Append(23, "ブロック集計")
-        menu_bar.Append(mnu_DispResult, "結果表示")
-        self.SetMenuBar(menu_bar)
+        self.g_menu_bar.Append(mnu_DispResult, "結果表示")
+        self.SetMenuBar(self.g_menu_bar)
 
         #終了
         '''
         mnu_Exit = wx.Menu()
-        menu_bar.Append(mnu_Exit, "終了")
-        self.SetMenuBar(menu_bar)
+        self.menu_bar.Append(mnu_Exit, "終了")
+        self.SetMenuBar(self.menu_bar)
         '''
 
         ################################################################################
@@ -128,8 +131,14 @@ class Main(wx.Frame):
         self._set_title("■RBFNプログラム用入力データ作成")
 
         if (wx.MessageBox("RBFNプログラム用の入力データを自動作成します。\nよろしいですか？", g_System_Title, wx.YES_NO) == wx.YES):
+            self.g_menu_bar.Enabled = False
+            self.g_button_11_1.Enabled = False
+            self.g_button_11_2.Enabled = False
             self._makeAllRainfallData()
             wx.MessageBox("RBFNプログラム用の入力データを自動作成しました。\n引き続き、RBFNプログラムを起動し、RBFN値を算出して下さい。", g_System_Title)
+            self.g_menu_bar.Enabled = True
+            self.g_button_11_1.Enabled = True
+            self.g_button_11_2.Enabled = True
 
     def _click_button_11_2(self, event):
         global g_System_Title
@@ -273,6 +282,8 @@ class Main(wx.Frame):
         if event_id == 11:
             self._hide_Panel()
             # RBFNプログラム用入力データ
+            self.g_button_11_1.Enabled = True
+            self.g_button_11_2.Enabled = True
             self._get_environ()
             self._set_title("■RBFNプログラム用入力データ作成")
             self.g_panel_11.Show()
@@ -304,14 +315,13 @@ class Main(wx.Frame):
             self.g_panel_22.Show()
         elif event_id == 23:
             self._hide_Panel()
-
-            if (wx.MessageBox("ブロック集計を行います。\n集計には時間がかかります。", g_System_Title, wx.YES_NO) == wx.YES):
-                self._makeBlockAll()
-
-            # ブロック集計
             self._get_environ()
             self._set_title("■ブロック集計")
-            self.g_panel_23.Show()
+            if (wx.MessageBox("ブロック集計を行います。\n集計には時間がかかります。", g_System_Title, wx.YES_NO) == wx.YES):
+                self._makeBlockAll()
+                wx.MessageBox("ブロック集計が完了しました！", g_System_Title)
+                # ブロック集計
+                self.g_panel_23.Show()
 
     def _dispStatistics(self, h_fname, h_row):
         if (self.g_listBox_22_1.GetItemCount() > 0):
@@ -461,10 +471,14 @@ class Main(wx.Frame):
         global g_meshList_list
 
         com.GetEnvData(g_ini_path)
+
+        '''
         #com.Store_DisasterFile()
         com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
         #com.Store_CautionAnnounceFile()
         com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+        '''
+
         # 集計
         # 解析雨量のCSVファイルからメッシュ数を取得する。
         del g_meshList_target[:]
@@ -558,8 +572,8 @@ class Main(wx.Frame):
 
         # RBFNデータ入力
 
-        for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
-        #for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
+        #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
+        for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
             print('***a_year=' + str(a_year))
 
             ''' testing...
@@ -571,6 +585,7 @@ class Main(wx.Frame):
             self.g_listBox_11.Update()
             '''
 
+            '''
             a_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
             a_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
 
@@ -591,6 +606,7 @@ class Main(wx.Frame):
                 com.g_textSum_RainfallFile1 = com.Store_DataFile(a_RainfallFileName1, com.g_textline_RainfallFile1)
                 #com.Store_SoilRainFile1(prv_SoilRainFileName1)
                 com.g_textSum_SoilRainFile1 = com.Store_DataFile(a_SoilRainFileName1, com.g_textline_SoilRainFile1)
+                '''
 
             a_meshSum = len(g_meshList_target)
 
@@ -603,7 +619,7 @@ class Main(wx.Frame):
             a_sum = 0
             a_count = self.g_listBox_11.GetItemCount()
             while (a_sum < a_meshSum):
-                a_cnt_max = (a_sum + 1)
+                a_cnt_max = (a_sum + 2)
                 if (a_cnt_max > a_meshSum):
                     a_cnt_max = a_meshSum
 
@@ -623,24 +639,17 @@ class Main(wx.Frame):
                         a_meshNo = a_split[0]
                     print('a_meshNo=' + a_meshNo)
 
-                    self.g_listBox_11.InsertItem(a_count + a_sum, str(a_year))
-                    self.g_listBox_11.SetItem(a_count + a_sum, 1, str(a_sum + 1) + "/" + str(a_meshSum))
-                    self.g_listBox_11.SetItem(a_count + a_sum, 2, a_meshNo)
-                    self.g_listBox_11.SetItem(a_count + a_sum, 3, "処理中......")
-                    self.g_listBox_11.SetItemTextColour(a_count + a_sum, wx.RED)
+                    self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
+                    self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
                     self.g_listBox_11.Update()
 
                     a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
-                                         com.g_textline_DisasterFile,
-                                         com.g_textline_CautionAnnounceFile,
-                                         com.g_textline_TemperatureFile,
-                                         com.g_textline_RainfallFile,
-                                         com.g_textline_SoilRainFile,
-                                         com.g_textline_RainfallFile1,
-                                         com.g_textline_SoilRainFile1,
                                          a_year,
                                          a_cnt,
                                          g_meshList_target
@@ -655,9 +664,10 @@ class Main(wx.Frame):
                     a_proc.terminate()
 
                 for a_i in range(a_sum, a_cnt_max):
-                    self.g_listBox_11.SetItem(a_count + a_sum , 3, "入力データ作成が完了しました。")
-                    self.g_listBox_11.SetItemTextColour(a_count + a_sum, wx.BLUE)
+                    self.g_listBox_11.SetItem(a_count + a_i , 3, "入力データ作成が完了しました。")
+                    self.g_listBox_11.SetItemTextColour(a_count + a_i, wx.BLUE)
                     self.g_listBox_11.Update()
+                    self.Update()
 
                 print('All process is ended.')
 
@@ -668,7 +678,9 @@ class Main(wx.Frame):
 
         a_proc = clsBlock.MakeBlockAll(
             0,
-            com.g_strIni
+            com.g_strIni,
+            com.g_textline_DisasterFile,
+            com.g_textline_CautionAnnounceFile
         )
 
     def _makeCautionAnnounceFrequencyOverOccurRainFallNum(self):

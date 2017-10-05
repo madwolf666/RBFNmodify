@@ -287,10 +287,10 @@ class ComFunctions:
             a_newDate=datetime.datetime.strptime(a_newDataStr, "%Y/%m/%d")
             return True
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + " ".join(map(str, exp.args)))
             return False
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + sys.exc_info())
             return False
 
     # INIファイルの読み込み
@@ -708,10 +708,10 @@ class ComFunctions:
                 a_iRet += a_textSum1
 
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + "," + " ".join(map(str, exp.args)))
             #self.Outputlog(self.g_LOGMODE_INFORMATION, 'run', 'end')
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
@@ -767,7 +767,7 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetPastCLData', a_strErr +  str(exp.args[0]))
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetPastCLData', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetPastCLData', a_strErr + "," + sys.exc_info())
 
         return a_RBFN
 
@@ -807,9 +807,9 @@ class ComFunctions:
                 '''
 
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetMeshNoByCL', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetMeshNoByCL', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetMeshNoByCL', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetMeshNoByCL', a_strErr + "," + sys.exc_info())
 
         return a_msno
 
@@ -852,9 +852,9 @@ class ComFunctions:
                         self.g_kikan_TargetYearByMesh = a_dRet
 
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetYearByMesh', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetYearByMesh', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetYearByMesh', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTargetYearByMesh', a_strErr + "," + sys.exc_info())
 
         return a_dRet
 
@@ -875,10 +875,10 @@ class ComFunctions:
             a_sr.close()
 
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + sys.exc_info())
 
         return a_sRet
 
@@ -1046,9 +1046,10 @@ class ComFunctions:
                 h_textLine.append(v)
             a_iRet = len(h_textLine)
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + str(exp.args[0]))
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
@@ -1105,9 +1106,9 @@ class ComFunctions:
             # 1行目は、メッシュ数の為、読み飛ばし
 
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_MeshListAll', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_MeshListAll', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_MeshListAll', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_MeshListAll', a_strErr + "," + sys.exc_info())
 
     '''
     def Store_PastCLFile(self):
@@ -1244,10 +1245,10 @@ class ComFunctions:
         except Exception as exp:
             #self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]' + str(err), a_strErr)
             #self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + str(exp.args[0]))
-            self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]', a_strErr)
+            self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]', a_strErr + "," + " ".join(map(str, exp.args)))
             return False
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + sys.exc_info())
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + "," + sys.exc_info())
             return False
 
     def Write_TextLine(self, h_sw, h_textline):
