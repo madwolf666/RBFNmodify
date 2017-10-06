@@ -153,6 +153,11 @@ class ComFunctions:
     g_WhiffFrequencyNewSoilMinSymbol = "空振り頻度2の算出結果(土壌雨量指数下限値)" #"WFR"  '空振り頻度→2006.03.22
     g_WhiffFrequencyNewSymbol = "空振り頻度2の算出結果"   #"WFR"  '空振り頻度→2006.03.22
 
+    g_Action_MakeContourOrigin = 312    # オリジナル等高線データの作成
+    g_Action_MakeContourRevise = 313    # 等高線補正
+    g_Action_MakeContourSnake = 314     # スネーク曲線
+    g_Action_MakeContourSoilMin = 315   # 土壌雨量下限値
+
     def __init__(self):
         #pass
 
@@ -463,11 +468,13 @@ class ComFunctions:
 
     def GetMeshList(self, h_tyear, h_meshList):
         a_strErr = "Year=" + str(h_tyear)
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetMeshList', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetMeshList', a_strErr)
 
         a_iRet = 0
 
         try:
+            del h_meshList[:]
+
             a_sr = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_tyear) + ".csv", 'r', encoding='shift_jis')
             # 1行目をリスト変数に読み込む。
             a_textline = a_sr.readline().rstrip('\r\n')
@@ -491,18 +498,20 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
     def GetMeshSum(self, h_year, h_RainfallFileName, h_meshList):
         a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSum', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_getMeshSum', a_strErr)
 
         a_iRet = 0
 
         try:
+            del h_meshList[:]
+
             # 解析雨量ファイルを開く。
             a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
             # メッシュファイルを開く。
@@ -533,18 +542,20 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
     def GetMeshSum2(self, h_year, h_RainfallFileName, h_meshList):
         a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSum2', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_getMeshSum2', a_strErr)
 
         a_iRet = 0
 
         try:
+            del h_meshList[:]
+
             # 解析雨量ファイルを開く。
             a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
             # メッシュファイルを開く。
@@ -585,18 +596,20 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
     def GetMeshSumFromFile(self, h_year, h_meshList):
         a_strErr = "Year=" + str(h_year)
-        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_getMeshSumFromFile', a_strErr)
 
         a_iRet = 0
 
         try:
+            del h_meshList[:]
+
             # 対象メッシュNoファイルを開く。
             a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
             # メッシュ数をカウントする。
@@ -632,18 +645,20 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', 'end')
+        #com.Outputlog(com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
 
         return a_iRet
 
     def GetMeshSumFromFile2(self, h_year, h_meshList):
         a_strErr = "Year=" + str(h_year)
-        self.Outputlog(self.g_LOGMODE_INFORMATION, '_getMeshSumFromFile2', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_getMeshSumFromFile2', a_strErr)
 
         a_iRet = 0
 
         try:
+            del h_meshList[:]
+
             # 対象メッシュNoファイルを開く。
             a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
             # メッシュ数をカウントする。
@@ -680,15 +695,15 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', 'end')
+        #com.Outputlog(com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
 
         return a_iRet
 
     # 全降雨の超過数を取得する。
     def GetOccurRainfallSumByMesh(self, h_meshNo):
         a_strErr = "meshNo=" + h_meshNo
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetOccurRainfallSumByMesh', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetOccurRainfallSumByMesh', a_strErr)
 
         a_iRet = 0
 
@@ -709,20 +724,20 @@ class ComFunctions:
 
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.Outputlog(self.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
     #
-    def GetPastCLData(self, h_meshNo, h_soilMin, h_rainMax):
+    def GetPastCLData(self, h_meshNo):
         a_strErr = "meshNo=" + h_meshNo
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetPastCLData', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetPastCLData', a_strErr)
 
         a_RBFN = 0
-        h_soilMin = 0
-        h_rainMax = -1
+        a_soilMin = 0
+        a_rainMax = -1
 
         try:
             if (self.g_textSum_PastCLFile == 0):
@@ -755,12 +770,12 @@ class ComFunctions:
                     else:
                         a_RBFN = 0
 
-                    h_soilMin = float(a_split1[2])
+                    a_soilMin = float(a_split1[2])
 
                     if (len(a_split1) >= 4):
-                            h_rainMax = float(a_split1[3]) # 60分間積算雨量上限値のサポート
+                            a_rainMax = float(a_split1[3]) # 60分間積算雨量上限値のサポート
                     else:
-                        h_rainMax = -1
+                        a_rainMax = -1
 
                     break
 
@@ -769,12 +784,12 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetPastCLData', a_strErr + "," + sys.exc_info())
 
-        return a_RBFN
+        return a_RBFN, a_soilMin, a_rainMax
 
     # 既往CL取込時の対象メッシュ番号を処理する
     def GetTargetMeshNoByCL(self, h_tyear, h_msno):
         a_strErr = "year=" + str(h_tyear) + ',msno=' + h_msno
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetTargetMeshNoByCL', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetTargetMeshNoByCL', a_strErr)
 
         a_msno = ''
 
@@ -816,7 +831,7 @@ class ComFunctions:
     # 対象期間を取得する
     def GetTargetYearByMesh(self, h_StartYear, h_EndYear, h_OutPath, h_meshNo):
         a_strErr = "meshNo=" + h_meshNo
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetTargetYearByMesh', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetTargetYearByMesh', a_strErr)
 
         a_dRet = 0
 
@@ -861,7 +876,7 @@ class ComFunctions:
     # 気温情報を取得する。
     def GetTemperatureInfo(self, h_meshNo):
         a_strErr = "meshNo=" + h_meshNo
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'GetTemperatureInfo', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'GetTemperatureInfo', a_strErr)
 
         a_sRet = ",,,"
 
@@ -876,7 +891,7 @@ class ComFunctions:
 
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + sys.exc_info())
 
@@ -971,7 +986,7 @@ class ComFunctions:
     '''
     def Store_AllRainfall(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_AllRainfall', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_AllRainfall', a_strErr)
 
         # 全解析雨量・土壌雨量指数ファイルを開く
 
@@ -986,13 +1001,13 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-        #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_AllRainfall', 'end')
+        #Outputlog(self.g_LOGMODE_TRACE1, 'Store_AllRainfall', 'end')
         '''
 
     '''
     def Store_CautionAnnounceFile(self):
         a_strErr = "filename=" + self.g_CautionAnnounceFileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_CautionAnnounceFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_CautionAnnounceFile', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1011,7 +1026,7 @@ class ComFunctions:
     '''
     def Store_ContourReviseByMesh(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_ContourReviseByMesh', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_ContourReviseByMesh', a_strErr)
 
         try:
             self.g_textSum_ContourReviseByMesh = 0
@@ -1029,7 +1044,7 @@ class ComFunctions:
     #def Store_DataFile(self, h_fileName, h_textSum, h_textLine):
     def Store_DataFile(self, h_fileName, h_textLine):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_DataFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_DataFile', a_strErr)
 
         a_iRet = 0
         try:
@@ -1056,7 +1071,7 @@ class ComFunctions:
     '''
     def Store_DisasterFile(self):
         a_strErr = "filename=" + self.g_DisasterFileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_DisasterFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_DisasterFile', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1075,7 +1090,7 @@ class ComFunctions:
     '''
     def Store_FindOccurRainfall(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_FindOccurRainfall', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_FindOccurRainfall', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1093,7 +1108,7 @@ class ComFunctions:
 
     def Store_MeshListAll(self, h_tyear):
         a_strErr = "year=" + str(h_tyear)
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_MeshListAll', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_MeshListAll', a_strErr)
 
         try:
             self.g_textSum_MeshListAll = 0
@@ -1113,7 +1128,7 @@ class ComFunctions:
     '''
     def Store_PastCLFile(self):
         a_strErr = ""
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_MeshListAll', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_MeshListAll', a_strErr)
 
         try:
             self.g_textSum_PastCLFile = 0
@@ -1131,7 +1146,7 @@ class ComFunctions:
     '''
     def Store_RainfallFile(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_RainfallFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_RainfallFile', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1146,13 +1161,13 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-        #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_RainfallFile', 'end')
+        #Outputlog(self.g_LOGMODE_TRACE1, 'Store_RainfallFile', 'end')
         '''
 
     '''
     def Store_RainfallFile1(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_RainfallFile1', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_RainfallFile1', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1167,13 +1182,13 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-        #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_RainfallFile1', 'end')
+        #Outputlog(self.g_LOGMODE_TRACE1, 'Store_RainfallFile1', 'end')
         '''
 
     '''
     def Store_SoilRainFile(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_SoilRainFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_SoilRainFile', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1188,13 +1203,13 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-        #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_SoilRainFile', 'end')
+        #Outputlog(self.g_LOGMODE_TRACE1, 'Store_SoilRainFile', 'end')
         '''
 
     '''
     def Store_SoilRainFile1(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_SoilRainFile1', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_SoilRainFile1', a_strErr)
 
         # 災害発生降雨の検出結果を退避（メッシュ単位）
 
@@ -1210,13 +1225,13 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-        #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_SoilRainFile1', 'end')
+        #Outputlog(self.g_LOGMODE_TRACE1, 'Store_SoilRainFile1', 'end')
         '''
 
     '''
     def Store_TemperatureFile(self, h_fileName):
         a_strErr = "filename=" + h_fileName
-        self.Outputlog(self.g_LOGMODE_INFORMATION, 'Store_TemperatureFile', a_strErr)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_TemperatureFile', a_strErr)
 
         # 気温情報を退避
 
@@ -1232,7 +1247,7 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, sys.exc_info(), a_strErr)
 
-            #Outputlog(self.g_LOGMODE_INFORMATION, 'Store_TemperatureFile', 'end')
+            #Outputlog(self.g_LOGMODE_TRACE1, 'Store_TemperatureFile', 'end')
             '''
 
     def Str_isfloat(self, str):

@@ -66,7 +66,7 @@ class MakeAllRainfallDataByMesh():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path +  ",Year=" + str(self.year) + ",meshIdx=" + str(self.meshIdx)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeAllRainfallDataByMesh-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeAllRainfallDataByMesh-run', a_strErr)
 
         #a_meshList = []
 
@@ -110,7 +110,7 @@ class MakeAllRainfallDataByMesh():
                 self._makeAllRainfallDataByMesh(self.year, 1, self.meshIdx, self.meshList)
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-run",  a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-run", a_strErr + "," + sys.exc_info())
 
@@ -123,7 +123,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位の気温情報を計算する
     def _calTemperatureByMesh(self, h_year, h_kind, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",meshoNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_calTemperatureByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calTemperatureByMesh', a_strErr)
 
         a_cnt = 0
         a_strTmp = ""
@@ -226,7 +226,7 @@ class MakeAllRainfallDataByMesh():
                     a_findDSum2 = a_findDSum2 + 1
 
             # 作成済みのFCORファイル名を変更する。
-            if (os.path.exists(a_sFileName) == True):
+            if (os.path.isfile(a_sFileName) == True):
                 os.remove(a_sFileName)
             os.rename(a_sFileName, a_sFileName2)
 
@@ -267,12 +267,12 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_calTemperatureByMesh", a_strErr + "," + sys.exc_info())
 
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_calTemperatureByMesh', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calTemperatureByMesh', 'end')
 
     # メッシュ単位の一連の降雨データを自動検出する
     def _findChainOccurRainfallByMesh(self, h_year, h_kind, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",meshoNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_findChainOccurRainfallByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_findChainOccurRainfallByMesh', a_strErr)
 
         a_findDSum = 0
         a_findDIndex = [[]] #２次元配列
@@ -346,12 +346,12 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_findChainOccurRainfallByMesh", a_strErr + "," + sys.exc_info())
 
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_findChainOccurRainfallByMesh', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_findChainOccurRainfallByMesh', 'end')
 
     # メッシュ単位の災害発生降雨データを自動検出する
     def _findCautionAnnounceRainfallByMesh(self, h_year, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_findCautionAnnounceRainfallByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_findCautionAnnounceRainfallByMesh', a_strErr)
 
         try:
             # 災害発生箇所のインデックスを退避する。
@@ -422,7 +422,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位の警戒情報のリードタイムを自動検出する
     def _findCautionAnnounceReadTImeByMesh(self, h_year, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_findCautionAnnounceReadTImeByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_findCautionAnnounceReadTImeByMesh', a_strErr)
 
         try:
             # 結果出力ファイルを開く
@@ -576,7 +576,7 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_findNextNonOccurByMesh", a_strErr + "," + sys.exc_info())
 
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_findNextNonOccurByMesh', 'end')
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_findNextNonOccurByMesh', 'end')
         #print('a_iRet=' + str(a_iRet))
         return a_iRet
 
@@ -727,14 +727,14 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_findPrevNonOccurByMesh", a_strErr + "," + sys.exc_info())
 
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
 
         return a_iRet
 
     '''
     def _getMeshSum(self, h_year, h_RainfallFileName, h_meshList):
         a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getMeshSum', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getMeshSum', a_strErr)
 
         a_iRet = 0
 
@@ -771,8 +771,8 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, sys.exc_info(), "")
 
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getMeshSum', 'end')
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
         '''
@@ -780,7 +780,7 @@ class MakeAllRainfallDataByMesh():
     '''
     def _getMeshSumFromFile(self, h_year, h_RainfallFileName, h_meshList):
         a_strErr = "Year=" + str(h_year) + ",RainfallFileName=" + h_RainfallFileName
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', a_strErr)
 
         a_iRet = 0
 
@@ -822,8 +822,8 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, sys.exc_info(), "")
 
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'a_iRet', str(a_iRet))
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getMeshSumFromFile', 'end')
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
 
         return a_iRet
         '''
@@ -831,7 +831,7 @@ class MakeAllRainfallDataByMesh():
     '''
     def _makeAllRainfallData(self, h_year):
         a_strErr = "Year=" + str(h_year)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAllRainfallData', a_strErr)
 
         a_meshList = []
 
@@ -870,13 +870,13 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, sys.exc_info(), "")
 
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAllRainfallData', 'end')
             '''
 
     # メッシュ単位の全降雨データを作成する
     def _makeAllRainfallDataByMesh(self, h_year, h_kind, h_idx, h_meshList):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",idx=" + str(h_idx)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeAllRainfallDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAllRainfallDataByMesh', a_strErr)
 
         '''
         global prv_RainfallFileName
@@ -973,7 +973,7 @@ class MakeAllRainfallDataByMesh():
                             break
 
                     # 結果出力のパスを作成
-                    if os.path.exists(self.com.g_OutPath + '\\' + str(a_meshNo)) == False:
+                    if os.path.isdir(self.com.g_OutPath + '\\' + str(a_meshNo)) == False:
                         os.mkdir(self.com.g_OutPath + '\\' + str(a_meshNo))
                     # 結果出力ファイルを開く。(OPen)
                     if h_kind == 0:
@@ -1075,12 +1075,12 @@ class MakeAllRainfallDataByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_makeAllRainfallDataByMesh", a_strErr + "," + sys.exc_info())
 
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeAllRainfallDataByMesh', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAllRainfallDataByMesh', 'end')
 
     # メッシュ単位の一連降雨データを自動検出する
     def _makeChainOccurRainFallDataByMesh(self, h_year, h_kind, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeChainOccurRainFallDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeChainOccurRainFallDataByMesh', a_strErr)
 
         try:
             # 結果出力ファイルを開く
@@ -1132,7 +1132,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位の一連降雨データを自動検出する。
     def _makeChainOnlyOccurRainFallDataByMesh(self, h_year, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeChainOnlyOccurRainFallDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeChainOnlyOccurRainFallDataByMesh', a_strErr)
 
         try:
             # 結果出力ファイルを開く。
@@ -1216,7 +1216,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位のRBFNツール用非発生降雨データを自動検出する
     def _makeNonOccurRainFallDataByMesh(self, h_year, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeNonOccurRainFallDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeNonOccurRainFallDataByMesh', a_strErr)
 
         try:
             a_sw = open(self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_NonOccurRainfallSymbol + str(h_year) + ".csv", 'w',encoding='shift_jis')
@@ -1240,7 +1240,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位の発生降雨データを自動検出する
     def _makeOccurRainFallDataByMesh(self, h_year, h_kind, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeOccurRainFallDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainFallDataByMesh', a_strErr)
 
         try:
             # 結果出力ファイルを開く。
@@ -1297,7 +1297,7 @@ class MakeAllRainfallDataByMesh():
     # メッシュ単位のRBFN入力データを自動検出する
     def _makeRBFNDataByMesh(self, h_year, h_meshNo):
         a_strErr = "Year=" + str(h_year) + ",meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeRBFNDataByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeRBFNDataByMesh', a_strErr)
 
         try:
             a_textSum = 0

@@ -1,5 +1,5 @@
 ################################################################################
-# 等高線の作成
+# 集計
 ################################################################################
 import sys
 import os
@@ -36,7 +36,7 @@ class MakeAlarmAnnounce():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeAlarmAnnounce-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeAlarmAnnounce-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -92,10 +92,10 @@ class MakeAlarmAnnounce():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeAlarmAnnounce-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeAlarmAnnounce-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeAlarmAnnounce-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeAlarmAnnounce-run', a_strErr + "," + sys.exc_info())
 
 # 発表頻度を作成する
 class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
@@ -124,7 +124,7 @@ class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -176,10 +176,10 @@ class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr + "," + sys.exc_info())
 
 # 災害捕捉率を作成する
 class MakeCautionAnnounceRateOccurNum():
@@ -208,7 +208,7 @@ class MakeCautionAnnounceRateOccurNum():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeCautionAnnounceRateOccurNum-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeCautionAnnounceRateOccurNum-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -259,10 +259,10 @@ class MakeCautionAnnounceRateOccurNum():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurNum-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurNum-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurNum-run', a_strErr + "," + sys.exc_info())
 
 # 災害捕捉率を作成する
 class MakeCautionAnnounceRateOccurRainFallNum():
@@ -291,7 +291,7 @@ class MakeCautionAnnounceRateOccurRainFallNum():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -342,10 +342,10 @@ class MakeCautionAnnounceRateOccurRainFallNum():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr + "," + sys.exc_info())
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement():
@@ -374,7 +374,7 @@ class MakeDisasterSupplement():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeDisasterSupplement-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeDisasterSupplement-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -451,10 +451,10 @@ class MakeDisasterSupplement():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement-run', a_strErr + "," + sys.exc_info())
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement9_1():
@@ -483,7 +483,7 @@ class MakeDisasterSupplement9_1():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeDisasterSupplement9_1-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeDisasterSupplement9_1-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -559,10 +559,10 @@ class MakeDisasterSupplement9_1():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_1-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_1-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_1-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_1-run', a_strErr + "," + sys.exc_info())
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement9_2():
@@ -591,7 +591,7 @@ class MakeDisasterSupplement9_2():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeDisasterSupplement9_2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeDisasterSupplement9_2-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -667,10 +667,10 @@ class MakeDisasterSupplement9_2():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_2-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_2-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeForecastPredictive():
@@ -701,7 +701,7 @@ class MakeForecastPredictive():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeForecastPredictive-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeForecastPredictive-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -793,7 +793,7 @@ class MakeForecastPredictive():
 
                 if (self.com.g_PastKind != 0):
                     # 取込あり
-                    a_RBFN = self.com.GetPastCLData(a_msNo[a_cnt1], a_soilMin, a_rainMax)    # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(a_msNo[a_cnt1])    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -833,10 +833,10 @@ class MakeForecastPredictive():
             a_swB.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeForecastPredictive-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeForecastPredictive-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeForecastPredictive-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeForecastPredictive-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeNIGeDaS():
@@ -867,7 +867,7 @@ class MakeNIGeDaS():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfall3_2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall3_2-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -889,7 +889,7 @@ class MakeNIGeDaS():
                 else:
                     # 取込あり
                     a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
-                    a_RBFN =  self.com.GetPastCLData(a_meshNo, a_soilMin, a_rainMax)    # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax =  self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -947,14 +947,14 @@ class MakeNIGeDaS():
                 a_sw2.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + sys.exc_info())
 
     def _calcNIGeDaS(self, h_RBFN, h_CL):
         a_strErr = "RBFN=" + h_RBFN + ",CL=" + str(h_CL)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_calcNIGeDaS-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calcNIGeDaS-run', a_strErr)
 
         a_sRet = ""
 
@@ -980,10 +980,10 @@ class MakeNIGeDaS():
             a_sRet +="," + a_sCL
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + sys.exc_info())
 
         return a_sRet
 
@@ -997,7 +997,7 @@ class MakeNIGeDaS():
         h_CL
         ):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_calcNIGeDaS2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calcNIGeDaS2-run', a_strErr)
 
         a_sRet = ""
 
@@ -1072,16 +1072,16 @@ class MakeNIGeDaS():
             a_sRet +="," + a_sCL
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + "," + sys.exc_info())
 
         return a_sRet
 
     def _cpnt(self, P0, P1, P2, P3):
         a_strErr = ""   #""ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_cpnt-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
 
         a_pRet = [0]*2
 
@@ -1103,16 +1103,16 @@ class MakeNIGeDaS():
             a_pRet[1] = (A * V - C * U) / (A * D - B * C)
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + "," + sys.exc_info())
 
         return a_pRet
 
     def _intersection(self, p1, p2, p3, p4):
         a_strErr = ""   #""ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_cpnt-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
 
         a_bRet = False
 
@@ -1122,10 +1122,10 @@ class MakeNIGeDaS():
                     a_bRet = True
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + "," + sys.exc_info())
 
         return a_bRet
 
@@ -1158,7 +1158,7 @@ class MakeNIGeDaS_NonOccurCalc():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -1180,7 +1180,7 @@ class MakeNIGeDaS_NonOccurCalc():
                 else:
                     # 取込あり
                     a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
-                    a_RBFN =  self.com.GetPastCLData(a_meshNo, a_soilMin, a_rainMax)    # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax =  self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -1238,10 +1238,10 @@ class MakeNIGeDaS_NonOccurCalc():
                 a_sw2.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfall2():
@@ -1268,11 +1268,14 @@ class MakeOverRainfall2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+
         self.run()  # multiprocess
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfall2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall2-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -1284,7 +1287,7 @@ class MakeOverRainfall2():
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
                     # 取込あり
-                    a_RBFN = self.com.GetPastCLData(a_meshNo, a_soilMin, a_rainMax)    # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -1326,15 +1329,15 @@ class MakeOverRainfall2():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall2-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall2-run', a_strErr + "," + sys.exc_info())
 
     # 警戒発表中の発生降雨数を取得する
     def _getCautionAnnounceOccurRainfallSum(self, h_meshNo, h_unReal, h_soilMin, h_rainMax):
         a_strErr = "meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getCautionAnnounceOccurRainfallSum', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getCautionAnnounceOccurRainfallSum', a_strErr)
 
         a_iRet = 0
         a_IsExists = False
@@ -1422,16 +1425,16 @@ class MakeOverRainfall2():
                             break
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurRainfallSum', a_strErr + str(exp.args[0]))
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurRainfallSum', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurRainfallSum', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurRainfallSum', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
     # 警戒発表中の災害件数を取得する
     def _getCautionAnnounceOccurSum(self, h_meshNo, h_unReal, h_soilMin, h_rainMax):
         a_strErr = "meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getCautionAnnounceOccurSum', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getCautionAnnounceOccurSum', a_strErr)
 
         a_iRet = 0
 
@@ -1452,9 +1455,9 @@ class MakeOverRainfall2():
                                 a_iRet += 1
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurSum', a_strErr + str(exp.args[0]))
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurSum', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurSum', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurSum', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
@@ -1487,7 +1490,7 @@ class MakeOverRainfall3_1():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfall3_1-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall3_1-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -1519,10 +1522,10 @@ class MakeOverRainfall3_1():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_1-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_1-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_1-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_1-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfall3_2():
@@ -1549,11 +1552,14 @@ class MakeOverRainfall3_2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+
         self.run()  # multiprocess
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfall3_2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall3_2-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -1569,7 +1575,7 @@ class MakeOverRainfall3_2():
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
                     # 取込あり
-                    a_RBFN =  self.com.GetPastCLData(a_meshNo, a_soilMin, a_rainMax)    # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax =  self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -1606,10 +1612,10 @@ class MakeOverRainfall3_2():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_2-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_2-run', a_strErr + "," + sys.exc_info())
 
     # 全降雨の超過数を取得する
     def _getRBFNReadTime(
@@ -1623,7 +1629,7 @@ class MakeOverRainfall3_2():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getRBFNReadTime', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getRBFNReadTime', a_strErr)
 
         h_overSum = 0
 
@@ -1638,7 +1644,7 @@ class MakeOverRainfall3_2():
             a_rainMax = h_rainMax # 60分積算雨量上限値の追加
         else:
             # 取り込みあり
-            a_RBFN = self.com.GetPastCLData(h_meshNo, a_soilMin, a_rainMax) # 60分間積算雨量上限値のサポート
+            a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(h_meshNo) # 60分間積算雨量上限値のサポート
             if (h_soilMin > 0) or (h_rainMax > 0):
                 a_soilMin = h_soilMin
                 a_rainMax = h_rainMax
@@ -1811,10 +1817,10 @@ class MakeOverRainfall3_2():
                     h_overRBFNVal[a_cnt] = -1
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getRBFNReadTime', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getRBFNReadTime', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getRBFNReadTime', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getRBFNReadTime', a_strErr + "," + sys.exc_info())
 
         return h_overSum
 
@@ -1849,7 +1855,7 @@ class MakeOverRainfall8():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfall8-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall8-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -1886,7 +1892,7 @@ class MakeOverRainfall8():
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
                     # 取込あり
-                    a_RBFN = self.com.GetPastCLData(a_meshNo, a_soilMin, a_rainMax) # 60分間積算雨量上限値のサポート
+                    a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(a_meshNo) # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
                         a_rainMax = self.rainMax
@@ -1951,10 +1957,10 @@ class MakeOverRainfall8():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall8-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall8-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall8-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall8-run', a_strErr + "," + sys.exc_info())
 
     # 全降雨の超過数を取得する
     def _getForecastPredictive(
@@ -1968,7 +1974,7 @@ class MakeOverRainfall8():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getForecastPredictive', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getForecastPredictive', a_strErr)
 
         h_overSum = -1
 
@@ -2063,10 +2069,10 @@ class MakeOverRainfall8():
                                             h_overTimeS[h_overSum - 1][a_cnt2] += a_nowTime
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getForecastPredictive', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getForecastPredictive', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getForecastPredictive', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getForecastPredictive', a_strErr + "," + sys.exc_info())
 
         return h_overSum
 
@@ -2077,8 +2083,6 @@ class MakeOverRainfallByMesh():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
-                 h_textline_DisasterFile,
-                 h_textline_CautionAnnounceFile,
                  h_meshNo,
                  h_unReal,
                  h_soilMin,
@@ -2091,8 +2095,10 @@ class MakeOverRainfallByMesh():
 
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
+        '''
         self.com.g_textline_DisasterFile =  h_textline_DisasterFile
         self.com.g_textline_CautionAnnounceFile =  h_textline_CautionAnnounceFile
+        '''
         '''
         self.com.g_textline_TemperatureFile = h_textline_TemperatureFile
         self.com.g_textline_RainfallFile = h_textline_RainfallFile
@@ -2100,8 +2106,10 @@ class MakeOverRainfallByMesh():
         self.com.g_textline_RainfallFile1 = h_textline_RainfallFile1
         self.com.g_textline_SoilRainFile1 = h_textline_SoilRainFile1
         '''
+        '''
         self.com.g_textSum_DisasterFile =  len(h_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile =  len(h_textline_CautionAnnounceFile)
+        '''
         '''
         self.com.g_textSum_TemperatureFile = len(h_textline_TemperatureFile)
         self.com.g_textSum_RainfallFile = len(h_textline_RainfallFile)
@@ -2118,11 +2126,14 @@ class MakeOverRainfallByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+
         self.run()  # multiprocess
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path + ",meshNo=" + self.meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', a_strErr)
 
         a_RBFN = 0
         a_soilMin = 0
@@ -2139,7 +2150,7 @@ class MakeOverRainfallByMesh():
             # 既往CLの取り込み
             if (self.com.g_PastKind != 0):
                 # 取り込みあり
-                a_RBFN = self.com.GetPastCLData(self.meshNo, a_soilMin, a_rainMax)   # 60分間積算雨量上限値のサポート
+                a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(self.meshNo)   # 60分間積算雨量上限値のサポート
                 if (self.soilMin > 0) or (self.rainMax > 0):
                     a_soilMin = self.soilMin
                     a_rainMax = self.rainMax
@@ -2313,15 +2324,15 @@ class MakeOverRainfallByMesh():
             a_sw.write("\n")
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + "," + sys.exc_info())
 
     # 災害発生件数を取得する
     def _getDisasterOccurSumByMesh(self, h_meshNo, h_tempInfo):
         a_strErr = "meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getDisasterOccurSumByMesh', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getDisasterOccurSumByMesh', a_strErr)
 
         a_iRet = 0
 
@@ -2332,9 +2343,9 @@ class MakeOverRainfallByMesh():
                     a_iRet += 1
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getDisasterOccurSumByMesh', a_strErr + str(exp.args[0]))
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getDisasterOccurSumByMesh', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getDisasterOccurSumByMesh', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getDisasterOccurSumByMesh', a_strErr + "," + sys.exc_info())
 
         return a_iRet
 
@@ -2356,7 +2367,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_checkOverRainfall', a_strErr)
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_checkOverRainfall', a_strErr)
 
         a_bFlag = True
 
@@ -2413,10 +2424,10 @@ class MakeOverRainfallByMesh():
                         h_isOver[h_lineIdx] = True
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + "," + sys.exc_info())
 
     # 超過をチェックする
     '''
@@ -2437,7 +2448,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_checkOverWhiffTime', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_checkOverWhiffTime', a_strErr)
 
         a_bFlag = True
 
@@ -2495,7 +2506,7 @@ class MakeOverRainfallByMesh():
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, str(exp.args[0]), a_strErr)
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, sys.exc_info(), "")
             '''
@@ -2510,7 +2521,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverAllRainfallSum', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverAllRainfallSum', a_strErr)
 
         for a_sum in h_overSum:
             a_sum = 0
@@ -2632,10 +2643,10 @@ class MakeOverRainfallByMesh():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverAllRainfallSum', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverAllRainfallSum', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverAllRainfallSum', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverAllRainfallSum', a_strErr + "," + sys.exc_info())
 
     # 非発生降雨の超過数を取得する
     def _getOverNonOccurRainfallSum(
@@ -2648,7 +2659,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverNonOccurRainfallSum', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverNonOccurRainfallSum', a_strErr)
 
         a_unReal = 0
         a_overTime = ['']*9
@@ -2676,12 +2687,12 @@ class MakeOverRainfallByMesh():
                 # 災害発生降雨を除いた一連降雨ファイルを開く
                 self.com.g_textSum_ChainOnlyOccurRainfallFile = self.com.Store_DataFile(self.com.g_OutPath + "\\" + h_meshNo + "\\" + self.com.g_ChainOnlyOccurRainfallSymbol + str(a_cnt) + ".csv", self.com.g_textline_ChainOnlyOccurRainfallFile)
                 #print('meshNo=' + h_meshNo + ',self.com.g_textSum_ChainOnlyOccurRainfallFile=' + str(self.com.g_textSum_ChainOnlyOccurRainfallFile))
-                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverNonOccurRainfallSum', 'meshNo=' + h_meshNo + ',self.com.g_textSum_ChainOnlyOccurRainfallFile=' + str(self.com.g_textSum_ChainOnlyOccurRainfallFile))
+                #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverNonOccurRainfallSum', 'meshNo=' + h_meshNo + ',self.com.g_textSum_ChainOnlyOccurRainfallFile=' + str(self.com.g_textSum_ChainOnlyOccurRainfallFile))
                 a_IsOver = [False]*9
                 a_prevTime = ""
                 for a_cnt1 in range(1, self.com.g_textSum_ChainOnlyOccurRainfallFile):
                     #print('meshNo=' + h_meshNo + ',a_cnt1=' + str(a_cnt1))
-                    #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverNonOccurRainfallSum', 'meshNo=' + h_meshNo + ',self.com.g_textline_ChainOnlyOccurRainfallFile=' + strself.com.g_textline_ChainOnlyOccurRainfallFile[a_cnt1])
+                    #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverNonOccurRainfallSum', 'meshNo=' + h_meshNo + ',self.com.g_textline_ChainOnlyOccurRainfallFile=' + strself.com.g_textline_ChainOnlyOccurRainfallFile[a_cnt1])
                     a_split1 = self.com.g_textline_ChainOnlyOccurRainfallFile[a_cnt1]
                     a_nowTime = a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5]
                     a_dt = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
@@ -2761,7 +2772,7 @@ class MakeOverRainfallByMesh():
                                         if (a_IsOverW[a_cnt2] == True) and (a_IsExists == False):
                                             a_isOK = False
                                             if (self.com.g_PastKind == 1):
-                                                a_RBFN = self.com.GetPastCLData(h_meshNo, a_soilMin, a_rainMax)
+                                                a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(h_meshNo)
                                                 if (a_cnt2 == a_RBFN):
                                                     a_isOK = True
                                             else:
@@ -2781,10 +2792,10 @@ class MakeOverRainfallByMesh():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverNonOccurRainfallSum', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverNonOccurRainfallSum', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverNonOccurRainfallSum', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverNonOccurRainfallSum', a_strErr + "," + sys.exc_info())
 
     # 全降雨の超過数を取得する
     def _getOverOccurRainfallSum9_1(
@@ -2796,7 +2807,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverOccurRainfallSum9_1', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverOccurRainfallSum9_1', a_strErr)
 
         a_unReal = 0
         a_overTime = ['']*9
@@ -2817,7 +2828,7 @@ class MakeOverRainfallByMesh():
 
             if (self.com.g_PastKind != 0):
                 # 既往CL取込あり
-                a_RBFN = self.com.GetPastCLData(str(h_meshNo), a_soilMin, a_rainMax)
+                a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(str(h_meshNo))
 
             a_sw = open(self.com.g_OutPath + "\\" + h_meshNo + "\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + ".csv", 'w', encoding='shift_jis')
             a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1\n")
@@ -2947,11 +2958,11 @@ class MakeOverRainfallByMesh():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + str(exp.args[0]))
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + sys.exc_info())
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + "," + " ".join(map(str, exp.args)))
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + "," + sys.exc_info())
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_1', a_strErr + "," + sys.exc_info())
 
     # 全降雨の超過数を取得する
     def _getOverOccurRainfallSum9_2(
@@ -2963,7 +2974,7 @@ class MakeOverRainfallByMesh():
             h_rainMax
     ):
         a_strErr = "meshNo=" + h_meshNo + ",unReal=" + str(h_unReal) + ",soilMin=" + str(h_soilMin) + ",rainMax=" + str(h_rainMax)
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getOverOccurRainfallSum9_2', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getOverOccurRainfallSum9_2', a_strErr)
 
         a_unReal = 0
         a_overTime = ['']*9
@@ -2984,7 +2995,7 @@ class MakeOverRainfallByMesh():
 
             if (self.com.g_PastKind != 0):
                 # 既往CL取込あり
-                a_RBFN = self.com.GetPastCLData(str(h_meshNo), a_soilMin, a_rainMax)
+                a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(str(h_meshNo))
 
             a_sw = open(self.com.g_OutPath + "\\" + h_meshNo + "\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + ".csv", 'w', encoding='shift_jis')
             a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1\n")
@@ -3122,10 +3133,10 @@ class MakeOverRainfallByMesh():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_2', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_2', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_2', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_2', a_strErr + "," + sys.exc_info())
 
     def _naigai(self, r_X, r_Y, m_PXR, m_PYR):
         a_bRet = False
@@ -3144,7 +3155,7 @@ class MakeOverRainfallByMesh():
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigai', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigai', sys.exc_info())
 
@@ -3175,7 +3186,7 @@ class MakeOverRainfallByMesh():
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiL', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiL', sys.exc_info())
 
@@ -3206,7 +3217,7 @@ class MakeOverRainfallByMesh():
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiR', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiR', sys.exc_info())
 
@@ -3220,7 +3231,7 @@ class MakeOverRainfallByMesh():
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_reSort', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_reSort', sys.exc_info())
 
@@ -3235,7 +3246,7 @@ class MakeOverRainfallByMesh():
             h_overTime
     ):
         a_strErr = "meshNo=" + h_meshNo
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_writeChainOccurRainfall', a_strErr)
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_writeChainOccurRainfall', a_strErr)
 
         try:
             a_RBFN = 0
@@ -3252,7 +3263,7 @@ class MakeOverRainfallByMesh():
             for a_cnt2 in range(0, 9):
                 a_isOK = False
                 if (self.com.g_PastKind == 1):
-                    a_RBFN = self.com.GetPastCLData(h_meshNo, a_soilMin, a_rainMax)
+                    a_RBFN, a_soilMin, a_rainMax = self.com.GetPastCLData(h_meshNo)
                     if (a_cnt2 == a_RBFN):
                         a_isOK = True
                 else:
@@ -3285,10 +3296,10 @@ class MakeOverRainfallByMesh():
             h_sw2.write("\n")
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeChainOccurRainfall', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeChainOccurRainfall', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeChainOccurRainfall', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeChainOccurRainfall', a_strErr + "," + sys.exc_info())
 
     def _writeOverOccurRainfallNum9(
             self,
@@ -3301,7 +3312,7 @@ class MakeOverRainfallByMesh():
             h_overTime
     ):
         a_strErr = "meshNo=" + h_meshNo
-        #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_writeOverOccurRainfallNum9_1', a_strErr)
+        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_writeOverOccurRainfallNum9_1', a_strErr)
 
         try:
             for a_cnt2 in range(0, 9):
@@ -3323,10 +3334,10 @@ class MakeOverRainfallByMesh():
                     break
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeOverOccurRainfallNum9', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeOverOccurRainfallNum9', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeOverOccurRainfallNum9', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_writeOverOccurRainfallNum9', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix():
@@ -3355,7 +3366,7 @@ class MakeOverRainfallMix():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfallMix-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfallMix-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3461,10 +3472,10 @@ class MakeOverRainfallMix():
             a_swNOC9_1.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix2():
@@ -3493,7 +3504,7 @@ class MakeOverRainfallMix2():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfallMix2-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfallMix2-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3539,10 +3550,10 @@ class MakeOverRainfallMix2():
             a_sw6.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix2-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix2-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix3_1():
@@ -3571,7 +3582,7 @@ class MakeOverRainfallMix3_1():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfallMix3_1-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfallMix3_1-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3607,10 +3618,10 @@ class MakeOverRainfallMix3_1():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_1-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_1-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_1-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_1-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix3_2():
@@ -3639,7 +3650,7 @@ class MakeOverRainfallMix3_2():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfallMix3_1-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfallMix3_1-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3675,10 +3686,10 @@ class MakeOverRainfallMix3_2():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_2-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_2-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_2-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix3_2-run', a_strErr + "," + sys.exc_info())
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix8():
@@ -3709,7 +3720,7 @@ class MakeOverRainfallMix8():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeOverRainfallMix8-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfallMix8-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3757,10 +3768,10 @@ class MakeOverRainfallMix8():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix8-run', a_strErr + str(exp.args))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix8-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix8-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallMix8-run', a_strErr + "," + sys.exc_info())
 
 # 空振り率を作成する
 class MakeWhiff():
@@ -3789,7 +3800,7 @@ class MakeWhiff():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeWhiff-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeWhiff-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3856,10 +3867,10 @@ class MakeWhiff():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff-run', a_strErr + "," + sys.exc_info())
 
 # 空振り率を作成する
 class MakeWhiff_New():
@@ -3888,7 +3899,7 @@ class MakeWhiff_New():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeWhiff_New-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeWhiff_New-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -3958,10 +3969,10 @@ class MakeWhiff_New():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff_New-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff_New-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff_New-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff_New-run', a_strErr + "," + sys.exc_info())
 
 # 空振り頻度を作成する
 class MakeWhiffFrequency():
@@ -3990,7 +4001,7 @@ class MakeWhiffFrequency():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeWhiffFrequency-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeWhiffFrequency-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -4046,10 +4057,10 @@ class MakeWhiffFrequency():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency-run', a_strErr + "," + sys.exc_info())
 
 # 空振り頻度を作成する
 class MakeWhiffFrequency_New():
@@ -4078,7 +4089,7 @@ class MakeWhiffFrequency_New():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeWhiffFrequency_New-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeWhiffFrequency_New-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -4134,10 +4145,10 @@ class MakeWhiffFrequency_New():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency_New-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency_New-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency_New-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency_New-run', a_strErr + "," + sys.exc_info())
 
 # 空振り時間を作成する
 class MakeWhiffTime():
@@ -4166,7 +4177,7 @@ class MakeWhiffTime():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeWhiffTime-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeWhiffTime-run', a_strErr)
 
         a_sFileName = ""
         a_TemperatureInfo = ""
@@ -4222,7 +4233,7 @@ class MakeWhiffTime():
             a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffTime-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffTime-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffTime-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffTime-run', a_strErr + "," + sys.exc_info())

@@ -42,7 +42,7 @@ class MakeBlockAll():
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeBlockAll-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeBlockAll-run', a_strErr)
 
         try:
             a_retsu, a_gyo = self._getBlockList()
@@ -80,14 +80,14 @@ class MakeBlockAll():
             self._makeStatisticsByBlock3_2()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + sys.exc_info())
 
     def _getBlockList(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_getBlockList-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getBlockList-run', a_strErr)
 
         a_restu = 0
         a_gyo = 0
@@ -130,10 +130,10 @@ class MakeBlockAll():
                     self.g_blockNoList[a_sum] += "," + str(a_value)
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getBlockList', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getBlockList', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getBlockList', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getBlockList', a_strErr + "," + sys.exc_info())
         finally:
             if (a_wkb != None):
                 a_wkb.release_resources()
@@ -144,7 +144,7 @@ class MakeBlockAll():
     # 空振り率を作成する
     def _makeForecastPredictiveByBlock(self, h_sw, h_meshList):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeForecastPredictiveByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeForecastPredictiveByBlock', a_strErr)
 
         try:
             a_textline1 = []
@@ -190,15 +190,15 @@ class MakeBlockAll():
             h_sw.write("予測適中率,", a_sTmp + "\n")
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + "," + sys.exc_info())
 
     # 非発生降雨
     def _makeNonOccurRainfallByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeNonOccurRainfallByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeNonOccurRainfallByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -240,15 +240,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeNonOccurRainfallByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeNonOccurRainfallByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeNonOccurRainfallByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeNonOccurRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生降雨
     def _makeOccurRainfallByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeOccurRainfallByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfallByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -345,15 +345,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfallByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfallByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfallByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生降雨
     def _makeOccurRainfall2ByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeOccurRainfall2ByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall2ByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -450,15 +450,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall2ByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall2ByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall2ByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 発生降雨超過数【災害捕捉率】
     def _makeOccurRainfall9_1ByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeOccurRainfall9_1ByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall9_1ByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -480,7 +480,7 @@ class MakeBlockAll():
                 a_rSum = 0
                 a_meshList = self.g_blockNoList[a_cnt1].split(",")
                 for a_cnt3 in range(0, len(a_meshList)):
-                    if os.path.exists(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + ".csv") == True:
                         a_textlineD2 = []
                         a_textSumD2 = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + ".csv", a_textlineD2)
                         for a_cnt2 in range(1, a_textSumD2):
@@ -547,15 +547,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_1ByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_1ByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_1ByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_1ByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生件数【災害捕捉率】
     def _makeOccurRainfall9_2ByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeOccurRainfall9_2ByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall9_2ByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -577,7 +577,7 @@ class MakeBlockAll():
                 a_rSum = 0
                 a_meshList = self.g_blockNoList[a_cnt1].split(",")
                 for a_cnt3 in range(0, len(a_meshList)):
-                    if os.path.exists(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + ".csv") == True:
                         a_textlineD2 = []
                         a_textSumD2 = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + ".csv", a_textlineD2)
                         for a_cnt2 in range(1, a_textSumD2):
@@ -669,15 +669,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_2ByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_2ByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_2ByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 一連の発生降雨
     def _makeRainfallByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeRainfallByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeRainfallByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -697,7 +697,7 @@ class MakeBlockAll():
                 a_rSum = 0
                 a_meshList = self.g_blockNoList[a_cnt1].split(",")
                 for a_cnt3 in range(0, len(a_meshList)):
-                    if os.path.exists(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfallSymbolByBlock + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfallSymbolByBlock + ".csv") == True:
                         a_textlineR = []
                         a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfallSymbolByBlock + ".csv", a_textlineR)
 
@@ -814,15 +814,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 一連の発生降雨
     def _makeRainfall2ByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeRainfall2ByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeRainfall2ByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -842,7 +842,7 @@ class MakeBlockAll():
                 a_rSum = 0
                 a_meshList = self.g_blockNoList[a_cnt1].split(",")
                 for a_cnt3 in range(0, len(a_meshList)):
-                    if os.path.exists(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfall2SymbolByBlock + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfall2SymbolByBlock + ".csv") == True:
                         a_textlineR = []
                         a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_ChainOccurRainfall2SymbolByBlock + ".csv", a_textlineR)
 
@@ -959,15 +959,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfall2ByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfall2ByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfall2ByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfall2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 警戒情報リードタイム/RBFN越リードタイム
     def _makeReadTimeByBlock(self, h_sKind):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeReadTimeByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeReadTimeByBlock', a_strErr)
 
         try:
             # リードタイムのデータをメモリに退避
@@ -1088,15 +1088,15 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeReadTimeByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeReadTimeByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeReadTimeByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeReadTimeByBlock', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理
     def _makeStatisticsByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeStatisticsByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock', a_strErr)
 
         try:
             a_sw = open(self.com.g_OutPath + "\\" + self.com.g_BlockStatisticsSymbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", "w", encoding="shift_jis")
@@ -1189,15 +1189,15 @@ class MakeBlockAll():
                     a_sw.write("\n")
             a_sw.close()
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理2
     def _makeStatisticsByBlock2(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeStatisticsByBlock2', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock2', a_strErr)
 
         try:
             a_sw = open(self.com.g_OutPath + "\\" + self.com.g_BlockStatisticsSymbol2 + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", "w", encoding="shift_jis")
@@ -1227,7 +1227,7 @@ class MakeBlockAll():
                     # ブロックの最初のメッシュがない場合エラーとなる
                     a_dKikan = 0
                     for a_cnt2 in range(0, len(a_splitB)):
-                        if os.path.exists(self.com.g_OutPath + "\\" + a_splitB[a_cnt2] + "\\" + self.com.g_AllRainfallSymbol + str(self.com.g_TargetStartYear) + ".csv") == True:
+                        if os.path.isfile(self.com.g_OutPath + "\\" + a_splitB[a_cnt2] + "\\" + self.com.g_AllRainfallSymbol + str(self.com.g_TargetStartYear) + ".csv") == True:
                             a_dKikan = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear,self.com.g_OutPath, a_splitB[a_cnt2])
                             break
 
@@ -1563,23 +1563,23 @@ class MakeBlockAll():
                         a_sw.write(",0,空振り時間⇒,0,期間⇒," + str(a_dKikan))
                     a_sw.write("\n")
 
-                    if os.path.exists(self.com.g_OutPath + "\\" + self.com.g_CalcForecastPredictiveSymbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + self.com.g_CalcForecastPredictiveSymbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv") == True:
                         self._makeForecastPredictiveByBlock(a_sw, a_splitB)
 
                     a_sw.write("\n")
 
             a_sw.close()
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock2', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock2', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock2', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock2', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理3
     # ②土砂災害警戒情報のリードタイム
     def _makeStatisticsByBlock3_1(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeStatisticsByBlock3_1', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock3_1', a_strErr)
 
         try:
             a_sw = open(self.com.g_OutPath + "\\" + self.com.g_BlockStatisticsSymbol3_1 + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", "w", encoding="shift_jis")
@@ -1622,16 +1622,16 @@ class MakeBlockAll():
                 a_sw.write("\n")
             a_sw.close()
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_1', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_1', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_1', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_1', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理3
     # ⑥RBFN越のリードタイム
     def _makeStatisticsByBlock3_2(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeStatisticsByBlock3_2', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock3_2', a_strErr)
 
         try:
             a_sw = open(self.com.g_OutPath + "\\" + self.com.g_BlockStatisticsSymbol3_2 + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", "w", encoding="shift_jis")
@@ -1674,15 +1674,15 @@ class MakeBlockAll():
                 a_sw.write("\n")
             a_sw.close()
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_2', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_2', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_2', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_2', a_strErr + "," + sys.exc_info())
 
     # 空振り時間
     def _makeWiffTimeByBlock(self):
         a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, '_makeWiffTimeByBlock', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeWiffTimeByBlock', a_strErr)
 
         try:
             a_blockSum = len(self.g_blockNameList)
@@ -1697,7 +1697,7 @@ class MakeBlockAll():
                 a_rSum = 0
                 a_meshList = self.g_blockNoList[a_cnt1].split(",")
                 for a_cnt3 in range(0, len(a_meshList)):
-                    if os.path.exists(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_WhiffTimeSymbolByBlock + ".csv") == True:
+                    if os.path.isfile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_WhiffTimeSymbolByBlock + ".csv") == True:
                         a_textlineD2 = []
                         a_textSumD2 = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshList[a_cnt3] + "\\" + self.com.g_WhiffTimeSymbolByBlock + ".csv", a_textlineD2)
                         for a_cnt2 in range(1, a_textSumD2):
@@ -1734,8 +1734,8 @@ class MakeBlockAll():
                 a_sw.close()
 
         except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeWiffTimeByBlock', a_strErr + str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'run', 'end')
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeWiffTimeByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeWiffTimeByBlock', a_strErr + sys.exc_info())
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeWiffTimeByBlock', a_strErr + "," + sys.exc_info())
 
