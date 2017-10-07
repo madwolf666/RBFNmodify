@@ -13,7 +13,8 @@ import clsBlock
 
 com = com_functions.ComFunctions()
 
-g_ini_path = "C:\\Users\\hal\\Documents\\CTI\\東京\\RBFN修正ツール\\2015年度\\program-source\\bin\\rbfnmdf.ini"
+#g_ini_path = "C:\\Users\\hal\\Documents\\CTI\\東京\\RBFN修正ツール\\2015年度\\program-source\\bin\\rbfnmdf.ini"
+g_ini_path = ".\\rbfnmdf.ini"
 g_System_Title = "RBFN修正ツール Ver 3.0"
 g_meshSum_targer = 0
 g_meshSum_list = 0

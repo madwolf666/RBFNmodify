@@ -216,12 +216,16 @@ class ComFunctions:
         self.g_textline_RainfallFile = []
         self.g_textSum_RainfallFile1 = 0
         self.g_textline_RainfallFile1 = []
+        self.g_textSum_RBFNFile = 0
+        self.g_textline_RBFNFile = []
         self.g_textSum_SoilRainFile = 0
         self.g_textline_SoilRainFile = []
         self.g_textSum_SoilRainFile1 = 0
         self.g_textline_SoilRainFile1 = []
         self.g_textSum_SurfaceFile = []
         self.g_textline_SurfaceFile = []
+        self.g_textSum_TargetMeshFile = 0
+        self.g_textline_TargetMeshFile = []
         self.g_textSum_TemperatureFile = 0
         self.g_textline_TemperatureFile = []
         self.g_textSum_WhiffTimeFile = 0
@@ -229,6 +233,7 @@ class ComFunctions:
 
         self.g_strIni = ""                   # INIファイル名
         self.g_target_year = 0               # 対象年
+        self.g_tyear_MeshList = 0            # 対象メッシュ年
 
         self.g_LogPath = "."                 # ログパス("TEMPパス")
         self.g_LogEffectiveDays = 7          # ログ有効期間("7")
@@ -729,6 +734,33 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetOccurRainfallSumByMesh', a_strErr + "," + sys.exc_info())
 
         return a_iRet
+
+    # 1kmメッシュのみで使用
+    def GetParnetMeshNo(
+            self,
+            tyear,
+            msno
+    ):
+        a_strErr = ""
+
+        a_sRet = ""
+
+        try:
+            if (self.g_tyear_MeshList != tyear):
+                self.g_textSum_MeshListAll = self.Store_DataFile(self.g_OutPath + "\\" + self.g_MeshSymbol + str(tyear) + ".csv", self.g_textline_MeshListAll)
+
+            for a_cnt in range(1, self.g_textSum_MeshListAll):
+                a_split = self.g_textline_MeshListAll[a_cnt]
+                if (a_split[1] == msno):
+                    a_sRet = a_split[0]
+                    break
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetParnetMeshNo', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'GetParnetMeshNo', a_strErr + "," + sys.exc_info())
+
+        return a_sRet
 
     #
     def GetPastCLData(self, h_meshNo):

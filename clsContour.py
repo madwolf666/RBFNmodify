@@ -6,13 +6,18 @@ import os
 import datetime
 import math
 import csv
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import shutil
 import com_functions
 import threading
 
 # 降雨超過数を作成する
 class MakeContourByMesh():
+    prv_leftMargin = 53.333333333333336
+    prv_topMargin = 26.666666666666668
+    prv_rightMargin = 148.0
+    prv_bottomMargin = 53.333333333333336
+
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
@@ -41,6 +46,8 @@ class MakeContourByMesh():
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
 
+        self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
+
         self.run()  # multiprocess
 
     def run(self):
@@ -60,10 +67,18 @@ class MakeContourByMesh():
                 # 取り込みあり
                 self.TargetPath = self.com.g_PastRBFNOutPath
                 # 既往CL対象メッシュ選択サポート
-                self.TargetMeshNo = self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.meshNo)
-                self.TargetFile = "surface-" + self.TargetMeshNo + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
-                self.StartYear = self.com.g_PastTargetStartYear
-                self.EndYear = self.com.g_PastTargetEndYear
+                self.TargetMeshNo = self.meshNo
+                #self.TargetMeshNo = self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.meshNo)
+                self.TargetFile = "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.meshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
+                #self.StartYear = self.com.g_PastTargetStartYear
+                #self.EndYear = self.com.g_PastTargetEndYear
+                self.StartYear = self.com.g_TargetStartYear
+                self.EndYear = self.com.g_TargetEndYear
+
+            # メッシュ番号の取得
+            a_RBFNFile = self.TargetPath + "\\" + self.TargetFile
+            # 全てのデータを読み込む
+            self.com.g_textSum_RBFNFile = self.com.Store_DataFile(a_RBFNFile, self.com.g_textline_RBFNFile)
 
             # オリジナル等高線の作成
             self._makeAutoContourOrigin(self.meshNo)
@@ -229,8 +244,7 @@ class MakeContourByMesh():
                 a_prev_textline = a_textline
                 a_textline = a_sr.readline().strip("\r\n")
 
-
-                a_sw.close()
+            a_sw.close()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_contourSoilMin', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -242,7 +256,7 @@ class MakeContourByMesh():
             self,
             outkind,
             outAction,
-            a_img,
+            h_img,
             TargetCL,
             soilMin,
             rainMax,
@@ -253,12 +267,509 @@ class MakeContourByMesh():
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawContour', a_strErr)
 
         try:
-            a_img = Image.new("RGB", (int(self.com.g_ImageFileWidth), int(self.com.g_ImageFileHeight)), (255, 255, 355))
+            a_textline = []
+            a_textSum = 0
+            a_textline2 = ""
+            a_textSum2 = ""
+            a_split1 = []
+            a_split2 = []
+            a_cnt1 = 0
+            a_cnt2 = 0
+            a_RBFNFile = ""
+            a_xMax = 0
+            a_yMax = 0
+            a_xLine = 0
+            a_yLine = 0
+            a_xSep = 0
+            a_ySep = 0
+            a_strTmp = ""
+            a_bFlag = False
+            a_drawInfo = []
+            a_TargetCL = -1
+            a_isDrawNonOccurRainfall = True
+            a_isDrawTargetCLOnly = False
+            a_TanbuX1 = -1
+            a_TanbuY1 = -1
+            a_TanbuX2 = -1
+            a_TanbuY2 = -1
+            a_splitC = []
+
+            # 既往取込あり
+            self._getGraphDrawInfo(h_msno, a_drawInfo)
+            if (len(a_drawInfo) > 0):
+                # 対象CL
+                a_TargetCL = int(float(a_drawInfo[1]) * 10)
+                # 非発生降雨描画の有無
+                if (a_drawInfo[4] == "1"):
+                    a_isDrawNonOccurRainfall = True
+                else:
+                    a_isDrawNonOccurRainfall = False
+
+                # CLのみ描画の有無
+                if (a_drawInfo[5] == "1"):
+                    a_isDrawTargetCLOnly = True
+                else:
+                    a_isDrawTargetCLOnly = False
+
+                if (soilMin <= 0):
+                    soilMin = float(a_drawInfo[2])
+                    rainMax = float(a_drawInfo[3])
+
+            if (TargetCL > 0):
+                a_TargetCL = int(TargetCL * 10)
+
+            # 全てのデータを読み込む
+            a_ySum = self.com.g_textSum_RBFNFile
+            a_xSum = len(self.com.g_textline_RBFNFile[0]) #- 1
+
+            # X軸の最大値を取得
+            a_xMax = float(self.com.g_textline_RBFNFile[0][a_xSum - 1])
+            # Y軸の最大値を取得
+            a_yMax = float(self.com.g_textline_RBFNFile[a_ySum - 1][0])
+
+            a_textline = []
+            a_textSum = self.com.Store_DataFile(self.com.g_OutPath + "\\" + outkind + "-" + str(self.TargetMeshNo) + "-" + str(self.StartYear) + "-" + str(self.EndYear) + ".csv", a_textline)
+
+            if (self.com.g_DrawRainfallMax > 0):
+                a_yMax = self.com.g_DrawRainfallMax
+            if (self.com.g_DrawSoilMax > 0):
+                a_xMax = self.com.g_DrawSoilMax
+
+            # X軸、Y軸のMAX値を補正する。
+            a_xLine = int(a_xMax / self.com.g_xUnit)
+            if ((a_xMax % self.com.g_xUnit) > 0):    #余り
+                a_xMax = a_xLine * self.com.g_xUnit + self.com.g_xUnit
+                a_xLine = a_xLine + 1
+            else:
+                a_xMax = a_xLine * self.com.g_xUnit
+            a_yLine = int(a_yMax / self.com.g_yUnit)
+            if ((a_yMax % self.com.g_yUnit) > 0):   #余り
+                a_yMax = a_yLine * self.com.g_yUnit + self.com.g_yUnit
+                a_yLine = a_yLine + 1
+            else:
+                a_yMax = a_yLine * self.com.g_yUnit
+
+            # X軸、Y軸のセパレートを設定する。
+            a_xSep = (h_img.width - (self.prv_leftMargin + self.prv_rightMargin)) / a_xMax
+            a_ySep = (h_img.height - (self.prv_topMargin + self.prv_bottomMargin)) / a_yMax
+
+            # PictureBox内容を初期化する。
+            #picbox.Image = Nothing
+            #h_img.width = int(self.com.g_ImageFileWidth)
+            #h_img.height = int(self.com.g_ImageFileHeight)
+            a_draw = ImageDraw.Draw(h_img)
+            #a_draw.bitmap((0, 0), )
+            #picbox.Image = New Bitmap(picbox.ClientSize.Width, picbox.ClientSize.Height)    '[2012.06.14]
+            #a_g As Graphics = Graphics.FromImage(picbox.Image)
+            a_pen_color = (0, 0, 0)   #黒
+            a_pen_width = 1
+            a_fnt_color = (0, 0, 0)   # 黒
+            # MS UI Gothic
+            a_fnt_font = ImageFont.truetype(
+                "C:\\Windows\\Fonts\\msgothic.ttc", 9
+            )
+
+            a_CX = 0
+
+            # 背景色を白に設定⇒呼び出し元で既に設定
+
+            # メッシュ番号（5km/1km）の描画
+            a_msno5km = ""
+            a_msno1km = ""
+            if (self.com.g_TargetRainMesh == 5):
+                a_msno5km = h_msno
+                a_msno1km = "-"
+            else:
+                a_msno1km = h_msno
+                a_msno5km = self.com.GetParnetMeshNo(self.StartYear, a_msno1km)
+            a_draw.text(
+                ((h_img.width / 2 - 40), 2),
+                a_msno5km,
+                font=a_fnt_font,
+                fill=a_fnt_color
+            )
+            a_draw.text(
+                ((h_img.width / 2 - 40), 12),
+                a_msno1km,
+                font=a_fnt_font,
+                fill=a_fnt_color
+            )
+
+            # 横
+            for a_cnt1 in range(0, a_yLine + 1):
+                a_bFlag = True
+                if (a_cnt1 >= 1) and (a_cnt1 < a_yLine):
+                    #a_pen.DashStyle = Drawing2D.DashStyle.Dot
+                    a_pen_color = (192, 192, 192)
+                else:
+                    #a_pen.DashStyle = Drawing2D.DashStyle.Solid
+                    a_pen_color = (0, 0, 0)
+
+                if (a_bFlag == True):
+                    a_draw.line(
+                        [
+                            (int(self.prv_leftMargin), int(self.prv_topMargin + (a_ySep * (self.com.g_yUnit * a_cnt1)))),
+                            (int(h_img.width - self.prv_rightMargin), int(self.prv_topMargin + (a_ySep * (self.com.g_yUnit * a_cnt1))))
+                             ],
+                        a_pen_color,
+                        1
+                    )
+
+                a_strTmp = str(int(a_cnt1 * self.com.g_yUnit))
+                if len(a_strTmp) == 1:
+                    a_CX = int(self.prv_leftMargin - 12.0)
+                elif len(a_strTmp) == 2:
+                    a_CX = int(self.prv_leftMargin - 16.0)
+                elif len(a_strTmp) == 3:
+                    a_CX = int(self.prv_leftMargin - 18.666666666666668)
+
+                a_draw.text(
+                    (a_CX, int(h_img.height - self.prv_bottomMargin - (a_ySep * (self.com.g_yUnit * a_cnt1)) - 5.333333333333333)),
+                    a_strTmp,
+                    font=a_fnt_font,
+                    fill=a_fnt_color
+                )
+
+            # 縦
+            for a_cnt1 in range(0, a_xLine + 1):
+                a_bFlag = True
+                if (a_cnt1 >= 1) and (a_cnt1 < a_xLine):
+                    #a_pen.DashStyle = Drawing2D.DashStyle.Dot
+                    a_pen_color = (192, 192, 192)
+                else:
+                    #a_pen.DashStyle = Drawing2D.DashStyle.Solid
+                    a_pen_color = (0, 0, 0)
+
+                if (a_bFlag == True):
+                    a_draw.line(
+                        [
+                            (int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1))), int(self.prv_topMargin + (a_ySep * (self.com.g_yUnit * a_yLine)))),
+                            (int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1))), int(self.prv_topMargin))
+                        ],
+                        a_pen_color,
+                        1
+                    )
+
+                a_strTmp = str(int(a_cnt1 * self.com.g_xUnit))
+                if len(a_strTmp) == 1:
+                    a_CX = int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1)) - 1.3333333333333333)
+                elif len(a_strTmp) == 2:
+                    a_CX = int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1)) - 5.333333333333333)
+                elif len(a_strTmp) == 3:
+                    a_CX = int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1)) - 8.0)
+
+                a_draw.text(
+                    (a_CX, int(h_img.height - self.prv_bottomMargin  + 2.6666666666666665)),
+                    a_strTmp,
+                    font=a_fnt_font,
+                    fill=a_fnt_color
+                )
+
+            # 文字の設定
+            a_imgSoil = Image.open(".\\images\\imgTitleSoil.gif")
+            a_imgRain = Image.open(".\\images\\imgTitleRain.gif")
+            h_img.paste(
+                a_imgSoil,
+                (
+                    int(h_img.width / 2 - 46.666666666666664), int(h_img.height - (self.prv_bottomMargin / 2) - 5.333333333333333)
+                )
+            )
+            h_img.paste(
+                a_imgRain,
+                (
+                    int(6.666666666666667), int((h_img.height - self.prv_bottomMargin) / 2 - 100.0)
+                )
+            )
+
+            # 等高線の描画
+            a_setSoilMin  = False
+            a_IsSet = False
+            a_splitTmp = []
+
+            for a_cnt1 in range(1, 10):
+                if (a_isDrawTargetCLOnly == True):
+                    if (a_cnt1 != a_TargetCL):
+                        continue
+                        #GoTo DRAWCONTOUR_CONTIBUE
+
+                a_pen_width = 1
+
+                # 色の設定
+                if (len(a_drawInfo) > 0):
+                    a_splitC = a_drawInfo[9 + ((9 - a_cnt1) * 3)].split("#")
+                    a_pen_color = (int(a_splitC[0]), int(a_splitC[1]), int(a_splitC[2]))
+                    #a_pen.DashStyle = CType(a_drawInfo(10 + +((9 - a_cnt1) * 3)), System.Drawing.Drawing2D.DashStyle)
+                    a_pen_width = float(a_drawInfo[11 + +((9 - a_cnt1) * 3)])
+                else:
+                    if (a_cnt1 == 1):   # 0.1
+                        a_pen_color = (0, 255, 0)
+                    elif (a_cnt1 == 2):   # 0.2
+                        a_pen_color = (0, 0, 255)
+                    elif (a_cnt1 == 3):   # 0.3
+                        a_pen_color = (0, 128, 0)
+                    elif (a_cnt1 == 4):   # 0.4
+                        a_pen_color = (128, 0, 0)
+                    elif (a_cnt1 == 5):   # 0.5
+                        a_pen_color = (128, 0, 128)
+                    elif (a_cnt1 == 6):   # 0.6
+                        a_pen_color = (0, 128, 192)
+                    elif (a_cnt1 == 7):   # 0.7
+                        a_pen_color = (255, 255, 0)
+                    elif (a_cnt1 == 8):   # 0.8
+                        a_pen_color = (255, 0, 255)
+                    elif (a_cnt1 == 2):   # 0.2
+                        a_pen_color = (0, 0, 128)
+
+                # 一番最後はやらない？→2006.03.14
+                a_IsSet = False
+
+                a_split1 = None
+                a_split2 = None
+
+                for a_cnt2 in range(0, a_textSum - 1):
+                    # 土壌雨量指数の下限値設定
+                    a_setSoilMin = False
+
+                    a_split1 = a_textline[a_cnt2]
+                    a_split2 = a_textline[a_cnt2 + 1]
+
+                    if (outAction == self.com.g_Action_MakeContourSoilMin):
+                        # 土壌雨量指数の下限値判断
+                        if (float(a_split1[0]) < soilMin):
+                            a_setSoilMin = True
+                        else:
+                            if (a_IsSet == False):
+                                if (float(a_split1[0]) == soilMin):
+                                    if (a_cnt1 == a_TargetCL):
+                                        a_TanbuX1 = int(self.prv_leftMargin + float(a_split1[0]) * a_xSep)
+                                        a_TanbuY1 = int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))) + 10)
+                                    if (a_cnt1 == 9):
+                                        a_TanbuX2 = int(self.prv_leftMargin + float(a_split1[0]) * a_xSep)
+                                        a_TanbuY2 = int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))
+
+                                    # 下限値と同じ場合は上部へ伸びる線を描画
+                                    if (rainMax != -1):
+                                        if (a_TargetCL < 0) or (a_cnt1 == a_TargetCL):
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(0) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax)))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax))))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax))))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                    else:
+                                        if (a_TargetCL < 0) or (a_cnt1 == a_TargetCL):
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(self.prv_topMargin))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                else:
+                                    # 下限値と異なる場合は上部へ伸びる線を描画
+                                    if (a_cnt2 > 0):
+                                        a_splitTmp = a_textline[a_cnt2 - 1]
+                                        if (rainMax != -1):
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(0) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax)))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax))))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * rainMax))))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                        else:
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(soilMin) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_splitTmp[10 - a_cnt1]))))),
+                                                    (int(self.prv_leftMargin + float(soilMin) * a_xSep), int(self.prv_topMargin))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                            a_draw.line(
+                                                [
+                                                    (int(self.prv_leftMargin + float(soilMin) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_splitTmp[10 - a_cnt1]))))),
+                                                    (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1])))))
+                                                ],
+                                                a_pen_color,
+                                                a_pen_width
+                                            )
+                                a_IsSet = True
+
+                    if (a_setSoilMin == False):
+                        if (float(a_split1[10 - a_cnt1]) > 0):
+                            if (float(a_split2[10 - a_cnt1]) > 0):
+                                a_draw.line(
+                                    [
+                                        (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                        (int(self.prv_leftMargin + float(a_split2[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split2[10 - a_cnt1])))))
+                                    ],
+                                    a_pen_color,
+                                    a_pen_width
+                                )
+                            else:
+                                # 次が0の場合、現在と同じX座標とする。
+                                a_draw.line(
+                                    [
+                                        (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                        (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split2[10 - a_cnt1])))))
+                                    ],
+                                    a_pen_color,
+                                    a_pen_width
+                                )
+                        else:
+                            if (float(a_split2[10 - a_cnt1]) > 0):
+                                a_draw.line(
+                                    [
+                                        (int(self.prv_leftMargin + float(a_split1[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split1[10 - a_cnt1]))))),
+                                        (int(self.prv_leftMargin + float(a_split2[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split2[10 - a_cnt1])))))
+                                    ],
+                                    a_pen_color,
+                                    a_pen_width
+                                )
+
+                # Y=0に強制的に補正
+                if (a_split2 != None):
+                    if (float(a_split2[10 - a_cnt1]) > 0):
+                        a_draw.line(
+                            [
+                                (int(self.prv_leftMargin + float(a_split2[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(a_split2[10 - a_cnt1]))))),
+                                (int(self.prv_leftMargin + float(a_split2[0]) * a_xSep), int(h_img.height - (self.prv_bottomMargin + (a_ySep * float(0)))))
+                            ],
+                            a_pen_color,
+                            a_pen_width
+                        )
+            #DRAWCONTOUR_CONTIBUE:
+
+            # 端部描画
+            if (a_TanbuX1 > 0):
+                a_pen_Tanbu_color = (255, 255, 255)
+                a_pen_Tanbu_width = 1
+                a_draw.line(
+                    [
+                        (int(a_TanbuX1), int(a_TanbuY1)),
+                        (int(a_TanbuX2), int(a_TanbuY2))
+                    ],
+                    a_pen_Tanbu_color,
+                    a_pen_Tanbu_width
+                )
+
+                if (a_isDrawTargetCLOnly == False):
+                    if (len(a_drawInfo) > 0):
+                        a_splitC = a_drawInfo[6].split("#")
+                        a_pen_Tanbu_color = (int(a_splitC[0]), int(a_splitC[1]), int(a_splitC[2]))
+                        #a_pen_Tanbu.DashStyle = CType(a_drawInfo(7), System.Drawing.Drawing2D.DashStyle)
+                        a_pen_Tanbu_width = float(a_drawInfo[8])
+                    else:
+                        a_pen_Tanbu_color = (0, 0, 128) # 0.9
+
+                        a_draw.line(
+                            [
+                                (int(a_TanbuX1), int(a_TanbuY1 - 10)),
+                                (int(a_TanbuX2), int(a_TanbuY2))
+                            ],
+                            a_pen_color,
+                            a_pen_Tanbu_width
+                        )
+            #End If
+
+            a_occurColor = []
+            a_occurTime = []
+            a_occurMark = []
+            if ((outAction == self.com.g_Action_MakeContourSnake) or (outAction == self.com.g_Action_MakeContourSoilMin)):
+                # 非発生降雨の描画
+                if (a_isDrawNonOccurRainfall == True):
+                    self._drawNonOccurRainFall(h_img, a_draw, a_xSep, a_ySep)
+
+                # 発生降雨の描画
+                self._drawOccurRainFall(h_img, a_draw, a_xSep, a_ySep, a_occurColor, a_occurTime, a_occurMark)
+                # Unrealの描画
+                self._drawUnreal(h_img, a_draw, a_xLine, a_yLine, a_xSep, a_ySep, unReal)
+
+                # 災害発生のデータを考慮した描画とする。→2006.03.20
+                self._drawLegendS(h_img, a_draw, a_occurColor, a_occurTime, a_occurMark, a_drawInfo)
+            else:
+                a_imgL = Image.open(".\\images\\imgLegendC.gif")
+                h_img.paste(
+                    a_imgL,
+                    (
+                        int(h_img.width - self.prv_rightMargin + 5.333333333333333), int(self.prv_topMargin)
+                    )
+                )
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + sys.exc_info())
+
+    def _getGraphDrawInfo(
+            self,
+            msno,
+            h_drawInfo
+    ):
+        a_strErr = ""
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getGraphDrawInfo', a_strErr)
+
+        try:
+            del h_drawInfo[:]
+
+            a_iCnt2 = 0
+            a_IsOK = False
+
+            for a_iCnt2 in range(0, self.com.g_textSum_TargetMeshFile):
+                a_split1 = self.com.g_textline_TargetMeshFile[a_iCnt2]
+
+                if (self.com.g_TargetRainMesh == 1):
+                    a_chkSum = 37
+                    # 1kmメッシュ
+                    if (a_split1[1] == msno):
+                        a_IsOK = True
+                else:
+                    # 5kmメッシュ
+                    a_chkSum = 36
+                    if (a_split1[0] == msno):
+                        a_IsOK = True
+
+                if (a_IsOK == True):
+                    # グラブ描画情報は35個あある。
+                    h_drawInfo = [""]*a_chkSum
+                    if (len(a_split1) >= a_chkSum):
+                        for a_iCnt in range(0, a_chkSum):
+                            if (self.com.g_TargetRainMesh == 1):
+                                # 1kmメッシュ
+                                if (a_iCnt > 0):
+                                    h_drawInfo[a_iCnt - 1] = a_split1[a_iCnt]
+                            else:
+                                # 5kmメッシュ
+                                h_drawInfo[a_iCnt] = a_split1[a_iCnt]
+                    else:
+                        del h_drawInfo[:]
+                    break
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getGraphDrawInfo', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getGraphDrawInfo', a_strErr + "," + sys.exc_info())
 
     # オリジナル等高線の作成
     def _makeAutoContourOrigin(self, h_meshNo):
@@ -337,9 +848,6 @@ class MakeContourByMesh():
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeContourOriginEx', a_strErr)
 
         try:
-            # メッシュ番号の取得
-            a_RBFNFile = self.TargetPath + "\\" + self.TargetFile
-
             # 結果出力のパスを作成
             if (os.path.isdir(self.com.g_OutPath + "\\" +self.TargetMeshNo) == False):
                 os.mkdir(self.com.g_OutPath + "\\" + self.TargetMeshNo)
@@ -347,9 +855,8 @@ class MakeContourByMesh():
             a_sw = open(self.com.g_OutPath + "\\" + self.com.g_ContourOriginSymbol + "-" + self.TargetMeshNo + "-" + str(self.StartYear) + "-" + str(self.EndYear) + ".csv", "w", encoding="shift_jis")
 
             # 全てのデータを読み込む
-            a_textline = []
-            a_ySum = self.com.Store_DataFile(a_RBFNFile, a_textline)
-            a_xSum = len(a_textline[0]) #- 1
+            a_ySum = self.com.g_textSum_RBFNFile
+            a_xSum = len(self.com.g_textline_RBFNFile[0]) #- 1
 
             # 0.1～0.9まで、0.1刻みの等高線データを作成
             # ここは後で再検討要？
@@ -361,15 +868,15 @@ class MakeContourByMesh():
 
             #オリジナルのX値(土壌雨量指数)の行を読み込む。
             a_writeline = ""
-            a_split1 = a_textline[0]
+            a_split1 = self.com.g_textline_RBFNFile[0]
             # 土壌雨量指数分、処理を繰り返す。
             for a_cnt1 in range(1, a_xSum):
                 # 解析雨量数分、処理を繰り返す。
                 a_findSum = 0
                 a_yTmp = -1
                 for a_cnt2 in range(1, a_ySum - 1):   # 最終で処理される事はない？
-                    a_split2 = a_textline[a_cnt2]
-                    a_split3 = a_textline[a_cnt2 + 1]  # 最終で処理される事はない？
+                    a_split2 = self.com.g_textline_RBFNFile[a_cnt2]
+                    a_split3 = self.com.g_textline_RBFNFile[a_cnt2 + 1]  # 最終で処理される事はない？
 
                     a_t0 = float(a_split2[a_cnt1])
                     a_t1 = float(a_split3[a_cnt1])
