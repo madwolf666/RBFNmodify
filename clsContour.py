@@ -412,7 +412,7 @@ class MakeContourByMesh():
                             (int(h_img.width - self.prv_rightMargin), int(self.prv_topMargin + (a_ySep * (self.com.g_yUnit * a_cnt1))))
                              ],
                         a_pen_color,
-                        1
+                        a_pen_width
                     )
 
                 a_strTmp = str(int(a_cnt1 * self.com.g_yUnit))
@@ -447,7 +447,7 @@ class MakeContourByMesh():
                             (int(self.prv_leftMargin + (a_xSep * (self.com.g_xUnit * a_cnt1))), int(self.prv_topMargin))
                         ],
                         a_pen_color,
-                        1
+                        a_pen_width
                     )
 
                 a_strTmp = str(int(a_cnt1 * self.com.g_xUnit))
@@ -721,6 +721,333 @@ class MakeContourByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + sys.exc_info())
+
+    def _drawNonOccurRainFall(
+            self,
+            h_img,
+            h_draw,
+            xSep,
+            ySep
+    ):
+        a_strErr = ""
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawNonOccurRainFall', a_strErr)
+
+        try:
+            a_fill = (0, 64, 128)
+            a_outline = (0, 64, 128)
+
+            for a_cnt in range(int(self.StartYear), int(self.EndYear) + 1):
+                a_textline = []
+                a_textSum = self.com.Store_DataFile(self.com.g_OutPath + "\\" + str(self.TargetMeshNo) + "\\" + self.com.g_ChainOnlyOccurRainfallSymbol + str(a_cnt) + ".csv", a_textline)
+                for a_cnt2 in range(1, a_textSum):
+                    a_split = a_textline[a_cnt2]
+                    # 非発生降雨を点で描画する
+                    # EllipseのX,Yは左上角の位置である。
+                    h_draw.ellipse(
+                        [
+                            (int(self.prv_leftMargin + (float(a_split[7]) * xSep) - 1), int(h_img.height - (self.prv_bottomMargin + (float(a_split[6]) * ySep)) - 1))
+                            (int(self.prv_leftMargin + (float(a_split[7]) * xSep) - 1) + 2, int(h_img.height - (self.prv_bottomMargin + (float(a_split[6]) * ySep)) - 1) + 2)
+                        ],
+                        fill=a_fill,
+                        outline=a_outline
+                    )
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawNonOccurRainFall', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawNonOccurRainFall', a_strErr + "," + sys.exc_info())
+
+    def _drawOccurRainFall(
+            self,
+            h_img,
+            h_draw,
+            xSep,
+            ySep,
+            occurColor,
+            h_occurTime,
+            h_occurMark
+    ):
+        a_strErr = ""
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawOccurRainFall', a_strErr)
+
+        try:
+            a_textline2 = []
+            a_textSum2 = self.com.Store_DataFile(self.com.g_DisasterFileName, a_textline2)
+
+            if (self.com.g_PastKind == 0):
+                # 取り込みなし
+                a_surfaceFile = self.com.g_RBFNOutPath + "\\" + "surface-" + self.TargetMeshNo + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
+            else:
+                # 取り込みあり
+                # 既往CL対象メッシュ選択サポート
+                a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.TargetMeshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
+                a_textlineSR = []
+                a_textSumSR = self.com.Store_DataFile(a_surfaceFile, a_textlineSR)
+
+            a_colorRGB = [[0]*3]*3
+            a_lineStyle = [0]*3
+            a_pen_color = (0, 0, 0)
+            a_pen_width = 1
+            a_fnt_color = (0, 0, 0)   # 黒
+            # MS UI Gothic
+            a_fnt_font = ImageFont.truetype(
+                "C:\\Windows\\Fonts\\msgothic.ttc", 9
+            )
+            a_fnt_font2 = ImageFont.truetype(
+                "C:\\Windows\\Fonts\\msgothic.ttc", 18
+            )
+            a_fill = (0, 0, 0)
+            a_outline = (0, 0, 0)
+
+            #災害発生ラインの色の初期設定
+            a_colorRGB[0][0] = 255
+            a_colorRGB[0][1] = 0
+            a_colorRGB[0][2] = 0
+
+            a_colorRGB[1][0] = -50
+            a_colorRGB[1][1] = 0
+            a_colorRGB[1][2] = 255
+
+            a_colorRGB[2][0] = 0
+            a_colorRGB[2][1] = 255
+            a_colorRGB[2][2] = -50
+            '''
+            a_lineStyle[0] = Drawing2D.DashStyle.Solid
+            a_lineStyle[1] = Drawing2D.DashStyle.Dot
+            a_lineStyle[2] = Drawing2D.DashStyle.Dot
+            '''
+
+            a_color_minus = 55
+            a_nowLine = 1
+            a_nextLine = 1
+
+            del occurColor[:]
+            occurColor = [[0]*3]*a_textSum2
+
+            del h_occurTime[:]
+            del h_occurMark[:]
+
+            a_pen_style = a_lineStyle[0]
+            a_pen_color = (a_colorRGB[0][0], a_colorRGB[0][1], a_colorRGB[0][2])
+
+            occurColor[0][0] = a_colorRGB[0][0]
+            occurColor[0][1] = a_colorRGB[0][1]
+            occurColor[0][2] = a_colorRGB[0][2]
+
+            a_occurCnt = 0
+            a_i = 0
+
+            for a_cnt in range(int(self.StartYear), int(self.EndYear)):
+                a_sw = open(self.com.g_OutPath + "\\" + str(self.TargetMeshNo) + "\\" + self.com.g_OccurRainfallRBFNNear + str(a_cnt) + ".csv", "w", encoding="shift_jis")
+
+                a_pen_width = 2
+
+                a_prevX = -999
+                a_prevY = -999
+                a_prevTime = ""
+                a_IsPlot = False
+
+                a_textline = []
+                a_textSum = self.com.Store_DataFile(self.com.g_OutPath + "\\" + str(self.TargetMeshNo) + "\\" + self.com.g_OccurRainfallSymbol + str(a_cnt) + ".csv", a_textline)
+
+                a_split = a_textline[0]
+                a_sw.write(a_split[0] + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + ",RBFN近似値\n")
+
+                for a_cnt1 in range(1, a_textSum):
+                    # 災害発生線の種類を可変にする対応→2006.03.22
+                    if (a_nextLine != a_nowLine):
+                        a_nowLine = a_nextLine
+                        if (a_nowLine > 3):
+                            a_nowLine = 1
+                            a_nextLine = 1
+                        '''
+                        if (a_lineStyle[a_nowLine - 1] = Drawing2D.DashStyle.Solid):
+                            a_lineStyle[a_nowLine - 1] = Drawing2D.DashStyle.Dot
+                        else:
+                            a_lineStyle[a_nowLine - 1] = Drawing2D.DashStyle.Solid
+                            '''
+
+                        if (a_nowLine == 1):
+                            a_i = 1
+                        elif (a_nowLine == 2):
+                            a_i = 0
+                        elif (a_nowLine == 3):
+                            a_i = 2
+
+                        if (a_colorRGB[a_nowLine - 1][a_i] < 0):
+                            a_colorRGB[a_nowLine - 1][a_i] = 0
+                        else:
+                            a_colorRGB[a_nowLine - 1][a_i] = a_colorRGB[a_nowLine - 1][a_i] - a_color_minus
+                            if (a_colorRGB[a_nowLine - 1][a_i] < 0):
+                                a_colorRGB[a_nowLine - 1][a_i] = 255
+
+                        #a_pen_style = a_lineStyle[a_nowLine - 1]
+                        a_pen_color = (a_colorRGB[a_nowLine - 1][0], a_colorRGB[a_nowLine - 1][1], a_colorRGB[a_nowLine - 1][2])
+
+                        a_occurCnt = a_occurCnt + 1
+                        h_occurTime.append("")
+                        occurColor[a_occurCnt][0] = a_colorRGB[a_nowLine - 1][0]
+                        occurColor[a_occurCnt][1] = a_colorRGB[a_nowLine - 1][1]
+                        occurColor[a_occurCnt][2] = a_colorRGB[a_nowLine - 1][2]
+
+                    a_split = a_textline[a_cnt1]
+                    # 土壌雨量指数・解析雨量かsurfaceの内容からABCDの座標を取得
+                    for a_SRCnt in range(0, a_textSumSR):
+                        a_splitSR = a_textlineSR[a_SRCnt]
+                        if (a_SRCnt == 0):
+                            # 1行目
+                            for a_SRCnt2 in range(1, len(a_splitSR) - 1):
+                                if (float(a_split[7]) >= float(a_splitSR[a_SRCnt2])) and (float(a_split[7]) < float(a_splitSR[a_SRCnt2 + 1])):
+                                    # 範囲内
+                                    a_X1 = float(a_splitSR(a_SRCnt2))
+                                    a_X2 = float(a_splitSR(a_SRCnt2 + 1))
+                                    a_X3 = float(a_splitSR(a_SRCnt2 + 1))
+                                    a_X4 = float(a_splitSR(a_SRCnt2))
+                                    break
+                        else:
+                            # 2行目以降
+                            if (float(a_split[6]) >= float(a_splitSR[0])):  #文字列による不当な判断
+                                # 範囲内
+                                a_Y1 = float(a_splitSR[0])
+                                a_Y2 = float(a_splitSR[0])
+                                a_Z1 = float(a_splitSR[a_SRCnt2])   #★pending
+                                a_Z2 = float(a_splitSR[a_SRCnt2 + 1])   #★pending
+                            else:
+                                if (float(a_split[6]) < float(a_splitSR[0])):   # 文字列による不当な判断
+                                    # 範囲内
+                                    a_Y3 = float(a_splitSR[0])
+                                    a_Y4 = float(a_splitSR[0])
+                                    a_Z3 = float(a_splitSR[a_SRCnt2 + 1])   #★pending
+                                    a_Z4 = float(a_splitSR[a_SRCnt2])   #★pending
+                                    break
+
+                    self._calcNearRBFN(
+                        float(a_split[7]),
+                        float(a_split[6]),
+                        a_X1,
+                        a_Y1,
+                        a_Z1,
+                        a_X2,
+                        a_Y2,
+                        a_Z2,
+                        a_X3,
+                        a_Y3,
+                        a_Z3,
+                        a_X4,
+                        a_Y4,
+                        a_Z4,
+                        a_XN,
+                        a_YN,
+                        a_ZN
+                    )
+
+                    a_sw.write(a_split[0] + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + "," + str(a_ZN) + "\n")
+                    # 同一年で複数の災害発生に対応→2006.03.22
+                    # 年月日時を取得
+                    a_nowTime = a_split[2] + "/" + a_split[3] + "/" + a_split[4] + " " + a_split[5]
+                    a_dt = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
+                    # 30分データ取込
+                    if (self.com.g_TimeKind == 1):
+                        # 30分の場合
+                        a_dt += datetime.timedelta(minutes=-30)
+                    else:
+                        # 1時間の場合
+                        a_dt += datetime.timedelta(hours=-1)
+                    #a_strTmp = a_dt.strftime('%Y/%m/%d %H:%M')
+                    a_strTmp = str(a_dt.year) + "/" + str(a_dt.month) + "/" + str(a_dt.day) + " " + str(a_dt.hour) + ":" + str(a_dt.minute).rjust(2, '0')
+                    if (a_prevTime != ""):
+                        if (a_prevTime != a_strTmp):
+                            # 異なる災害発生降雨となる。
+                            a_prevX = -999
+                            a_prevY = -999
+                            a_IsPlot = False
+                            a_nextLine = a_nowLine + 1
+                    a_prevTime = a_nowTime
+
+                    if (float(a_split[6]) > 0):
+                        if (a_prevX != -999):
+                            # 発生降雨を線で描画する
+                            h_draw.line(
+                                [
+                                    (int(self.prv_leftMargin + a_prevX * xSep), int(h_img.height - (self.prv_bottomMargin + (ySep * a_prevY)))),
+                                    (int(self.prv_leftMargin + float(a_split[7]) * xSep), int(h_img.height - (self.prv_bottomMargin + (ySep * float(a_split[6])))))
+                                ],
+                                a_pen_color,
+                                a_pen_width
+                            )
+                            a_IsPlot = True
+                        a_prevX = float(a_split[7])
+                        a_prevY = float(a_split[6])
+
+                    # 災害発生時刻のプロット→2006.03.22
+                    for a_cnt2 in range(0, a_textSum2):
+                        a_split2 = a_textline2[a_cnt2]
+                        if (a_split[2] == a_split2[1].strip()) and (a_split[3] == a_split2[2].strip()) and (a_split[4] == a_split2[3].strip()) and (a_split[5] == a_split2[4].strip()):
+                            # 同じ年月日
+                            # X,Y座標値を退避する。
+                            a_textline2[a_cnt2] = \
+                                a_split2[0] + "," + a_split2[1] + "," + a_split2[2] + "," + a_split2[3] + "," + a_split2[4] + "," + a_split2[5] + \
+                                "," + str(self.prv_leftMargin + float(a_split[7]) * xSep) + "," + str(h_img.height - (self.prv_bottomMargin + (ySep * float(a_split[6]))))
+                            h_occurTime[a_occurCnt - 1] += "#" + a_split2[1] + "/" + a_split2[2] + "/" + a_split2[3] + " " + a_split2[4]
+                            break
+
+                a_sw.close()
+
+                if (a_IsPlot == True):
+                    a_nextLine = a_nowLine + 1
+
+
+
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawOccurRainFall', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawOccurRainFall', a_strErr + "," + sys.exc_info())
+
+    def _drawUnreal(
+            self,
+            h_img,
+            h_draw,
+            xLine,
+            yLine,
+            xSep,
+            ySep,
+            unReal
+    ):
+        a_strErr = ""
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawUnreal', a_strErr)
+
+        try:
+            if (unReal > 0):
+                a_unReal = unReal
+            else:
+                a_unReal = self.com.g_UnrealAlpha
+
+            a_fill = (0, 64, 128)
+            a_outline = (0, 64, 128)
+
+            h_draw.polygon(
+                [
+                    (int(self.prv_leftMargin), int(h_img.height - self.prv_bottomMargin)),
+                    (int(self.prv_leftMargin), int(h_img.height - (self.prv_bottomMargin + (ySep * (self.com.g_yUnit * yLine))))),
+                    (int(self.prv_leftMargin + xSep * ((self.com.g_yUnit * yLine) / a_unReal)), int(h_img.height - (self.prv_bottomMargin + (ySep * (self.com.g_yUnit * yLine)))))
+                ],
+                fill=a_fill,
+                outline=a_outline
+            )
+
+            a_imgL = Image.open(".\\images\\imgUnreal.gif")
+            h_img.paste(
+                a_imgL,
+                (
+                    int(h_img.width - self.prv_leftMargin + 6.666666666666667), int(self.prv_topMargin + 33.333333333333336)
+                )
+            )
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawUnreal', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawUnreal', a_strErr + "," + sys.exc_info())
 
     def _getGraphDrawInfo(
             self,
