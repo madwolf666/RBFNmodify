@@ -93,6 +93,90 @@ class MakeContourByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeContourByMesh-run', a_strErr + "," + sys.exc_info())
 
+    def _calcNearRBFN(
+            self,
+            h_soil,
+            h_rain,
+            h_x1,
+            h_y1,
+            h_z1,
+            h_x2,
+            h_y2,
+            h_z2,
+            h_x3,
+            h_y3,
+            h_z3,
+            h_x4,
+            h_y4,
+            h_z4
+    ):
+        a_strErr = "meshNo=" + self.meshNo
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calcNearRBFN', a_strErr)
+
+        a_xn = 0
+        a_yn = 0
+        a_zn = 0
+
+        try:
+            # AB間の内分座標
+            a_tmp1 = h_soil - h_x1
+            a_tmp2 = h_x2 - h_x1
+            a_m = a_tmp1 / a_tmp2
+            a_n = 1 - a_m
+
+            a_xAB = (a_n * h_x1 + a_m * h_x2) / (a_m + a_n)
+            a_yAB = (a_n * h_y1 + a_m * h_y2) / (a_m + a_n)
+            a_zAB = (a_n * h_z1 + a_m * h_z2) / (a_m + a_n)
+
+            # DC間の内分座標
+            a_xDC = (a_n * h_x4 + a_m * h_x3) / (a_m + a_n)
+            a_yDC = (a_n * h_y4 + a_m * h_y3) / (a_m + a_n)
+            a_zDC = (a_n * h_z4 + a_m * h_z3) / (a_m + a_n)
+
+            # AD間の内分座標
+            a_tmp1 = h_rain - h_y1
+            a_tmp2 = h_y4 - h_y1
+            a_m = a_tmp1 / a_tmp2
+            a_n = 1 - a_m
+
+            a_xAD = (a_n * h_x1 + a_m * h_x4) / (a_m + a_n)
+            a_yAD = (a_n * h_y1 + a_m * h_y4) / (a_m + a_n)
+            a_zAD = (a_n * h_z1 + a_m * h_z4) / (a_m + a_n)
+
+            # BC間の内分座標
+            a_xBC = (a_n * h_x2 + a_m * h_x3) / (a_m + a_n)
+            a_yBC = (a_n * h_y2 + a_m * h_y3) / (a_m + a_n)
+            a_zBC = (a_n * h_z2 + a_m * h_z3) / (a_m + a_n)
+
+            # AB-DCの線とAD-BCの線の交点を求める。
+            a_xa = a_xAB - a_xDC
+            a_xb = a_xAD - a_xBC
+            a_xc = a_xAD - a_xAB
+
+            a_ya = a_yAB - a_yDC
+            a_yb = a_yAD - a_yBC
+            a_yc = a_yAD - a_yAB
+
+            # 媒介変数
+            a_s = ((a_xAB - a_xDC) * (a_yAD - a_yAB) - (a_yAB - a_yDC) * (a_xAD - a_xAB)) / ((a_yAB - a_yDC) * (a_xAD - a_xBC) - (a_yAD - a_yBC) * (a_xAB - a_xDC))
+            a_t = ((a_xa * a_yc) - (a_xc * a_ya)) / ((a_xb * a_ya) - (a_xa * a_yb))
+
+            # 交点
+            a_hantei1 = a_zAB + a_t * (a_zAB - a_zDC)
+            a_hantei2 = a_zAD + a_s * (a_zAD - a_xBC)
+
+            h_xn = a_xAB + a_t * (a_xAB - a_xDC)
+            h_yn = a_yAB + a_t * (a_yAB - a_yDC)
+            h_zn = a_zAB + a_t * (a_zAB - a_zDC)
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_calcNearRBFN', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_calcNearRBFN', a_strErr + "," + sys.exc_info())
+
+        return a_xn, a_yn, a_zn
+
     # 等高線補正処理
     def _contourRevise(self):
         a_strErr = "meshNo=" + self.meshNo
@@ -213,7 +297,7 @@ class MakeContourByMesh():
             soilMin,
             rainMax
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_contourSoilMin', a_strErr)
 
         try:
@@ -722,6 +806,131 @@ class MakeContourByMesh():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + sys.exc_info())
 
+    def _drawLegendS(
+            self,
+            h_img,
+            h_draw,
+            occurColor,
+            h_occurTime,
+            h_occurMark,
+            h_drawInfo
+    ):
+        a_strErr = "meshNo=" + self.meshNo
+        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawLegendS', a_strErr)
+
+        try:
+            a_fill = (255, 255, 255)
+            a_fill2 = (0, 0, 0)
+            a_fill3 = (0, 64, 128)
+            a_pen_color = (0, 0, 0)
+            a_pen_width = 1
+            a_pen_color2 = (0, 0, 0)
+            a_pen_width2 = 1
+            a_fnt_color = (0, 0, 0)   # 黒
+            # MS UI Gothic
+            a_fnt_font = ImageFont.truetype(
+                "C:\\Windows\\Fonts\\msgothic.ttc", 9
+            )
+
+            a_textline = []
+            a_textSum = 0
+
+            for a_cntDF in range(1, self.com.g_textSum_DisasterFile):
+                a_split = self.com.g_textline_DisasterFile[a_cntDF]
+                if (a_split[0].strip() == str(self.TargetMeshNo)):
+                    if (int(a_split[1].strip()) >= int(self.StartYear)) and (int(a_split[1].strip()) <= int(self.EndYear)):
+
+                        a_strTime = a_split[1].strip() + "/" + a_split[2].stri() + "/" + a_split[3].strip() + " " + a_split[4].strip() + " 災害"
+                        a_isOK = True
+                        # 同一時刻の災害が複数ある場合
+                        if (a_textSum > 0):
+                            for a_cnt in range(0, a_textSum):
+                                if (a_textline[a_cnt] == a_strTime):
+                                    a_isOK = False
+                                    break
+
+                        if (a_isOK == True):
+                            # 同じメッシュ
+                            a_textline.append(a_strTime)
+                            a_textSum += 1
+
+            # ボックス⇒[2013.04.16]widthを- VB6.TwipsToPixelsX(200)から- VB6.TwipsToPixelsX(100)
+            h_draw.rectangle(
+                [
+                    (int(h_img.width - self.prv_rightMargin - VB6.TwipsToPixelsX(500)), int(self.prv_topMargin + VB6.TwipsToPixelsY(100))),
+                    (int((h_img.width - VB6.TwipsToPixelsX(100)) - (h_img.width - self.prv_rightMargin - VB6.TwipsToPixelsX(500))),
+                     int((self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * (10 + (a_textSum + 1)))) - (self.prv_topMargin + VB6.TwipsToPixelsY(100))))
+                ],
+                fill=a_fill,
+                outline=a_pen_color
+            )
+
+            # 等高線の凡例
+            for a_cnt1 in range(1, 10):
+                # 色の設定
+                if (len(h_drawInfo) > 0):
+                    a_splitC = h_drawInfo[9 + ((9 - a_cnt1) * 3)].split("#")
+                    a_pen_color2 = (int(a_splitC[0]), int(a_splitC[1]), int(a_splitC[2]))
+                    #a_pen2.DashStyle = CType(h_drawInfo(10 + +((9 - a_cnt1) * 3)), System.Drawing.Drawing2D.DashStyle)
+                    a_pen_width2 = float(h_drawInfo[11 + ((9 - a_cnt1) * 3)])
+                else:
+                    if (a_cnt1 == 1): # 0.1
+                        a_pen_color2 = (0, 255, 0)
+                    elif (a_cnt1 == 2): # 0.2
+                        a_pen_color2 = (0, 0, 255)
+                    elif (a_cnt1 == 3): # 0.3
+                        a_pen_color2 = (0, 128, 0)
+                    elif (a_cnt1 == 4): # 0.4
+                        a_pen_color2 = (128, 0, 0)
+                    elif (a_cnt1 == 5): # 0.5
+                        a_pen_color2 = (128, 0, 128)
+                    elif (a_cnt1 == 6): # 0.6
+                        a_pen_color2 = (0, 128, 192)
+                    elif (a_cnt1 == 7): # 0.7
+                        a_pen_color2 = (255, 255, 0)
+                    elif (a_cnt1 == 8): # 0.8
+                        a_pen_color2 = (255, 0, 255)
+                    elif (a_cnt1 == 9): # 0.9
+                        a_pen_color2 = (0, 0, 128)
+
+                h_draw.line(
+                    [
+                        (int((h_img.Width - self.prv_rightMargin) - VB6.TwipsToPixelsX(300)), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * a_cnt1))),
+                        (int((h_img.Width - self.prv_rightMargin) + VB6.TwipsToPixelsX(200)), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * a_cnt1)))
+                    ],
+                    a_pen_color2,
+                    a_pen_width2
+                )
+                h_draw.text(
+                    (int((h_img.width - self.prv_rightMargin) + VB6.TwipsToPixelsX(300)), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * a_cnt1) - VB6.TwipsToPixelsY(60))),
+                    str(a_cnt1 / 10),
+                    font=a_fnt_font,
+                    fill=(0, 0, 0)
+                )
+
+                # 非発生降雨の凡例
+                # EllipseのX,Yは左上角の位置である。
+                h_draw.ellipse(
+                    [
+                        (int(h_img.Width - self.prv_rightMargin - 1), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * 10) - 1)),
+                        (int(h_img.Width - self.prv_rightMargin + 1), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * 10) + 1))
+                    ],
+                    fill=a_fill3,
+                    outline=(0, 0, 0)
+                )
+                h_draw.text(
+                    (int((h_img.width - self.prv_rightMargin) + VB6.TwipsToPixelsX(300)), int(self.prv_topMargin + VB6.TwipsToPixelsY(100) + (VB6.TwipsToPixelsY(260) * 10) - VB6.TwipsToPixelsY(60))),
+                    "非発生降雨",
+                    font=a_fnt_font,
+                    fill=(0, 0, 0)
+                )
+
+
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawLegendS', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawLegendS', a_strErr + "," + sys.exc_info())
+
     def _drawNonOccurRainFall(
             self,
             h_img,
@@ -729,7 +938,7 @@ class MakeContourByMesh():
             xSep,
             ySep
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawNonOccurRainFall', a_strErr)
 
         try:
@@ -746,7 +955,7 @@ class MakeContourByMesh():
                     h_draw.ellipse(
                         [
                             (int(self.prv_leftMargin + (float(a_split[7]) * xSep) - 1), int(h_img.height - (self.prv_bottomMargin + (float(a_split[6]) * ySep)) - 1))
-                            (int(self.prv_leftMargin + (float(a_split[7]) * xSep) - 1) + 2, int(h_img.height - (self.prv_bottomMargin + (float(a_split[6]) * ySep)) - 1) + 2)
+                            (int(self.prv_leftMargin + (float(a_split[7]) * xSep) + 1), int(h_img.height - (self.prv_bottomMargin + (float(a_split[6]) * ySep)) + 1))
                         ],
                         fill=a_fill,
                         outline=a_outline
@@ -767,7 +976,7 @@ class MakeContourByMesh():
             h_occurTime,
             h_occurMark
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawOccurRainFall', a_strErr)
 
         try:
@@ -783,6 +992,22 @@ class MakeContourByMesh():
                 a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.TargetMeshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
                 a_textlineSR = []
                 a_textSumSR = self.com.Store_DataFile(a_surfaceFile, a_textlineSR)
+
+            a_X1 = 0
+            a_Y1 = 0
+            a_Z1 = 0
+            a_X2 = 0
+            a_Y2 = 0
+            a_Z2 = 0
+            a_X3 = 0
+            a_Y3 = 0
+            a_Z3 = 0
+            a_X4 = 0
+            a_Y4 = 0
+            a_Z4 = 0
+            a_XN = 0
+            a_YN = 0
+            a_ZN = 0
 
             a_colorRGB = [[0]*3]*3
             a_lineStyle = [0]*3
@@ -921,6 +1146,7 @@ class MakeContourByMesh():
                                     a_Z4 = float(a_splitSR[a_SRCnt2])   #★pending
                                     break
 
+                    a_XN, a_YN, a_ZN = \
                     self._calcNearRBFN(
                         float(a_split[7]),
                         float(a_split[6]),
@@ -932,13 +1158,7 @@ class MakeContourByMesh():
                         a_Z2,
                         a_X3,
                         a_Y3,
-                        a_Z3,
-                        a_X4,
-                        a_Y4,
-                        a_Z4,
-                        a_XN,
-                        a_YN,
-                        a_ZN
+                        a_Z3
                     )
 
                     a_sw.write(a_split[0] + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + "," + str(a_ZN) + "\n")
@@ -996,8 +1216,92 @@ class MakeContourByMesh():
                 if (a_IsPlot == True):
                     a_nextLine = a_nowLine + 1
 
+            a_iMark = 0
+            for a_cnt2 in range(0, a_textSum2):
+                a_split2 = a_textline2[a_cnt2]
+                if (len(a_split2) >= 8):
+                    if (a_split2[6] != "") and (a_split2[7] != ""):
+                        a_mark = int(a_split2[5])
+                        a_iMark += 1
+                        h_occurMark.append(a_split2[1] + "/" + a_split2[2] + "/" + a_split2[3] + " " + a_split2[4] + "#" + str(a_mark))
 
-
+                        if (a_mark == 1):   # 赤○（外側は黒線）
+                            # EllipseのX,Yは左上角の位置である。
+                            h_draw.ellipse(
+                                [
+                                    (int(float(a_split2[6]) - 6.666666666666667), int(float(a_split2[7]) - 6.666666666666667)),
+                                    (int(13.333333333333334), int(13.333333333333334))
+                                ],
+                                fill = (255, 0, 0),
+                                a_outline = (0, 0, 0)
+                            )
+                        elif (a_mark == 2):   # 青◇（外側は黒線）
+                            h_draw.polygon(
+                                [
+                                    (int(float(a_split2[6])), int(float(a_split2[7]) + 6.666666666666667)),
+                                    (int(float(a_split2[6]) - 6.666666666666667), int(float(a_split2[7]))),
+                                    (int(float(a_split2[6])), int(float(a_split2[7]) - 6.666666666666667)),
+                                    (int(float(a_split2[6]) + 6.666666666666667), int(float(a_split2[7])))
+                                ],
+                                fill = (0, 0, 255),
+                                a_outline = (0, 0, 0)
+                            )
+                        elif (a_mark == 3):   # 緑△（外側は黒線）
+                            h_draw.polygon(
+                                [
+                                    (int(float(a_split2[6]) - 6.666666666666667), int(float(a_split2[7]) + 6.666666666666667)),
+                                    (int(float(a_split2[6])), int(float(a_split2[7]) - 6.666666666666667)),
+                                    (int(float(a_split2[6]) + 6.666666666666667), int(float(a_split2[7]) + 6.666666666666667))
+                                ],
+                                fill = (0, 255, 0),
+                                a_outline = (0, 0, 0)
+                            )
+                        elif (a_mark == 4):   # 黄□（外側は黒線）
+                            h_draw.rectangle(
+                                [
+                                    (int(float(a_split2[6]) - 6.666666666666667), int(float(a_split2[7]) - 6.666666666666667)),
+                                    (int(float(a_split2[6]) + 6.666666666666667), int(float(a_split2[7]) + 6.666666666666667))
+                                ],
+                                fill = (255, 255, 0),
+                                a_outline = (0, 0, 0)
+                            )
+                        elif (a_mark == 5):   # 赤×
+                            h_draw.text(
+                                [
+                                    (int(float(a_split2[6]) - a_fnt_font2.size * 10), int(float(a_split2[7]) - a_fnt_font2.size * 10))
+                                ],
+                                "×",
+                                font=a_fnt_font2,
+                                fill=(255, 0, 0)
+                            )
+                        elif (a_mark == 6):   # 青＊
+                            h_draw.text(
+                                [
+                                    (int(float(a_split2[6]) - a_fnt_font2.size * 10), int(float(a_split2[7]) - a_fnt_font2.size * 10))
+                                ],
+                                "＊",
+                                font=a_fnt_font2,
+                                fill=(0, 0, 255)
+                            )
+                        elif (a_mark == 7):   # 緑＋
+                            h_draw.text(
+                                [
+                                    (int(float(a_split2[6]) - a_fnt_font2.size * 10), int(float(a_split2[7]) - a_fnt_font2.size * 10))
+                                ],
+                                "＋",
+                                font=a_fnt_font2,
+                                fill=(0, 255, 0)
+                            )
+                        else:   # その他
+                            # EllipseのX,Yは左上角の位置である。
+                            h_draw.ellipse(
+                                [
+                                    (int(a_split2(6)), int(a_split2(7))),
+                                    (int(13.333333333333334), int(13.333333333333334))
+                                ],
+                                fill=(255, 0, 0),
+                                outline=(0, 0, 0)
+                            )
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawOccurRainFall', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1014,7 +1318,7 @@ class MakeContourByMesh():
             ySep,
             unReal
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawUnreal', a_strErr)
 
         try:
@@ -1054,7 +1358,7 @@ class MakeContourByMesh():
             msno,
             h_drawInfo
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getGraphDrawInfo', a_strErr)
 
         try:
@@ -1265,7 +1569,7 @@ class MakeContourByMesh():
             nextZ,
             contour
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_setOriginContourY', a_strErr)
 
         a_sRet = ""
@@ -1290,7 +1594,7 @@ class MakeContourByMesh():
             contour,
             nowSum
     ):
-        a_strErr = ""
+        a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_setOriginContourYRevise', a_strErr)
 
         a_sRet = ""
