@@ -2,6 +2,7 @@ import sys
 import configparser
 import  csv
 import datetime
+import math
 
 class ComFunctions:
     g_LOG_FILENAME = "rbfnmdf"
@@ -928,6 +929,21 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + sys.exc_info())
 
         return a_sRet
+
+    def My_round(self, x, d=0):
+        a_strErr = ""
+        a_iRet = 0
+
+        try:
+            p = 10 ** d
+            a_iRet = float(math.floor((x * p) + math.copysign(0.5, x)))/p
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + "," + sys.exc_info())
+
+        return a_iRet
 
     def Outputlog(self, h_mode, h_Source, h_desc):
         '''

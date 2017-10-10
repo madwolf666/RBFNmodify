@@ -759,11 +759,13 @@ class Main(wx.Frame):
         global com
         global g_meshList_check
 
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "start")
+
         # チェックされたものを処理対象
         a_meshSum = len(g_meshList_check)
         a_sum = 0
         while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + 5)
+            a_cnt_max = (a_sum + 10)
             if (a_cnt_max > a_meshSum):
                 a_cnt_max = a_meshSum
 
@@ -819,6 +821,8 @@ class Main(wx.Frame):
             print('All process is ended.')
 
             a_sum = a_cnt_max
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "end")
 
     def _makeDisasterSupplement(self):
         global com
