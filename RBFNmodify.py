@@ -4,7 +4,7 @@ import wx
 import wx.lib.mixins.listctrl as listmix
 from PIL import Image
 from subprocess import check_call
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import com_functions
 import clsRainfall
 import clsContour
@@ -610,18 +610,17 @@ class Main(wx.Frame):
 
         # RBFNデータ入力
 
+        a_manager = Manager()
+        # 災害情報
+        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
+        # 警戒情報
+        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
+        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+
         #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
         for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
             print('***a_year=' + str(a_year))
-
-            ''' testing...
-            self.g_listBox_11.InsertItem(0, str(a_year))
-            self.g_listBox_11.SetItem(0, 1, str(0 + 1) + "/" + str(1))
-            self.g_listBox_11.SetItem(0, 2, '')
-            self.g_listBox_11.SetItem(0, 3, "処理中......")
-            self.g_listBox_11.SetItemTextColour(0, wx.RED)
-            self.g_listBox_11.Update()
-            '''
 
             '''
             a_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
@@ -644,6 +643,22 @@ class Main(wx.Frame):
                 com.g_textSum_RainfallFile1 = com.Store_DataFile(a_RainfallFileName1, com.g_textline_RainfallFile1)
                 #com.Store_SoilRainFile1(prv_SoilRainFileName1)
                 com.g_textSum_SoilRainFile1 = com.Store_DataFile(a_SoilRainFileName1, com.g_textline_SoilRainFile1)
+
+            a_RainfallFile = a_manager.list([])
+            a_SoilRainFile = a_manager.list([])
+            a_TemperatureFile = a_manager.list([])
+            a_RainfallFile1 = a_manager.list([])
+            a_SoilRainFile1 = a_manager.list([])
+
+            a_RainfallFile = a_manager.list(com.g_textline_RainfallFile)
+            a_SoilRainFile = a_manager.list(com.g_textline_SoilRainFile)
+            a_TemperatureFile = a_manager.list(com.g_textline_TemperatureFile)
+            if com.g_RainKind != 0:
+                a_RainfallFile1 = a_manager.list(com.g_textline_RainfallFile1)
+                a_SoilRainFile1 = a_manager.list(com.g_textline_SoilRainFile1)
+            else:
+                a_RainfallFile1 = a_manager.list([])
+                a_SoilRainFile1 = a_manager.list([])
                 '''
 
             a_meshSum = len(g_meshList_target)
@@ -688,10 +703,40 @@ class Main(wx.Frame):
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
+                                         a_DisasterFile,
+                                         a_CautionAnnounceFile,
                                          a_year,
                                          a_cnt,
                                          g_meshList_target
                                      ))
+                    '''
+                    a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_DisasterFile,
+                                         a_CautionAnnounceFile,
+                                         a_TemperatureFile,
+                                         a_RainfallFile,
+                                         a_SoilRainFile,
+                                         a_RainfallFile1,
+                                         a_SoilRainFile1,
+                                         a_year,
+                                         a_cnt,
+                                         g_meshList_target
+                                     ))
+                                     '''
+                    '''
+                    a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_year,
+                                         a_cnt,
+                                         g_meshList_target
+                                     ))
+                                     '''
+
                     a_procs.append(a_proc)
 
                 for a_proc in a_procs:
@@ -765,14 +810,17 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "start")
 
-        '''
         # 災害情報
         com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
         # 警戒情報
         com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
         # 対象メッシュ情報
         com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
-        '''
+
+        a_manager = Manager()
+        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
+        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+        a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
 
         # チェックされたものを処理対象
         a_meshSum = len(g_meshList_check)
@@ -808,31 +856,32 @@ class Main(wx.Frame):
                 self.g_listBox_13_1.Update()
                 self.Update()
 
+                a_proc = Process(target=clsContour.MakeContourByMesh,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_DisasterFile,
+                                     a_CautionAnnounceFile,
+                                     a_TargetMeshFile,
+                                     a_meshNo,
+                                     0,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
                 '''
                 a_proc = Process(target=clsContour.MakeContourByMesh,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     com.g_textline_DisasterFile,
-                                     com.g_textline_CautionAnnounceFile,
-                                     com.g_textline_TargetMeshFile,
-                                     a_meshNo,
-                                     0,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                                 '''
-                a_proc = Process(target=clsContour.MakeContourByMesh,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_meshNo,
-                                     0,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
+                             args=(
+                                 a_proc_num,
+                                 com.g_strIni,
+                                 a_meshNo,
+                                 0,
+                                 0,
+                                 0,
+                                 -1
+                             ))
+                             '''
+
                 a_procs.append(a_proc)
 
             for a_proc in a_procs:

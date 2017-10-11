@@ -18,7 +18,6 @@ class MakeContourByMesh():
     prv_rightMargin = 148.0
     prv_bottomMargin = 53.333333333333336
 
-    '''
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
@@ -31,16 +30,17 @@ class MakeContourByMesh():
                  h_soilMin,
                  h_rainMax
                  ):
-                 '''
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshNo,
-                 h_kind,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+        '''
+        def __init__(self,
+                     h_proc_num,
+                     h_ini_path,
+                     h_meshNo,
+                     h_kind,
+                     h_unReal,
+                     h_soilMin,
+                     h_rainMax
+                     ):
+            '''
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -48,6 +48,14 @@ class MakeContourByMesh():
 
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
+
+        self.com.g_textline_DisasterFile = h_DisasterFile
+        self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile
+        self.com.g_textline_TargetMeshFile = h_TargetMeshFile
+        self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+        self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+
         self.meshNo = h_meshNo
         self.kind = h_kind
         self.unReal = h_unReal
@@ -58,16 +66,10 @@ class MakeContourByMesh():
         self.com.GetEnvData(h_ini_path)
 
         '''
-        self.com.g_textline_DisasterFile = h_DisasterFile
-        self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile
-        self.com.g_textline_TargetMeshFile = h_TargetMeshFile
-        self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
-        self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
-        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
         self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
+        '''
 
         self.run()  # multiprocess
 
