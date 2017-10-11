@@ -283,6 +283,11 @@ class ComFunctions:
         self.g_PastCLFileName = ""           #
         self.g_NIGeDaS_NonOccurCalc =0       # NIGeDaS
 
+        # 同時起動プロセス数
+        self.g_MakeAllRainfallDataExecNum = 1
+        self.g_MakeContourExecNum = 1
+        self.g_MakeOverRainfallExecNum = 1
+
     def _getInifile(self, inifile, section, name):
         try:
             return inifile.get(section, name)
@@ -471,6 +476,10 @@ class ComFunctions:
         #print('[self.g_LogEffectiveDays]' + str(self.g_LogEffectiveDays))
         self.g_LogLevel = int(self._getInifile(a_inifile, 'LogInfo', 'LogLevel'))
         #print('[self.g_LogLevel]' + str(self.g_LogLevel))
+
+        self.g_MakeAllRainfallDataExecNum = int(self._getInifile(a_inifile, 'All', 'MakeAllRainfallDataExecNum'))
+        self.g_MakeContourExecNum = int(self._getInifile(a_inifile, 'All', 'MakeContourExecNum'))
+        self.g_MakeOverRainfallExecNum = int(self._getInifile(a_inifile, 'All', 'MakeOverRainfallExecNum'))
 
     def GetMeshList(self, h_tyear, h_meshList):
         a_strErr = "Year=" + str(h_tyear)

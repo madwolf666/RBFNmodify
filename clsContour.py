@@ -18,6 +18,20 @@ class MakeContourByMesh():
     prv_rightMargin = 148.0
     prv_bottomMargin = 53.333333333333336
 
+    '''
+    def __init__(self,
+                 h_proc_num,
+                 h_ini_path,
+                 h_DisasterFile,
+                 h_CautionAnnounceFile,
+                 h_TargetMeshFile,
+                 h_meshNo,
+                 h_kind,
+                 h_unReal,
+                 h_soilMin,
+                 h_rainMax
+                 ):
+                 '''
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
@@ -43,9 +57,16 @@ class MakeContourByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        '''
+        self.com.g_textline_DisasterFile = h_DisasterFile
+        self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile
+        self.com.g_textline_TargetMeshFile = h_TargetMeshFile
+        self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+        self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
-
         self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
 
         self.run()  # multiprocess
@@ -1107,6 +1128,7 @@ class MakeContourByMesh():
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_drawOccurRainFall', a_strErr)
 
         try:
+            '''
             if (self.com.g_PastKind == 0):
                 # 取り込みなし
                 a_surfaceFile = self.com.g_RBFNOutPath + "\\" + "surface-" + self.TargetMeshNo + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
@@ -1116,6 +1138,7 @@ class MakeContourByMesh():
                 a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, self.TargetMeshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
                 a_textlineSR = []
             a_textSumSR = self.com.Store_DataFile(a_surfaceFile, a_textlineSR)
+            '''
 
             # 災害発生情報を読み込む
             a_textline2 = []
@@ -1254,8 +1277,12 @@ class MakeContourByMesh():
 
                     a_split = a_textline[a_cnt1]
                     # 土壌雨量指数・解析雨量かsurfaceの内容からABCDの座標を取得
+                    '''
                     for a_SRCnt in range(0, a_textSumSR):
                         a_splitSR = a_textlineSR[a_SRCnt]
+                        '''
+                    for a_SRCnt in range(0, self.com.g_textSum_RBFNFile):
+                        a_splitSR = self.com.g_textline_RBFNFile[a_SRCnt]
                         if (a_SRCnt == 0):
                             # 1行目
                             for a_SRCnt2 in range(1, len(a_splitSR) - 1):

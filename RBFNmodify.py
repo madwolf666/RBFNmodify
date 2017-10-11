@@ -606,6 +606,8 @@ class Main(wx.Frame):
         global com
         global g_meshList_target
 
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "start")
+
         # RBFNデータ入力
 
         #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
@@ -655,7 +657,7 @@ class Main(wx.Frame):
             a_sum = 0
             a_count = self.g_listBox_11.GetItemCount()
             while (a_sum < a_meshSum):
-                a_cnt_max = (a_sum + 2)
+                a_cnt_max = (a_sum + com.g_MakeAllRainfallDataExecNum)
                 if (a_cnt_max > a_meshSum):
                     a_cnt_max = a_meshSum
 
@@ -709,6 +711,8 @@ class Main(wx.Frame):
 
                 a_sum = a_cnt_max
 
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "end")
+
     def _makeBlockAll(self):
         global com
 
@@ -761,11 +765,20 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "start")
 
+        '''
+        # 災害情報
+        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
+        # 警戒情報
+        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+        # 対象メッシュ情報
+        com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+        '''
+
         # チェックされたものを処理対象
         a_meshSum = len(g_meshList_check)
         a_sum = 0
         while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + 10)
+            a_cnt_max = (a_sum + com.g_MakeContourExecNum)
             if (a_cnt_max > a_meshSum):
                 a_cnt_max = a_meshSum
 
@@ -790,9 +803,26 @@ class Main(wx.Frame):
                 print('a_meshNo=' + a_meshNo)
                 self.g_listBox_13_1.SetItem(a_index , 3, "処理中......")
                 self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
+                #self.g_listBox_13_1.Select(a_index, 1)
+                #self.SetScrollPos(wx.VERTICAL, a_index)
                 self.g_listBox_13_1.Update()
                 self.Update()
 
+                '''
+                a_proc = Process(target=clsContour.MakeContourByMesh,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     com.g_textline_DisasterFile,
+                                     com.g_textline_CautionAnnounceFile,
+                                     com.g_textline_TargetMeshFile,
+                                     a_meshNo,
+                                     0,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                                 '''
                 a_proc = Process(target=clsContour.MakeContourByMesh,
                                  args=(
                                      a_proc_num,
@@ -861,6 +891,8 @@ class Main(wx.Frame):
         )
 
     def _makeFigure(self):
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "start")
+
         self.g_listBox_13_2.SetItem(0, 3, "処理中......")
         self.g_listBox_13_2.SetItemTextColour(0, wx.RED)
         self.g_listBox_13_2.Update()
@@ -1029,6 +1061,8 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
 
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "end")
+
     def _makeForecastPredictive(self):
         global com
         global g_meshList_list
@@ -1077,7 +1111,7 @@ class Main(wx.Frame):
         a_meshSum = len(g_meshList_check)
         a_sum = 0
         while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + 5)
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
             if (a_cnt_max > a_meshSum):
                 a_cnt_max = a_meshSum
 

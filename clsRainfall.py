@@ -683,7 +683,7 @@ class MakeAllRainfallDataByMesh():
             a_sw.close()
 
             #self.com.Store_FindOccurRainfall(a_sFileName)
-            self.com.Store_DateFile(a_sFileName, self.com.g_textSum_FindOccurRainfall, self.com.g_textline_FindOccurRainfall)
+            self.com.g_textSum_FindOccurRainfall = self.com.Store_DataFile(a_sFileName, self.com.g_textline_FindOccurRainfall)
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_findOccurRainfallByMesh", a_strErr + "," + " ".join(map(str, exp.args)))
