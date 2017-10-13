@@ -5,6 +5,7 @@ import wx.lib.mixins.listctrl as listmix
 from PIL import Image
 from subprocess import check_call
 from multiprocessing import Process, Manager
+import gc
 import com_functions
 import clsRainfall
 import clsContour
@@ -36,7 +37,11 @@ class CheckBoxList(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAuto
         if (flag == True):
             g_meshList_check.append([index, self.GetItemText(index, 0)])
         else:
-            del g_meshList_check[index]
+            for a_check in g_meshList_check:
+                #print(a_check)
+                #print(a_check[0])
+                if (a_check[0] == index):
+                    g_meshList_check.remove(a_check)
 
         #print(g_meshList_check)
 
@@ -67,8 +72,6 @@ class Main(wx.Frame):
     def __init__(self, parent, id, title):
         """ レイアウトの作成 """
         wx.Frame.__init__(self, parent, id, title)
-
-        self.Bind(wx.EVT_CLOSE, self._onClose)
 
         self.SetSize(size=(1024, 768))
         self.g_icon = wx.Icon(".\\images\\RBFNmodify.ico", wx.BITMAP_TYPE_ICO)
@@ -124,7 +127,9 @@ class Main(wx.Frame):
         self._makePanel_23()
         self._hide_Panel()
 
+        self.Bind(wx.EVT_PAINT, self._onPaint)
         self.Bind(wx.EVT_SIZE, self._get_frame)
+        self.Bind(wx.EVT_CLOSE, self._onClose)
 
         self.Maximize()
         self.Show(True)
@@ -140,6 +145,7 @@ class Main(wx.Frame):
             self.g_button_11_1.Enabled = False
             self.g_button_11_2.Enabled = False
             self._makeAllRainfallData()
+            #self._makeAllRainfallData_proc()
             wx.MessageBox("RBFNプログラム用の入力データを自動作成しました。\n引き続き、RBFNプログラムを起動し、RBFN値を算出して下さい。", g_System_Title)
             self._enable_MenuBar(True)
             self.g_menu_bar.Enabled = True
@@ -175,6 +181,7 @@ class Main(wx.Frame):
             self.g_button_13_3.Enabled = False
             self.g_button_13_4.Enabled = False
             self._makeContour()
+            #self._makeContour_proc()
             wx.MessageBox("RBFN出力値からの等高線作成が完了しました。", g_System_Title)
             self._enable_MenuBar(True)
             self.g_button_13_1.Enabled = True
@@ -578,6 +585,8 @@ class Main(wx.Frame):
 
         # ブロック集計
 
+        self.Refresh()
+        self.Update()
 
     # パネルの全非表示
     def _hide_Panel(self):
@@ -610,6 +619,121 @@ class Main(wx.Frame):
 
         # RBFNデータ入力
 
+        #for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
+        for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
+            print('***a_year=' + str(a_year))
+
+            self.prv_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+            self.prv_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+            # 予測的中率
+            self.prv_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+            self.prv_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+
+            a_clsRainfall = clsRainfall.MakeAllRainfallDataByMesh(
+                1,
+                com.g_strIni,
+                a_year,
+                -1,
+                g_meshList_target
+            )
+
+
+            a_meshSum = len(g_meshList_target)
+
+            # 通常
+            a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName, a_clsRainfall.textline_Rainfall)
+            a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName, a_clsRainfall.textline_SoilRain)
+
+            a_count = self.g_listBox_11.GetItemCount()
+            for a_cnt in range(0, a_meshSum):
+                a_split = g_meshList_target[a_cnt].split(',')
+                a_meshNo = ''
+                if (com.g_TargetRainMesh == 1):
+                    # 対象Surfaceが1km
+                    a_meshNo = a_split[1]
+                else:
+                    # 対象Surfaceが5km
+                    a_meshNo = a_split[0]
+                print('a_meshNo=' + a_meshNo)
+
+                self.g_listBox_11.InsertItem(a_cnt + a_count, str(a_year))
+                self.g_listBox_11.SetItem(a_cnt + a_count, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                self.g_listBox_11.SetItem(a_cnt + a_count, 2, a_meshNo)
+                self.g_listBox_11.SetItem(a_cnt + a_count, 3, "処理中......")
+                self.g_listBox_11.SetItemTextColour(a_cnt, wx.RED)
+                #self.g_listBox_11.Refresh()
+                self.g_listBox_11.Update()
+                #self.Refresh()
+                self.Update()
+
+                a_clsRainfall.meshIdx = a_cnt
+                #a_clsRainfall.run()
+                a_clsRainfall._makeAllRainfallDataByMesh(a_year, 0, a_cnt, g_meshList_target)
+
+                self.g_listBox_11.SetItem(a_cnt + a_count, 3, "入力データ作成が完了しました。")
+                self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.BLUE)
+                #self.g_listBox_11.Refresh()
+                self.g_listBox_11.Update()
+                #self.Refresh()
+                self.Update()
+
+            del a_clsRainfall.textline_Rainfall[:]
+            del a_clsRainfall.textline_SoilRain[:]
+            gc.collect()
+
+            if com.g_RainKind != 0:
+                # 比較対象の実況雨量データの算出
+                a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName1, a_clsRainfall.textline_Rainfall)
+                a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName1, a_clsRainfall.textline_SoilRain)
+
+                a_count = self.g_listBox_11.GetItemCount()
+                for a_cnt in range(0, a_meshSum):
+                    a_split = g_meshList_target[a_cnt].split(',')
+                    a_meshNo = ''
+                    if (com.g_TargetRainMesh == 1):
+                        # 対象Surfaceが1km
+                        a_meshNo = a_split[1]
+                    else:
+                        # 対象Surfaceが5km
+                        a_meshNo = a_split[0]
+                    print('a_meshNo=' + a_meshNo)
+
+                    self.g_listBox_11.InsertItem(a_cnt + a_count, str(a_year))
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 2, a_meshNo)
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の処理中......")
+                    self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.RED)
+                    #self.g_listBox_11.Refresh()
+                    self.g_listBox_11.Update()
+                    #self.Refresh()
+                    self.Update()
+
+                    a_clsRainfall.meshIdx = a_cnt
+                    #a_clsRainfall.run()
+                    a_clsRainfall._makeAllRainfallDataByMesh(a_year, 1, a_cnt, g_meshList_target)
+
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の入力データ作成が完了しました。")
+                    self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.BLUE)
+                    #self.g_listBox_11.Refresh()
+                    self.g_listBox_11.Update()
+                    #self.Refresh()
+                    self.Update()
+
+                del a_clsRainfall.textline_Rainfall[:]
+                del a_clsRainfall.textline_SoilRain[:]
+                gc.collect()
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "end")
+
+    def _makeAllRainfallData_proc(self):
+        global com
+        global g_meshList_target
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "start")
+
+        # RBFNデータ入力
+
+        '''
         a_manager = Manager()
         # 災害情報
         com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
@@ -617,6 +741,7 @@ class Main(wx.Frame):
         com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
         a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
         a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+        '''
 
         #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
         for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
@@ -672,6 +797,7 @@ class Main(wx.Frame):
             a_sum = 0
             a_count = self.g_listBox_11.GetItemCount()
             while (a_sum < a_meshSum):
+                #a_cnt_max = (a_sum + com.g_cpu_count)
                 a_cnt_max = (a_sum + com.g_MakeAllRainfallDataExecNum)
                 if (a_cnt_max > a_meshSum):
                     a_cnt_max = a_meshSum
@@ -692,13 +818,7 @@ class Main(wx.Frame):
                         a_meshNo = a_split[0]
                     print('a_meshNo=' + a_meshNo)
 
-                    self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
-                    self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
-                    self.g_listBox_11.Update()
-
+                    '''
                     a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
                                      args=(
                                          a_proc_num,
@@ -709,6 +829,7 @@ class Main(wx.Frame):
                                          a_cnt,
                                          g_meshList_target
                                      ))
+                                     '''
                     '''
                     a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
                                      args=(
@@ -726,7 +847,7 @@ class Main(wx.Frame):
                                          g_meshList_target
                                      ))
                                      '''
-                    '''
+
                     a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
                                      args=(
                                          a_proc_num,
@@ -735,9 +856,16 @@ class Main(wx.Frame):
                                          a_cnt,
                                          g_meshList_target
                                      ))
-                                     '''
+
 
                     a_procs.append(a_proc)
+
+                    self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
+                    self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
+                    self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
+                    self.g_listBox_11.Update()
 
                 for a_proc in a_procs:
                     a_proc.start()
@@ -756,16 +884,14 @@ class Main(wx.Frame):
 
                 a_sum = a_cnt_max
 
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "end")
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "end")
 
     def _makeBlockAll(self):
         global com
 
         a_proc = clsBlock.MakeBlockAll(
             0,
-            com.g_strIni,
-            com.g_textline_DisasterFile,
-            com.g_textline_CautionAnnounceFile
+            com.g_strIni
         )
 
     def _makeCautionAnnounceFrequencyOverOccurRainFallNum(self):
@@ -782,12 +908,12 @@ class Main(wx.Frame):
 
     def _makeCautionAnnounceRateOccurNum(self):
         global com
-        global g_meshList
+        global g_meshList_list
 
         a_proc = clsFigure.MakeCautionAnnounceRateOccurNum(
             0,
             com.g_strIni,
-            g_meshList,
+            g_meshList_list,
             0,
             -1
         )
@@ -810,6 +936,7 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "start")
 
+        '''
         # 災害情報
         com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
         # 警戒情報
@@ -821,11 +948,66 @@ class Main(wx.Frame):
         a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
         a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
         a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
+        '''
+        a_clsContour = clsContour.MakeContourByMesh(
+            1,
+            com.g_strIni,
+            "",
+            0,
+            0,
+            0,
+            -1
+        )
+
+        # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+
+        for a_cnt in range(0, a_meshSum):
+            a_index = g_meshList_check[a_cnt][0]   # インデックス
+            a_meshNo = g_meshList_check[a_cnt][1]   # メッシュ番号
+            print('a_meshNo=' + a_meshNo)
+            self.g_listBox_13_1.SetItem(a_index , 3, "処理中......")
+            self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
+            #self.g_listBox_13_1.Select(a_index, 1)
+            #self.SetScrollPos(wx.VERTICAL, a_index)
+            self.g_listBox_13_1.Update()
+            self.Update()
+
+            a_clsContour.meshNo = a_meshNo
+            a_clsContour.run()
+
+            self.g_listBox_13_1.SetItem(a_index , 3, "抽出処理が完了しました。")
+            self.g_listBox_13_1.SetItemTextColour(a_index, wx.BLUE)
+            self.g_listBox_13_1.Update()
+            self.Update()
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "end")
+
+    def _makeContour_proc(self):
+        global com
+        global g_meshList_check
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "start")
+
+        '''
+        # 災害情報
+        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
+        # 警戒情報
+        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+        # 対象メッシュ情報
+        com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+
+        a_manager = Manager()
+        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
+        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+        a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
+        '''
 
         # チェックされたものを処理対象
         a_meshSum = len(g_meshList_check)
         a_sum = 0
         while (a_sum < a_meshSum):
+            #a_cnt_max = (a_sum + com.g_cpu_count)
             a_cnt_max = (a_sum + com.g_MakeContourExecNum)
             if (a_cnt_max > a_meshSum):
                 a_cnt_max = a_meshSum
@@ -856,6 +1038,7 @@ class Main(wx.Frame):
                 self.g_listBox_13_1.Update()
                 self.Update()
 
+                '''
                 a_proc = Process(target=clsContour.MakeContourByMesh,
                                  args=(
                                      a_proc_num,
@@ -869,18 +1052,19 @@ class Main(wx.Frame):
                                      0,
                                      -1
                                  ))
-                '''
+                                 '''
+
                 a_proc = Process(target=clsContour.MakeContourByMesh,
-                             args=(
-                                 a_proc_num,
-                                 com.g_strIni,
-                                 a_meshNo,
-                                 0,
-                                 0,
-                                 0,
-                                 -1
-                             ))
-                             '''
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_meshNo,
+                                     0,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+
 
                 a_procs.append(a_proc)
 
@@ -901,7 +1085,7 @@ class Main(wx.Frame):
 
             a_sum = a_cnt_max
 
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "end")
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "end")
 
     def _makeDisasterSupplement(self):
         global com
@@ -949,8 +1133,8 @@ class Main(wx.Frame):
         # 全降雨の超過数
         # 非発生降雨の超過数
         # 発生降雨の超過数
-        #_makeOverRainfall()
-        #_makeOverRainfallMix()
+        #self._makeOverRainfall()
+        #self._makeOverRainfallMix()
         self.g_listBox_13_2.SetItem(0, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -961,7 +1145,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         #災害捕捉率
-        self._makeDisasterSupplement()
+        #self._makeDisasterSupplement()
         self.g_listBox_13_2.SetItem(1, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(1, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -972,9 +1156,9 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り率
-        self._makeWiff()
+        #self._makeWiff()
         # 空振り率2
-        self._makeWiff_New()
+        #self._makeWiff_New()
         self.g_listBox_13_2.SetItem(2, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(2, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -985,9 +1169,9 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り頻度
-        self._makeWhiffFrequency()
+        #self._makeWhiffFrequency()
         # 空振り頻度2
-        self._makeWhiffFrequency_New()
+        #self._makeWhiffFrequency_New()
         self.g_listBox_13_2.SetItem(3, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(3, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -998,7 +1182,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り時間
-        self._makeWhiffTime()
+        #self._makeWhiffTime()
         self.g_listBox_13_2.SetItem(4, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(4, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1009,7 +1193,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 警報発表頻度
-        self._makeAlarmAnnounce()
+        #self._makeAlarmAnnounce()
         self.g_listBox_13_2.SetItem(5, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(5, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1021,9 +1205,9 @@ class Main(wx.Frame):
         self.Update()
         # 9)実質災害捕捉率
         # 災害捕捉率【降雨数】
-        self._makeDisasterSupplement9_1()
+        #self._makeDisasterSupplement9_1()
         # 災害捕捉率【件数】
-        self._makeDisasterSupplement9_2()
+        #self._makeDisasterSupplement9_2()
         self.g_listBox_13_2.SetItem(6, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(6, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1035,15 +1219,15 @@ class Main(wx.Frame):
         self.Update()
         # ④実質災害捕捉率
         # 年毎メッシュ単位の算出結果
-        self._makeOverRainfall2()
+        #self._makeOverRainfall2()
         # 警戒発表中災害発生件数
         # 警戒発表中災害発生降雨数
-        self._makeOverRainfallMix2()
+        #self._makeOverRainfallMix2()
 
         # 土砂災害警戒情報の災害捕捉率（降雨数）
-        self._makeCautionAnnounceRateOccurRainFallNum()
+        #self._makeCautionAnnounceRateOccurRainFallNum()
         # 土砂災害警戒情報の災害捕捉率（件数）
-        self._makeCautionAnnounceRateOccurNum()
+        #self._makeCautionAnnounceRateOccurNum()
         self.g_listBox_13_2.SetItem(7, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(7, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1054,8 +1238,8 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ②土砂災害警戒情報のリードタイム
-        self._makeOverRainfall3_1()
-        self._makeOverRainfallMix3_1()
+        #self._makeOverRainfall3_1()
+        #self._makeOverRainfallMix3_1()
         self.g_listBox_13_2.SetItem(8, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(8, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1066,7 +1250,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ③土砂災害警戒情報の発表頻度
-        self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
+        #self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
         self.g_listBox_13_2.SetItem(9, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(9, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1077,8 +1261,8 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ⑥RBFN越のリードタイム
-        self._makeOverRainfall3_2()
-        self._makeOverRainfallMix3_2()
+        #self._makeOverRainfall3_2()
+        #self._makeOverRainfallMix3_2()
         self.g_listBox_13_2.SetItem(10, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1089,10 +1273,12 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ⑧予測適中率
+        '''
         if (com.g_RainKind != 0):
             self._makeOverRainfall8()
             self._makeOverRainfallMix8()
             self._makeForecastPredictive()
+            '''
         self.g_listBox_13_2.SetItem(11, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(11, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1170,7 +1356,7 @@ class Main(wx.Frame):
             for a_cnt in range(a_sum, a_cnt_max):
                 a_proc_num += 1
                 #print('a_cnt=' + str(a_cnt))
-                a_meshNo = g_meshList_check[a_cnt, 0]
+                a_meshNo = g_meshList_check[a_cnt][1]
                 '''
                 a_split = g_meshList_check[a_cnt].split(',')
                 a_meshNo = ''
@@ -1332,7 +1518,6 @@ class Main(wx.Frame):
             1,
             g_meshList_list,
             0,
-            0,
             -1
         )
 
@@ -1342,7 +1527,6 @@ class Main(wx.Frame):
             com.g_strIni,
             0,
             g_meshList_list,
-            0,
             0,
             -1
         )
@@ -1580,6 +1764,12 @@ class Main(wx.Frame):
     def _onClose(self, event):
         if (wx.MessageBox("プログラムを終了します。\nよろしいですか？", g_System_Title, wx.YES_NO) == wx.YES):
             self.Destroy()
+
+    def _onPaint(self, event):
+        #dc = wx.PaintDC(self)
+        #dc.DrawBitmap(self., 0, 0, True)
+        self.Refresh()
+        self.Update()
 
     '''
     def _recalcLimit(self):

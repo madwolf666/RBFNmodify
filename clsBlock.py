@@ -21,9 +21,7 @@ class MakeBlockAll():
 
     def __init__(self,
                  h_proc_num,
-                 h_ini_path,
-                 h_textline_DisasterFile,
-                 h_textline_CautionAnnounceFile
+                 h_ini_path
                  ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
@@ -32,11 +30,16 @@ class MakeBlockAll():
 
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
+        '''
         self.com.g_textline_DisasterFile =  h_textline_DisasterFile
         self.com.g_textline_CautionAnnounceFile =  h_textline_CautionAnnounceFile
+        '''
 
         #引数を取得
         self.com.GetEnvData(h_ini_path)
+
+        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
 
         self.run()  # multiprocess
 
@@ -50,34 +53,34 @@ class MakeBlockAll():
 
             # 集計結果ファイルを読み込み、ブロック毎に集計し直す。
             # 一連の発生降雨
-            self._makeRainfallByBlock()
+            #self._makeRainfallByBlock()
             # 災害発生降雨
             self._makeOccurRainfallByBlock()
             # 非発生降雨
-            self._makeNonOccurRainfallByBlock()
+            #self._makeNonOccurRainfallByBlock()
             # 一連の発生降雨
-            self._makeRainfall2ByBlock()
+            #self._makeRainfall2ByBlock()
             # 災害発生降雨
-            self._makeOccurRainfall2ByBlock()
+            #self._makeOccurRainfall2ByBlock()
             # 空振り時間
-            self._makeWiffTimeByBlock()
+            #self._makeWiffTimeByBlock()
             # 発生降雨超過数【災害捕捉率】
-            self._makeOccurRainfall9_1ByBlock()
+            #self._makeOccurRainfall9_1ByBlock()
             # 災害発生件数【災害捕捉率】
-            self._makeOccurRainfall9_2ByBlock()
+            #self._makeOccurRainfall9_2ByBlock()
             # 警戒情報リードタイム
-            self._makeReadTimeByBlock(self.com.g_CalcCautionAnnounceReadTimeSymbolByBlock)
+            #self._makeReadTimeByBlock(self.com.g_CalcCautionAnnounceReadTimeSymbolByBlock)
             # RBFN越リードタイム
-            self._makeReadTimeByBlock(self.com.g_CalcRBFNReadTimeSymbolByBlock)
+            #self._makeReadTimeByBlock(self.com.g_CalcRBFNReadTimeSymbolByBlock)
 
-            self._makeStatisticsByBlock()
+            #self._makeStatisticsByBlock()
 
             # ①土砂災害警戒情報の災害捕捉率、③土砂災害警戒情報の発表頻度
-            self._makeStatisticsByBlock2()
+            #self._makeStatisticsByBlock2()
             # ②土砂災害警戒情報のリードタイム
-            self._makeStatisticsByBlock3_1()
+            #self._makeStatisticsByBlock3_1()
             # ⑥RBFN越のリードタイム
-            self._makeStatisticsByBlock3_2()
+            #self._makeStatisticsByBlock3_2()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -255,12 +258,11 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,メッシュ番号,災害発生時刻\n")
 
-                a_bIsSet = [False]*a_textSumR
                 a_index = []
                 a_sTime = []
                 a_eTime = []
@@ -299,9 +301,9 @@ class MakeBlockAll():
                                                 a_IsOK = True
                                             else:
                                                 a_IsOK = False
-                                                if (a_tmpTime < a_OTime[a_rSum]):
-                                                    a_OTime[a_rSum] = a_tmpTime
-                                                    a_OMeshNo[a_rSum] = a_splitD2[0]
+                                                if (a_tmpTime < a_OTime[a_rSum - 1]):
+                                                    a_OTime[a_rSum - 1] = a_tmpTime
+                                                    a_OMeshNo[a_rSum - 1] = a_splitD2[0]
                                                 break
 
                                     if (a_IsOK == True):
@@ -682,10 +684,9 @@ class MakeBlockAll():
         try:
             a_blockSum = len(self.g_blockNameList)
             for a_cnt1 in range(0, a_blockSum):
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,メッシュ番号(開始),メッシュ番号(終了)\n")
 
-                a_bIsSet = [False]*a_textSumR
                 a_sTime = []
                 a_eTime = []
                 a_CLTime = []
@@ -751,10 +752,13 @@ class MakeBlockAll():
 
                                 a_CLTime.append([None]*9)
                                 a_MeshNo.append([""]*9)
+                                a_rMeshNoS.append("")
+                                a_rMeshNoE.append("")
+                                a_chkOK.append(True)
 
                                 for a_cnt2 in range(9, 18):
                                     if (a_split1[a_cnt2] != ""):
-                                        a_CLTime[a_rSum][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2])
+                                        a_CLTime[a_rSum][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2], '%Y/%m/%d %H:%M')
                                         a_MeshNo[a_rSum][a_cnt2 - 9] = a_meshList[a_cnt3]
 
                                 a_rMeshNoS[a_rSum] = a_meshList[a_cnt3]
@@ -798,18 +802,18 @@ class MakeBlockAll():
                                    "," + str(a_sTime[a_cnt2].year) + "," + str(a_sTime[a_cnt2].month) + "," + str(a_sTime[a_cnt2].day) + "," + str(a_sTime[a_cnt2].hour) + ":" + str(a_sTime[a_cnt2].minute).rjust(2, "0") +
                                    "," + str(a_eTime[a_cnt2].year) + "," + str(a_eTime[a_cnt2].month) + "," + str(a_eTime[a_cnt2].day) + "," + str(a_eTime[a_cnt2].hour) + ":" + str(a_eTime[a_cnt2].minute).rjust(2, "0"))
 
-                    for a_cnt3 in range(0, 9):
-                        if (a_CLTime[a_cnt2][a_cnt3] == None):
-                            a_sw.write(",")
-                        else:
-                            a_sw.write("," + str(a_CLTime[a_cnt2][a_cnt3].year) + "/" + str(a_CLTime[a_cnt2][a_cnt3].month) + "/" + str(a_CLTime[a_cnt2][a_cnt3].day) + " " + str(a_CLTime[a_cnt2][a_cnt3].hour) + ":" + str(a_CLTime[a_cnt2][a_cnt3].minute).rjust(2, "0"))
+                        for a_cnt3 in range(0, 9):
+                            if (a_CLTime[a_cnt2][a_cnt3] == None):
+                                a_sw.write(",")
+                            else:
+                                a_sw.write("," + str(a_CLTime[a_cnt2][a_cnt3].year) + "/" + str(a_CLTime[a_cnt2][a_cnt3].month) + "/" + str(a_CLTime[a_cnt2][a_cnt3].day) + " " + str(a_CLTime[a_cnt2][a_cnt3].hour) + ":" + str(a_CLTime[a_cnt2][a_cnt3].minute).rjust(2, "0"))
 
-                    for a_cnt3 in range(0, 9):
-                        a_sw.write("," + a_MeshNo[a_cnt2][a_cnt3])
+                        for a_cnt3 in range(0, 9):
+                            a_sw.write("," + a_MeshNo[a_cnt2][a_cnt3])
 
-                    a_sw.write("," + a_rMeshNoS[a_cnt2] + "," + a_rMeshNoE[a_cnt2])
+                        a_sw.write("," + a_rMeshNoS[a_cnt2] + "," + a_rMeshNoE[a_cnt2])
 
-                    a_sw.write("\n")
+                        a_sw.write("\n")
 
                 a_sw.close()
 

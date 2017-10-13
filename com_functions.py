@@ -1,8 +1,11 @@
+import os
 import sys
 import configparser
 import  csv
 import datetime
 import math
+import gc
+#from multiprocessing import Process, Manager
 
 class ComFunctions:
     g_LOG_FILENAME = "rbfnmdf"
@@ -284,6 +287,7 @@ class ComFunctions:
         self.g_NIGeDaS_NonOccurCalc =0       # NIGeDaS
 
         # 同時起動プロセス数
+        self.g_cpu_count = 1
         self.g_MakeAllRainfallDataExecNum = 1
         self.g_MakeContourExecNum = 1
         self.g_MakeOverRainfallExecNum = 1
@@ -295,6 +299,149 @@ class ComFunctions:
             return "error: could not read " + name
         except:
             print(sys.exc_info())
+
+    def CalcNIGeDaS(self, h_RBFN, h_CL):
+        a_strErr = "RBFN=" + h_RBFN + ",CL=" + str(h_CL)
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'CalcNIGeDaS', a_strErr)
+
+        a_sRet = ""
+
+        try:
+            a_sCL = ""
+
+            for a_cnt1 in range(0, 9):
+                a_isFound = True
+
+                if (a_isFound == True):
+                    # 計算
+                    a_sTmp = str(100 / (1 + math.exp(100 * ((0.8 * math.pow(float(h_RBFN) - 0.1, 2)) + 0.1) * (float(h_RBFN) - float((9 - a_cnt1) / 10)))) + 50)
+                else:
+                    a_sTmp = "－"
+                a_sRet += "," + a_sTmp
+
+                if (self.g_PastKind == 0):
+                    # 既往CL取込なし
+                    a_sCL = "-,-"
+                else:
+                    # 既往CL取込あり
+                    if (a_cnt1 == h_CL):
+                        a_sCL = a_sTmp + "," + str(self.My_round(1 - (a_cnt1 + 1) / 10, 1))
+
+            a_sRet += "," + a_sCL
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CalcNIGeDaS', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CalcNIGeDaS', a_strErr + "," + sys.exc_info())
+
+        return a_sRet
+
+    def CalcNIGeDaS2(
+            self,
+            h_surfaceSum,
+            h_surfaceLine,
+            h_contourSum,
+            h_contourLine,
+            h_rain,
+            h_soil,
+            h_CL
+    ):
+        a_strErr = ""
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'CalcNIGeDaS2', a_strErr)
+
+        a_sRet = ""
+
+        try:
+            a_sCL = ""
+
+            for a_cnt1 in range(0, 9):
+                a_isFound = True
+
+                if (a_isFound == True):
+                    a_p1 = [0]*2
+                    a_p2 = [0]*2
+                    a_p3 = [0]*2
+                    a_p4 = [0]*2
+                    a_pE = [0]*2
+
+                    # 計算
+                    # RBFNまでの線
+                    a_p1[0] = 0  # 土壌雨量指数
+                    a_p1[1] = 0  # 解析雨量
+                    a_p2[0] = float(h_soil)  # 土壌雨量指数
+                    a_p2[1] = float(h_rain)  # 解析雨量
+                    # ２点の座標から延長座標を求める。
+                    #a_pE[0] = float((1000 / math.sqrt((a_p2[0] - a_p1[0]) ^ 2 + (a_p2[1] - a_p1[1]) ^ 2) + 1) * a_p2[0])
+                    #a_pE[1] = float((1000 / math.sqrt((a_p2[0] - a_p1[0]) ^ 2 + (a_p2[1] - a_p1[1]) ^ 2) + 1) * a_p2[1])
+                    a_t0 = math.sqrt(math.pow((a_p2[0] - a_p1[0]), 2) + math.pow((a_p2[1] - a_p1[1]), 2))
+                    a_t1 = math.sqrt(math.pow((a_p2[0] - a_p1[0]), 2) + math.pow((a_p2[1] - a_p1[1]), 2))
+                    if (a_t0 > 0):
+                        a_pE[0] = float((1000 / a_t0 + 1) * a_p2[0])
+                    else:
+                        a_pE[0] = float((1) * a_p2[0])
+                    if (a_t1 > 0):
+                        a_pE[1] = float((1000 / a_t1 + 1) * a_p2[1])
+                    else:
+                        a_pE[1] = float((1) * a_p2[1])
+
+                    a_isCross = False
+
+                    # 等高線補正の1列目は土壌雨量指数、2列目以降は雨量
+                    for a_cnt2 in range(0, h_contourSum):
+                        # 等高線との交点を求める
+                        if (a_cnt2 == 0):
+                            a_splitC = h_contourLine[a_cnt2]    #次の点
+                            a_p3[0] = 0
+                            a_p3[1] = float(a_splitC[a_cnt1 + 1])
+                        else:
+                            # CLの線
+                            a_splitC = h_contourLine[a_cnt2 - 1]    #直前の点
+                            a_p3[0] = float(a_splitC[0])
+                            a_p3[1] = float(a_splitC[a_cnt1 + 1])
+
+                        a_splitC = h_contourLine[a_cnt2]    #現在の点
+                        a_p4[0] = float(a_splitC[0])
+                        a_p4[1] = float(a_splitC[a_cnt1 + 1])
+
+                        # 交差するかどうかを判定
+                        a_isCross = self.Intersection(a_p1, a_pE, a_p3, a_p4)
+                        if (a_isCross == True):
+                            # 交点を求める
+                            a_pC = self.Cpnt(a_p1, a_p2, a_p3, a_p4)
+                            # 直線Aの長さを求める。
+                            a_AVal = math.sqrt(math.pow((float(h_soil) - a_p1[0]), 2) + math.pow((float(h_rain) - a_p1[1]), 2))
+                            # 直線Bの長さを求める。
+                            a_BVal = math.sqrt(math.pow((a_pC[0] - a_p1[0]), 2) + math.pow((a_pC[1] - a_p1[1]), 2))
+
+                            if (a_AVal > 0) and (a_BVal > 0):
+                                a_sTmp = str((a_AVal / a_BVal) * 100)
+                            else:
+                                a_sTmp = "0"
+
+                            break
+
+                else:
+                    a_sTmp = "－"
+                a_sRet += "," + a_sTmp
+
+                if (self.g_PastKind == 0):
+                    # 既往CL取込なし
+                    a_sCL = "-,-"
+                else:
+                    # 既往CL取込あり
+                    if (a_cnt1 == h_CL):
+                        a_sCL = a_sTmp + "," + str(self.My_round(1 - (a_cnt1 + 1) / 10, 1))
+
+            a_sRet += "," + a_sCL
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CalcNIGeDaS2', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CalcNIGeDaS2', a_strErr + "," + sys.exc_info())
+
+        return a_sRet
 
     def CheckDate(self, h_year, h_month, h_day):
         a_strErr = str(h_year) + "/" + str(h_month) + "/" + str(h_day)
@@ -308,6 +455,128 @@ class ComFunctions:
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + sys.exc_info())
             return False
+
+    # 超過をチェックする
+    def CheckOverRainfall(
+            self,
+            h_meshNo,
+            h_contLine,
+            h_contSum,
+            h_contIdx,
+            h_lineIdx,
+            h_srcShisu,
+            h_srcRain,
+            h_dstShisu,
+            h_dstRain,
+            h_overSum,
+            h_isOver,
+            h_soilMin,
+            h_rainMax
+    ):
+        a_strErr = "meshNo=" + h_meshNo
+        #self.Outputlog(self.g_LOGMODE_TRACE1, 'CheckOverRainfall', a_strErr)
+
+        a_bFlag = True
+
+        try:
+            if (h_srcShisu > h_dstShisu):
+                # 土壌雨量指数が等高線を超えている。
+                if (h_srcRain >= h_dstRain):
+                    h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
+                    h_isOver[h_lineIdx] = True
+                else:
+                    a_bFlag = False
+            elif (h_srcShisu == h_dstShisu):
+                # 土壌雨量指数が同じ。
+                if (h_srcRain >= h_dstRain):
+                    # 雨量が等高線を超えている。
+                    # カウント対象とする。
+                    h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
+                    h_isOver[h_lineIdx] = True
+            else:
+                # 60分積算雨量上限値の追加
+                if (h_srcShisu < h_soilMin) and (h_rainMax > 0):
+                    # 土壌雨量指数下限値内、かつ60分積算雨量上限値越え
+                    if (h_srcRain > h_rainMax):
+                        # 雨量が上限値を超えている。
+                        # カウント対象とする。
+                        h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
+                        h_isOver[h_lineIdx] = True
+
+            a_x = [0]*5
+            a_y = [0]*5
+            if (a_bFlag == False):
+                # 次の等高線があればそれとチェックする。
+                if (h_contIdx < h_contSum - 1):
+                    a_split4 = h_contLine[h_contIdx + 1]
+                    a_shisu = float(a_split4[0])    # 土壌雨量指数
+                    if (a_shisu > 0):
+                        # 0は意味がない
+                        a_rain = float(a_split4[h_lineIdx + 1])   # 解析雨量
+                        if (a_rain < h_dstRain) and (a_shisu > h_dstShisu):
+                            a_x[1] = h_dstShisu
+                            a_x[2] = a_shisu
+                            a_x[3] = a_shisu
+                            a_x[4] = h_dstShisu
+                            a_y[1] = h_dstRain
+                            a_y[2] = a_rain
+                            a_y[3] = h_dstRain
+                            a_y[4] = h_dstRain
+                            if (self.naigai(h_srcShisu, h_srcRain, a_x, a_y) == True):
+                                h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
+                                h_isOver[h_lineIdx] = True
+                else:
+                    if (h_srcShisu >= h_dstShisu):
+                        h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
+                        h_isOver[h_lineIdx] = True
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckOverRainfall', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckOverRainfall', a_strErr + "," + sys.exc_info())
+
+    def Cpnt(self, P0, P1, P2, P3):
+        a_strErr = ""   #""ini_path=" + self.ini_path
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
+
+        a_pRet = [0]*2
+
+        try:
+            A = 0
+            B = 0
+            U = 0
+            C = 0
+            D = 0
+            V = 0
+
+            A = P1[1] - P0[1]
+            B = P0[0] - P1[0]
+            U = (P1[1] - P0[1]) * P0[0] - (P1[0] - P0[0]) * P0[1]
+            C = P3[1] - P2[1]
+            D = P2[0] - P3[0]
+            V = (P3[1] - P2[1]) * P2[0] - (P3[0] - P2[0]) * P2[1]
+
+            a_ts = (A * D - B * C)
+            a_t0 = (D * U - B * V)
+            a_t1 = (A * V - C * U)
+
+            if (a_ts > 0):
+                if (a_t0 > 0):
+                    a_pRet[0] = a_t0 / a_ts
+                if (a_t1 > 0):
+                    a_pRet[1] = a_t1 / a_ts
+
+            #a_pRet[0] = (D * U - B * V) / (A * D - B * C)
+            #a_pRet[1] = (A * V - C * U) / (A * D - B * C)
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Cpnt', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Cpnt', a_strErr + "," + sys.exc_info())
+
+        return a_pRet
 
     # INIファイルの読み込み
     def GetEnvData(self, h_ini_path):
@@ -481,6 +750,9 @@ class ComFunctions:
         self.g_MakeContourExecNum = int(self._getInifile(a_inifile, 'All', 'MakeContourExecNum'))
         self.g_MakeOverRainfallExecNum = int(self._getInifile(a_inifile, 'All', 'MakeOverRainfallExecNum'))
 
+        if (os.cpu_count() != None):
+            self.g_cpu_count = os.cpu_count()
+
     def GetMeshList(self, h_tyear, h_meshList):
         a_strErr = "Year=" + str(h_tyear)
         self.Outputlog(self.g_LOGMODE_TRACE1, 'GetMeshList', a_strErr)
@@ -489,6 +761,7 @@ class ComFunctions:
 
         try:
             del h_meshList[:]
+            gc.collect()
 
             a_sr = open(self.g_OutPath + "\\" + self.g_MeshSymbol + str(h_tyear) + ".csv", 'r', encoding='shift_jis')
             # 1行目をリスト変数に読み込む。
@@ -514,7 +787,7 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
         self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
+        #Outputlog(g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
@@ -526,6 +799,7 @@ class ComFunctions:
 
         try:
             del h_meshList[:]
+            gc.collect()
 
             # 解析雨量ファイルを開く。
             a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
@@ -558,7 +832,7 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
         self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
+        #Outputlog(g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
@@ -570,6 +844,7 @@ class ComFunctions:
 
         try:
             del h_meshList[:]
+            gc.collect()
 
             # 解析雨量ファイルを開く。
             a_sr = open(h_RainfallFileName, 'r', encoding='shift_jis')
@@ -612,7 +887,7 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
         self.Outputlog(self.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSum', 'end')
+        #Outputlog(g_LOGMODE_TRACE1, '_getMeshSum', 'end')
 
         return a_iRet
 
@@ -624,6 +899,7 @@ class ComFunctions:
 
         try:
             del h_meshList[:]
+            gc.collect()
 
             # 対象メッシュNoファイルを開く。
             a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
@@ -660,8 +936,8 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        #com.Outputlog(com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
+        #Outputlog(g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #Outputlog(g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
 
         return a_iRet
 
@@ -673,6 +949,7 @@ class ComFunctions:
 
         try:
             del h_meshList[:]
+            gc.collect()
 
             # 対象メッシュNoファイルを開く。
             a_sr = open(self.g_TargetMeshFile, 'r', encoding='shift_jis')
@@ -710,8 +987,8 @@ class ComFunctions:
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, type(exp), a_strErr)
 
-        #com.Outputlog(com.g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
-        #com.Outputlog(com.g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
+        #Outputlog(g_LOGMODE_TRACE1, 'a_iRet', str(a_iRet))
+        #Outputlog(g_LOGMODE_TRACE1, '_getMeshSumFromFile', 'end')
 
         return a_iRet
 
@@ -933,11 +1210,30 @@ class ComFunctions:
 
         except Exception as exp:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.Outputlog(self.g_LOGMODE_ERROR, 'GetTemperatureInfo', a_strErr + "," + sys.exc_info())
 
         return a_sRet
+
+    def Intersection(self, p1, p2, p3, p4):
+        a_strErr = ""   #""ini_path=" + self.ini_path
+        self.Outputlog(self.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
+
+        a_bRet = False
+
+        try:
+            if (((p1[0] - p2[0]) * (p3[1] - p1[1]) + (p1[1] - p2[1]) * (p1[0] - p3[0])) * ((p1[0] - p2[0]) * (p4[1] - p1[1]) + (p1[1] - p2[1]) * (p1[0] - p4[0])) <= 0.0):
+                if (((p3[0] - p4[0]) * (p1[1] - p3[1]) + (p3[1] - p4[1]) * (p3[0] - p1[0])) * ((p3[0] - p4[0]) * (p2[1] - p3[1]) + (p3[1] - p4[1]) * (p3[0] - p2[0])) <= 0.0):
+                    a_bRet = True
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Intersection', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Intersection', a_strErr + "," + sys.exc_info())
+
+        return a_bRet
 
     def My_round(self, x, d=0):
         a_strErr = ""
@@ -953,6 +1249,103 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + "," + sys.exc_info())
 
         return a_iRet
+
+    def naigai(self, r_X, r_Y, m_PXR, m_PYR):
+        a_bRet = False
+
+        try:
+            m_PXL = [0]*5
+            m_PYL = [0]*5
+
+            # 座標を反対並びにする
+            self.reSort(m_PXR, m_PYR, m_PXL, m_PYL)
+
+            if (self.naigaiR(r_X, r_Y, m_PXR, m_PYR) == True) or (self.naigaiL(r_X, r_Y, m_PXL, m_PYL) == True):
+                a_bRet = True
+            else:
+                a_bRet = False
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigai', str(exp.args[0]))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigai', sys.exc_info())
+
+        return a_bRet
+
+    def naigaiL(self, r_X, r_Y, m_PXL, m_PYL):
+        a_bRet = False
+
+        try:
+            CT = 0
+            # 内外判定処理
+            for i in range(1, 4):
+                RX = r_X - m_PXL[i]
+                NX = r_X - m_PXL[i + 1]
+                if (RX < 0 and NX >= 0) or (RX >= 0 and NX < 0):
+                    RY = r_Y - m_PYL[i]
+                    DX = m_PXL[i + 1] - m_PXL[i]
+                    DY = m_PYL[i + 1] - m_PYL[i]
+                    if (RX * DY < RY * DX):
+                        CT = CT + 1
+                    else:
+                        CT = CT - 1
+            # １以上の場合は、ポリゴン内に含まれる
+            if CT > 0:
+                a_bRet = True
+            else:
+                a_bRet = False
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigaiL', str(exp.args[0]))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigaiL', sys.exc_info())
+
+        return a_bRet
+
+    def naigaiR(self, r_X, r_Y, m_PXR, m_PYR):
+        a_bRet = False
+
+        try:
+            CT = 0
+            # 内外判定処理
+            for i in range(1, 4):
+                RX = r_X - m_PXR[i]
+                NX = r_X - m_PXR[i + 1]
+                if (RX < 0 and NX >= 0) or (RX >= 0 and NX < 0):
+                    RY = r_Y - m_PYR[i]
+                    DX = m_PXR[i + 1] - m_PXR[i]
+                    DY = m_PYR[i + 1] - m_PYR[i]
+                    if (RX * DY < RY * DX):
+                        CT = CT + 1
+                    else:
+                        CT = CT - 1
+            # １以上の場合は、ポリゴン内に含まれる
+            if CT > 0:
+                a_bRet = True
+            else:
+                a_bRet = False
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigaiR', str(exp.args[0]))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_naigaiR', sys.exc_info())
+
+        return a_bRet
+
+    def reSort(self, m_PXR, m_PYR, m_PXL, m_PYL):
+        try:
+            for i in range(0, 4):
+                m_PXL[i + 1] = m_PXR[4 - i]
+                m_PYL[i + 1] = m_PYR[4 - i]
+
+        except Exception as exp:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_reSort', str(exp.args[0]))
+            #self.Outputlog(self.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, '_reSort', sys.exc_info())
 
     def Outputlog(self, h_mode, h_Source, h_desc):
         '''
@@ -1113,6 +1506,8 @@ class ComFunctions:
             h_textSum = len(h_textLine)
             '''
             del h_textLine[:]
+            gc.collect()
+
             a_csv_obj = csv.reader(open(h_fileName, 'r', encoding='shift_jis'))
             for v in a_csv_obj:
                 h_textLine.append(v)
@@ -1307,10 +1702,10 @@ class ComFunctions:
             #Outputlog(self.g_LOGMODE_TRACE1, 'Store_TemperatureFile', 'end')
             '''
 
-    def Str_isfloat(self, str):
-        a_strErr = "str=" + str
+    def Str_isfloat(self, h_str):
+        a_strErr = "str=" + h_str
         try:
-            float(str)
+            float(h_str)
             return True
 
         #except ValueError as err:

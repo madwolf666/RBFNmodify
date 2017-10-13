@@ -8,6 +8,7 @@ import math
 import csv
 import com_functions
 import threading
+import gc
 
 # 警報発表頻度を作成する
 class MakeAlarmAnnounce():
@@ -60,6 +61,7 @@ class MakeAlarmAnnounce():
 
             # 該当メッシュの対象期間を算出する
             a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, self.meshList[0])
+            a_tyear = int(self.com.My_round(a_tyear, 0))
             for a_cnt1 in range(1, self.com.g_textSum_OverAllRainfallFile):
                 a_split1 = self.com.g_textline_OverAllRainfallFile[a_cnt1]
                 a_writeline = a_split1[0]
@@ -69,7 +71,8 @@ class MakeAlarmAnnounce():
                     if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                         if (float(a_split1[a_cnt2]) != 0):
                             if (a_tyear > 0):
-                                a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_tyear), 2))
+                                #a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -82,7 +85,7 @@ class MakeAlarmAnnounce():
                         a_sCL = "-,-"
                     else:
                         # 既往CL取込あり
-                        if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                        if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                             a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_tyear)
@@ -90,6 +93,9 @@ class MakeAlarmAnnounce():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverAllRainfallFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeAlarmAnnounce-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -146,18 +152,26 @@ class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
             a_sw = open(a_sFileName, 'w', encoding='shift_jis')
             a_sw.write("メッシュNo.,警戒発表した降雨数,対象期間,発表頻度" + a_TemperatureInfo + "\n")
 
+            # 対象期間（年）を取得
+            a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, self.meshList[0])
+            a_tyear = int(self.com.My_round(a_tyear, 0))
+
             for a_cnt1 in range(1, self.com.g_textSum_CautionAnnouncOccurRainfalleFile):
                 a_split1 = self.com.g_textline_CautionAnnouncOccurRainfalleFile[a_cnt1]
+                '''
                 # 対象期間（年）を取得
                 a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, a_split1[0])
+                a_tyear = int(self.com.My_round(a_tyear, 0))
+                '''
                 a_writeline = a_split1[0]
                 if (a_tyear > 0):
-                    for a_cnt2 in range(1, 10):
+                    for a_cnt2 in range(1, 2):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
                                 a_writeline += "," + str(a_split1[a_cnt2])
                                 a_writeline += "," + str(int(a_tyear))
-                                a_writeline += "," + "%10.2f" % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
+                                a_writeline += "," + str(self.com.My_round((float(a_split1[a_cnt2]) / a_tyear), 2))
+                                #a_writeline += "," + "%10.2f" % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
                             else:
                                 a_writeline += ",0"
                                 a_writeline += "," + str(int(a_tyear))
@@ -174,6 +188,9 @@ class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_CautionAnnouncOccurRainfalleFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceFrequencyOverOccurRainFallNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -235,12 +252,13 @@ class MakeCautionAnnounceRateOccurNum():
                 a_occurSum = self.com.GetOccurRainfallSumByMesh(a_split1[0])
                 a_writeline = a_split1[0]
                 if (a_occurSum != 0):
-                    for a_cnt2 in range(1, 10):
+                    for a_cnt2 in range(1, 2):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
                                 a_writeline += "," + str(a_split1[a_cnt2])
                                 a_writeline += "," + str(a_occurSum)
-                                a_writeline += "," + "%3.2f" % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
+                                a_writeline += "," + str(self.com.My_round((float(a_split1[a_cnt2]) / a_occurSum) * 100, 2))
+                                #a_writeline += "," + "%3.2f" % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
                             else:
                                 a_writeline += ",0"
                                 a_writeline += "," + str(a_occurSum)
@@ -257,6 +275,9 @@ class MakeCautionAnnounceRateOccurNum():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_CautionAnnouncOccurFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -318,12 +339,13 @@ class MakeCautionAnnounceRateOccurRainFallNum():
                 a_occurSum = self.com.GetOccurRainfallSumByMesh(a_split1[0])
                 a_writeline = a_split1[0]
                 if (a_occurSum != 0):
-                    for a_cnt2 in range(1, 10):
+                    for a_cnt2 in range(1, 2):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
                                 a_writeline += "," + str(a_split1[a_cnt2])
                                 a_writeline += "," + str(a_occurSum)
-                                a_writeline += "," + "%3.2f" % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
+                                a_writeline += "," + str(self.com.My_round((float(a_split1[a_cnt2]) / a_occurSum) * 100, 2))
+                                #a_writeline += "," + "%3.2f" % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
                             else:
                                 a_writeline += ",0"
                                 a_writeline += "," + str(a_occurSum)
@@ -340,6 +362,9 @@ class MakeCautionAnnounceRateOccurRainFallNum():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_CautionAnnouncOccurRainfalleFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeCautionAnnounceRateOccurRainFallNum-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -406,7 +431,8 @@ class MakeDisasterSupplement():
                     for a_cnt2 in range(1, 10):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
-                                a_sTmp = '%3.2f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_occurSum) * 100, 2))
+                                #a_sTmp = '%3.1f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -422,7 +448,7 @@ class MakeDisasterSupplement():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
                 else:
                     for a_cnt2 in range(1, 10):
@@ -441,7 +467,7 @@ class MakeDisasterSupplement():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_occurSum)
@@ -449,6 +475,9 @@ class MakeDisasterSupplement():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverOccurRainfallFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -516,7 +545,8 @@ class MakeDisasterSupplement9_1():
                     for a_cnt2 in range(1, 10):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
-                                a_sTmp = '%3.2f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_occurSum) * 100, 2))
+                                #a_sTmp = '%3.2f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -530,7 +560,7 @@ class MakeDisasterSupplement9_1():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
                 else:
                     for a_cnt2 in range(1, 10):
@@ -549,7 +579,7 @@ class MakeDisasterSupplement9_1():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_occurSum)
@@ -557,6 +587,9 @@ class MakeDisasterSupplement9_1():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverOccurRainfall9_1File[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_1-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -624,7 +657,8 @@ class MakeDisasterSupplement9_2():
                     for a_cnt2 in range(1, 10):
                         if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                             if (float(a_split1[a_cnt2]) != 0):
-                                a_sTmp = '%3.2f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_occurSum) * 100, 2))
+                                #a_sTmp = '%3.2f' % ((float(a_split1[a_cnt2]) / a_occurSum) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -638,7 +672,7 @@ class MakeDisasterSupplement9_2():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
                 else:
                     for a_cnt2 in range(1, 10):
@@ -657,7 +691,7 @@ class MakeDisasterSupplement9_2():
                             a_sCL = "-,-"
                         else:
                             # 既往CL取込あり
-                            if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                            if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                                 a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_occurSum)
@@ -665,6 +699,9 @@ class MakeDisasterSupplement9_2():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverOccurRainfall9_2File[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeDisasterSupplement9_2-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -678,7 +715,6 @@ class MakeForecastPredictive():
                  h_proc_num,
                  h_ini_path,
                  h_meshList,
-                 h_unReal,
                  h_soilMin,
                  h_rainMax
                  ):
@@ -690,7 +726,7 @@ class MakeForecastPredictive():
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
         self.meshList = h_meshList
-        self.unReal = h_unReal
+        #self.unReal = h_unReal
         self.soilMin = h_soilMin
         self.rainMax = h_rainMax
 
@@ -712,7 +748,7 @@ class MakeForecastPredictive():
 
         a_prevMsno = ""
         a_msSum = 0
-        a_msNo = []
+        a_msNo = [0]
         a_FSum = [[0]*9]
         a_PSum = [[0]*9]
 
@@ -754,25 +790,25 @@ class MakeForecastPredictive():
                         # 次のメッシュ
                         if (a_msSum > 0):
                             a_msNo.append('')
-                            a_FSum.append([[0]*9])
-                            a_PSum.append([[0]*9])
+                            a_FSum.append([0]*9)
+                            a_PSum.append([0]*9)
                         a_msSum += 1
-                        a_msNo[a_msSum -1 ] = a_split1[0]
+                        a_msNo[a_msSum -1] = a_split1[0]
                 else:
                     # 最初のメッシュ
                     if (a_msSum > 0):
                         a_msNo.append('')
-                        a_FSum.append([[0]*9])
-                        a_PSum.append([[0]*9])
+                        a_FSum.append([0]*9)
+                        a_PSum.append([0]*9)
                     a_msSum += 1
                     a_msNo[a_msSum - 1] = a_split1[0]
                 a_prevMsno = a_split1[0]
 
                 # 予測時間と実況時間を比較
-                for a_cnt2 in range(0, 9):
+                for a_cnt2 in range(1, 10):
                     if (a_split1[a_cnt2] != ""):
                         # 予測超過数を設定
-                        a_FSum[a_msSum - 1][a_cnt2] += 1
+                        a_FSum[a_msSum - 1][a_cnt2 - 1] += 1
                         # 予測時刻計算
                         # 時刻は加算しなくても良い↓
                         a_tTmp = datetime.datetime.strptime(a_split1[a_cnt2], "%Y/%m/%d %H:%M")
@@ -781,7 +817,7 @@ class MakeForecastPredictive():
                             a_tTmp2 = datetime.datetime.strptime(a_split2[a_cnt2], "%Y/%m/%d %H:%M")
                             if (a_tTmp2 > a_tTmp):
                                 # 予測適中
-                                a_PSum[a_msSum - 1][a_cnt2] += 1
+                                a_PSum[a_msSum - 1][a_cnt2 - 1] += 1
 
             for a_cnt1 in range(0, a_msSum):
                 # メッシュ番号
@@ -803,7 +839,8 @@ class MakeForecastPredictive():
                 # 予測適中率
                 for a_cnt2 in range(0, 9):
                     if (a_PSum[a_cnt1][a_cnt2] > 0) and (a_FSum[a_cnt1][a_cnt2] > 0):
-                        a_sTmp = "%3.1f" % ((float(a_PSum[a_cnt1][a_cnt2]) / float(a_FSum[a_cnt1][a_cnt2])) * 100)
+                        a_sTmp = str(self.com.My_round((float(a_PSum[a_cnt1][a_cnt2]) / float(a_FSum[a_cnt1][a_cnt2])) * 100, 2))
+                        #a_sTmp = "%3.1f" % ((float(a_PSum[a_cnt1][a_cnt2]) / float(a_FSum[a_cnt1][a_cnt2])) * 100)
                     else:
                         a_sTmp = "0"
                     a_writeline += "," + a_sTmp
@@ -813,7 +850,7 @@ class MakeForecastPredictive():
                     else:
                         # 既往CL取込あり
                         if (a_cnt2 == a_RBFN):
-                            a_sCL1 = str(a_cnt2 / 10)
+                            a_sCL1 = str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1))
 
                 # 予測超過数
                 for a_cnt2 in range(0, 9):
@@ -831,6 +868,10 @@ class MakeForecastPredictive():
 
             a_sw.close()
             a_swB.close()
+
+            del self.com.g_textline_CalcForecastTime1File[:]
+            del self.com.g_textline_CalcForecastTime0File[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeForecastPredictive-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -876,8 +917,10 @@ class MakeNIGeDaS():
         a_occurTime = []
         a_overRBFNVal = []
 
+        a_soilIdx = 0
+
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
 
             for a_index, a_meshNo in self.meshList:
                 a_RBFN = -1
@@ -888,7 +931,7 @@ class MakeNIGeDaS():
                     a_surfaceFile = self.com.g_RBFNOutPath + "\\" + "surface-" + a_meshNo + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
                 else:
                     # 取込あり
-                    a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
+                    a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
                     a_RBFN, a_soilMin, a_rainMax =  self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
@@ -933,201 +976,45 @@ class MakeNIGeDaS():
                                 if (float(a_splitS[0]) >= float(a_splitO[6])):
                                     # 雨量検出
                                     # NIGeDaS
-                                    a_sw.write(a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
+                                    a_sw.write(
+                                        a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
                                         a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
-                                    self._calcNIGeDaS(a_splitS[a_soilIdx], a_RBFN))
+                                        self.com.CalcNIGeDaS(a_splitS[a_soilIdx], a_RBFN) +
+                                        "\n"
+                                    )
                                     # NIGeDaSⅡ
-                                    a_sw2.write(a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
+                                    a_sw2.write(
+                                        a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
                                         a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
-                                    self.calcNIGeDaS2(self.com.g_textSum_SurfaceFile, self.com.g_textline_SurfaceFile, self.com.g_textSum_ContourReviseByMesh, self.com.g_textline_ContourReviseByMesh, a_splitO[6], a_splitO[7], a_RBFN))
+                                        self.com.CalcNIGeDaS2(
+                                            self.com.g_textSum_SurfaceFile,
+                                            self.com.g_textline_SurfaceFile,
+                                            self.com.g_textSum_ContourReviseByMesh,
+                                            self.com.g_textline_ContourReviseByMesh,
+                                            a_splitO[6],
+                                            a_splitO[7],
+                                            a_RBFN
+                                        ) +
+                                        "\n"
+                                    )
                                     a_isFound = True
                                     break
+
+                    del self.com.g_textline_OccurRainfallFile[:]
+                    gc.collect()
 
                 a_sw.close()
                 a_sw2.close()
 
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + sys.exc_info())
-
-    def _calcNIGeDaS(self, h_RBFN, h_CL):
-        a_strErr = "RBFN=" + h_RBFN + ",CL=" + str(h_CL)
-        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calcNIGeDaS-run', a_strErr)
-
-        a_sRet = ""
-
-        try:
-            for a_cnt1 in range(0, 9):
-                a_isFound = True
-
-                if (a_isFound == True):
-                    # 計算
-                    a_sTmp = str(100 / (1 + math.exp(100 * ((0.8 * math.pow(float(h_RBFN) - 0.1, 2)) + 0.1) * (float(h_RBFN) - float((9 - a_cnt1) / 10)))) + 50)
-                else:
-                    a_sTmp = "－"
-                a_sRet += + "," + a_sTmp
-
-                if (self.com.g_PastKind == 0):
-                    # 既往CL取込なし
-                    a_sCL = "-,-"
-                else:
-                    # 既往CL取込あり
-                    if (a_cnt1 == h_CL):
-                        a_sCL = a_sTmp + "," + str(1 - (a_cnt1 + 1) / 10)
-
-            a_sRet +="," + a_sCL
+                del self.com.g_textline_SurfaceFile[:]
+                del self.com.g_textline_ContourReviseByMesh[:]
+                gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS-run', a_strErr + "," + sys.exc_info())
-
-        return a_sRet
-
-    def _calcNIGeDaS(self,
-        h_surfaceSum,
-        h_surfaceLine,
-        h_contourSum,
-        h_contourLine,
-        h_rain,
-        h_soil,
-        h_CL
-        ):
-        a_strErr = ""
-        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_calcNIGeDaS2-run', a_strErr)
-
-        a_sRet = ""
-
-        try:
-            for a_cnt1 in range(0, 9):
-                a_isFound = True
-
-                if (a_isFound == True):
-                    a_p1 = [0]*2
-                    a_p2 = [0]*2
-                    a_p3 = [0]*2
-                    a_p4 = [0]*2
-                    a_pE = [0]*2
-
-                    # 計算
-                    # RBFNまでの線
-                    a_p1[0] = 0  # 土壌雨量指数
-                    a_p1[1] = 0  # 解析雨量
-                    a_p2[0] = float(h_soil)  # 土壌雨量指数
-                    a_p2[1] = float(h_rain)  # 解析雨量
-                    # ２点の座標から延長座標を求める。
-                    #a_pE[0] = float((1000 / math.sqrt((a_p2[0] - a_p1[0]) ^ 2 + (a_p2[1] - a_p1[1]) ^ 2) + 1) * a_p2[0])
-                    #a_pE[1] = float((1000 / math.sqrt((a_p2[0] - a_p1[0]) ^ 2 + (a_p2[1] - a_p1[1]) ^ 2) + 1) * a_p2[1])
-                    a_pE[0] = float((1000 / math.sqrt(math.pow((a_p2[0] - a_p1[0]), 2) + math.pow((a_p2[1] - a_p1[1]), 2)) + 1) * a_p2[0])
-                    a_pE[1] = float((1000 / math.sqrt(math.pow((a_p2[0] - a_p1[0]), 2) + math.pow((a_p2[1] - a_p1[1]), 2)) + 1) * a_p2[1])
-
-                    a_isCross = False
-
-                    # 等高線補正の1列目は土壌雨量指数、2列目以降は雨量
-                    for a_cnt2 in range(0, h_contourSum):
-                        # 等高線との交点を求める
-                        if (a_cnt2 == 0):
-                            a_splitC = h_contourLine[a_cnt2]    #次の点
-                            a_p3[0] = 0
-                            a_p3[1] = float(a_splitC[a_cnt1 + 1])
-                        else:
-                            # CLの線
-                            a_splitC = h_contourLine[a_cnt2 - 1]    #直前の点
-                            a_p3[0] = float(a_splitC[0])
-                            a_p3[1] = float(a_splitC[a_cnt1 + 1])
-
-                        a_splitC = h_contourLine[a_cnt2]    #現在の点
-                        a_p4[0] = float(a_splitC[0])
-                        a_p4[1] = float(a_splitC[a_cnt1 + 1])
-
-                        # 交差するかどうかを判定
-                        a_isCross = self._intersection(a_p1, a_pE, a_p3, a_p4)
-                        if (a_isCross == True):
-                            # 交点を求める
-                            a_pC = self._cpnt(a_p1, a_p2, a_p3, a_p4)
-                            # 直線Aの長さを求める。
-                            a_AVal = math.sqrt(math.pow((float(h_soil) - a_p1[0]), 2) + math.pow((float(h_rain) - a_p1[1]), 2))
-                            # 直線Bの長さを求める。
-                            a_BVal = math.sqrt(math.pow((a_pC[0] - a_p1[0]), 2) + math.pow((a_pC[1] - a_p1[1]), 2))
-
-                            a_sTmp = str((a_AVal / a_BVal) * 100)
-
-                            break
-
-                else:
-                    a_sTmp = "－"
-                a_sRet += + "," + a_sTmp
-
-                if (self.com.g_PastKind == 0):
-                    # 既往CL取込なし
-                    a_sCL = "-,-"
-                else:
-                    # 既往CL取込あり
-                    if (a_cnt1 == h_CL):
-                        a_sCL = a_sTmp + "," + str(1 - (a_cnt1 + 1) / 10)
-
-            a_sRet +="," + a_sCL
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS2-run', a_strErr + "," + sys.exc_info())
-
-        return a_sRet
-
-    def _cpnt(self, P0, P1, P2, P3):
-        a_strErr = ""   #""ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
-
-        a_pRet = [0]*2
-
-        try:
-            A = 0
-            B = 0
-            U = 0
-            C = 0
-            D = 0
-            V = 0
-
-            A = P1[1] - P0[1]
-            B = P0[0] - P1[0]
-            U = (P1[1] - P0[1]) * P0[0] - (P1[0] - P0[0]) * P0[1]
-            C = P3[1] - P2[1]
-            D = P2[0] - P3[0]
-            V = (P3[1] - P2[1]) * P2[0] - (P3[0] - P2[0]) * P2[1]
-            a_pRet[0] = (D * U - B * V) / (A * D - B * C)
-            a_pRet[1] = (A * V - C * U) / (A * D - B * C)
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_cpnt-run', a_strErr + "," + sys.exc_info())
-
-        return a_pRet
-
-    def _intersection(self, p1, p2, p3, p4):
-        a_strErr = ""   #""ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_cpnt-run', a_strErr)
-
-        a_bRet = False
-
-        try:
-            if (((p1[0] - p2[0]) * (p3[1] - p1[1]) + (p1[1] - p2[1]) * (p1[0] - p3[0])) * ((p1[0] - p2[0]) * (p4[1] - p1[1]) + (p1[1] - p2[1]) * (p1[0] - p4[0])) <= 0.0):
-                if (((p3[0] - p4[0]) * (p1[1] - p3[1]) + (p3[1] - p4[1]) * (p3[0] - p1[0])) * ((p3[0] - p4[0]) * (p2[1] - p3[1]) + (p3[1] - p4[1]) * (p3[0] - p2[0])) <= 0.0):
-                    a_bRet = True
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_intersection-run', a_strErr + "," + sys.exc_info())
-
-        return a_bRet
 
 # 降雨超過数を作成する
 class MakeNIGeDaS_NonOccurCalc():
@@ -1167,8 +1054,10 @@ class MakeNIGeDaS_NonOccurCalc():
         a_occurTime = []
         a_overRBFNVal = []
 
+        a_soilIdx = 0
+
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
 
             for a_index, a_meshNo in self.meshList:
                 a_RBFN = -1
@@ -1179,7 +1068,7 @@ class MakeNIGeDaS_NonOccurCalc():
                     a_surfaceFile = self.com.g_RBFNOutPath + "\\" + "surface-" + a_meshNo + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
                 else:
                     # 取込あり
-                    a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
+                    a_surfaceFile = self.com.g_PastRBFNOutPath + "\\" + "surface-" + self.com.GetTargetMeshNoByCL(self.com.g_TargetStartYear, a_meshNo) + "-" + str(self.com.g_PastTargetStartYear) + "-" + str(self.com.g_PastTargetEndYear) + ".csv"
                     a_RBFN, a_soilMin, a_rainMax =  self.com.GetPastCLData(a_meshNo)    # 60分間積算雨量上限値のサポート
                     if (self.soilMin > 0) or (self.rainMax > 0):
                         a_soilMin = self.soilMin
@@ -1224,18 +1113,39 @@ class MakeNIGeDaS_NonOccurCalc():
                                 if (float(a_splitS[0]) >= float(a_splitO[6])):
                                     # 雨量検出
                                     # NIGeDaS
-                                    a_sw.write(a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
-                                               a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
-                                               self._calcNIGeDaS(a_splitS[a_soilIdx], a_RBFN))
+                                    a_sw.write(
+                                        a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
+                                        a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
+                                        self.com.CalcNIGeDaS(a_splitS[a_soilIdx], a_RBFN) +
+                                        "\n"
+                                    )
                                     # NIGeDaSⅡ
-                                    a_sw2.write(a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
-                                                a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
-                                                self.calcNIGeDaS2(self.com.g_textSum_SurfaceFile, self.com.g_textline_SurfaceFile, self.com.g_textSum_ContourReviseByMesh, self.com.g_textline_ContourReviseByMesh, a_splitO[6], a_splitO[7], a_RBFN))
+                                    a_sw2.write(
+                                        a_splitO[2] + "," + a_splitO[3] + "," + a_splitO[4] + "," + a_splitO[5] + "," +
+                                        a_splitO[6] + "," + a_splitO[7] + "," + a_splitS[a_soilIdx] +
+                                        self.com.CalcNIGeDaS2(
+                                            self.com.g_textSum_SurfaceFile,
+                                            self.com.g_textline_SurfaceFile,
+                                            self.com.g_textSum_ContourReviseByMesh,
+                                            self.com.g_textline_ContourReviseByMesh,
+                                            a_splitO[6],
+                                            a_splitO[7],
+                                            a_RBFN
+                                        ) +
+                                        "\n"
+                                    )
                                     a_isFound = True
                                     break
 
+                    del self.com.g_textline_ChainOccurRainfallFile[:]
+                    gc.collect()
+
                 a_sw.close()
                 a_sw2.close()
+
+                del self.com.g_textline_SurfaceFile[:]
+                del self.com.g_textline_ContourReviseByMesh[:]
+                gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeNIGeDaS_NonOccurCalc-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1281,7 +1191,7 @@ class MakeOverRainfall2():
         a_TemperatureInfo = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
             a_RBFN = 0
             for a_index, a_meshNo in self.meshList:
                 # 既往CLの取り込み
@@ -1376,17 +1286,18 @@ class MakeOverRainfall2():
                                         if (a_splitD[0].strip() == h_meshNo):
                                             # メッシュ番号が同じ
                                             a_mTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
-                                            if (a_mTime >= a_OccurT[0]) and (a_mTime <= a_OccurT[1]):
-                                                # 災害が一連の降雨内である
-                                                # 警戒発表以前に災害発生
-                                                if (a_mTime < a_sTime):
-                                                    a_IsExists = True
-                                                    break
-                                                if (a_mTime >= a_sTime) and (a_mTime <= a_eTime):
-                                                    # 年月日時が警戒発表の範囲内
-                                                    a_iRet += 1
-                                                    a_IsExists = True
-                                                    break
+                                            if (a_OccurT[0] != None) and (a_OccurT[1] != None):
+                                                if (a_mTime >= a_OccurT[0]) and (a_mTime <= a_OccurT[1]):
+                                                    # 災害が一連の降雨内である
+                                                    # 警戒発表以前に災害発生
+                                                    if (a_mTime < a_sTime):
+                                                        a_IsExists = True
+                                                        break
+                                                    if (a_mTime >= a_sTime) and (a_mTime <= a_eTime):
+                                                        # 年月日時が警戒発表の範囲内
+                                                        a_iRet += 1
+                                                        a_IsExists = True
+                                                        break
                                     if (a_IsExists == True):
                                         break
                             a_OccurT[0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M') # 開始
@@ -1410,19 +1321,23 @@ class MakeOverRainfall2():
                             if (a_splitD[0].strip() == h_meshNo):
                                 # メッシュ番号が同じ
                                 a_mTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
-                                if (a_mTime >= a_OccurT[0]) and (a_mTime <= a_OccurT[1]):
-                                    # 災害が一連の降雨内である
-                                    # 警戒発表以前に災害発生
-                                    if (a_mTime < a_sTime):
-                                        a_IsExists = True
-                                        break
-                                    if (a_mTime >= a_sTime) and (a_mTime <= a_eTime):
-                                        # 年月日時が警戒発表の範囲内
-                                        a_iRet += 1
-                                        a_IsExists = True
-                                        break
+                                if (a_OccurT[0] != None) and (a_OccurT[1] != None):
+                                    if (a_mTime >= a_OccurT[0]) and (a_mTime <= a_OccurT[1]):
+                                        # 災害が一連の降雨内である
+                                        # 警戒発表以前に災害発生
+                                        if (a_mTime < a_sTime):
+                                            a_IsExists = True
+                                            break
+                                        if (a_mTime >= a_sTime) and (a_mTime <= a_eTime):
+                                            # 年月日時が警戒発表の範囲内
+                                            a_iRet += 1
+                                            a_IsExists = True
+                                            break
                         if (a_IsExists == True):
                             break
+
+                del self.com.g_textline_OccurRainfallFile[:]
+                gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getCautionAnnounceOccurRainfallSum', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1497,7 +1412,7 @@ class MakeOverRainfall3_1():
         a_strTmp = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
 
             for a_index, a_meshNo in self.meshList:
                 if (self.soilMin > 0) or (self.rainMax > 0):    # 60分積算雨量上限値の追加
@@ -1509,7 +1424,10 @@ class MakeOverRainfall3_1():
 
                 for a_cnt in range(self.com.g_TargetStartYear, self.com.g_TargetEndYear + 1):
                     a_cnt3 = 0
-                    a_sr = open(self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_CalcCautionAnnounceReadTimeSymbol + str(a_cnt) + ".csv", "r", encoding='shift_jis')
+
+                    a_sFileName = self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_CalcCautionAnnounceReadTimeSymbol + str(a_cnt)  + ".csv"
+                    a_sr = open(a_sFileName, "r", encoding='shift_jis')
+
                     # 1行目は読み飛ばす
                     a_strTmp = a_sr.readline()
                     a_strTmp = a_sr.readline()
@@ -1519,7 +1437,7 @@ class MakeOverRainfall3_1():
                         a_strTmp = a_sr.readline()
                     a_sr.close()
 
-                a_sw.close()
+            a_sw.close()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall3_1-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1561,6 +1479,8 @@ class MakeOverRainfall3_2():
         a_strErr = "ini_path=" + self.com.ini_path
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeOverRainfall3_2-run', a_strErr)
 
+        a_soilMin = 0
+        a_rainMax = -1
         a_sFileName = ""
         a_TemperatureInfo = ""
         a_overSum = 0
@@ -1569,7 +1489,7 @@ class MakeOverRainfall3_2():
         a_overRBFNVal = []
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
 
             for a_index, a_meshNo in self.meshList:
                 # 既往CLの取り込み
@@ -1599,14 +1519,14 @@ class MakeOverRainfall3_2():
                 for a_cnt3 in range(0, a_overSum + 1):
                     if (a_overRBFNVal[a_cnt3] != -1):
                         a_delta = a_occurTime[a_cnt3] - a_overRBFNTime[a_cnt3]   # 実時刻対応⇒分計算
-                        a_iTmp = a_delta.minutes
+                        a_iTmp = int(a_delta.total_seconds() /60)
                         a_sTmp = str(a_iTmp)
                         a_sw.write(
                             a_meshNo + "," +
                             str(a_overRBFNTime[a_cnt3].year) + "," + str(a_overRBFNTime[a_cnt3].month) + "," + str(a_overRBFNTime[a_cnt3].day) + "," + str(a_overRBFNTime[a_cnt3].hour) + ":" + str(a_overRBFNTime[a_cnt3].minute).rjust(2, "0") + "," +
                             str(a_occurTime[a_cnt3].year) + "," + str(a_occurTime[a_cnt3].month) + "," + str(a_occurTime[a_cnt3].day) + "," + str(a_occurTime[a_cnt3].hour) + ":" + str(a_occurTime[a_cnt3].minute).rjust(2, "0") + "," +
                             a_sTmp + "," +
-                            str(float(9 - a_overRBFNVal[a_cnt3]) / 10)
+                            str(float(9 - a_overRBFNVal[a_cnt3]) / 10) + "\n"
                         )
 
                 a_sw.close()
@@ -1653,9 +1573,6 @@ class MakeOverRainfall3_2():
         a_overTime = ['']*9
         a_strStart = ""
         a_strEnd = ""
-        a_RBFN = 0
-        a_soilMin = 0
-        a_rainMax = 0
 
         try:
             if (h_unReal > 0):
@@ -1672,9 +1589,13 @@ class MakeOverRainfall3_2():
 
             a_overSum = [0]*9
             a_OccurT = [[None]*2]
+
             del h_overRBFNTime[:]
             del h_overRBFNVal[:]
             del h_OccurTime[:]
+            h_overRBFNTime.append(None)
+            h_overRBFNVal.append(-1)
+            h_OccurTime.append(None)
 
             for a_cnt in range(int(self.com.g_TargetStartYear), int(self.com.g_TargetEndYear) + 1):
                 # 一連の降雨ファイルを開く
@@ -1701,17 +1622,20 @@ class MakeOverRainfall3_2():
                             a_IsOver = [False]*9
                             # 異なる一連の降雨となる
                             h_overSum += 1
+                            '''
                             if (h_overSum == 0):
                                 a_OccurT[0][0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
                             else:
-                                a_OccurT.append([None]*2)
-                                a_OccurT[h_overSum - 1][0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
+                            '''
+                            a_OccurT.append([None]*2)
+                            a_OccurT[len(a_OccurT) - 1][0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
                             h_overRBFNTime.append(None)
                             h_overRBFNVal.append(-1)
                             h_OccurTime.append(None)
                     else:
-                        a_OccurT[h_overSum - 1][0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
-                    a_OccurT[h_overSum - 1][1] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
+                        #a_OccurT.append([None]*2)
+                        a_OccurT[len(a_OccurT) - 1][0] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
+                    a_OccurT[len(a_OccurT) - 1][1] = datetime.datetime.strptime(a_split1[2] + "/" + a_split1[3] + "/" + a_split1[4] + " " + a_split1[5], '%Y/%m/%d %H:%M')
 
                     a_prevTime = a_nowTime
 
@@ -1746,7 +1670,7 @@ class MakeOverRainfall3_2():
                                     if (a_IsRBFN == True):
                                         if (a_IsOver[a_cnt2] == False):
                                             a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                            self._checkOverRainfall(
+                                            self.com.CheckOverRainfall(
                                                 h_meshNo,
                                                 self.com.g_textline_ContourReviseByMesh,
                                                 self.com.g_textSum_ContourReviseByMesh,
@@ -1765,33 +1689,37 @@ class MakeOverRainfall3_2():
                                             if (a_IsOver[a_cnt2] == True):
                                                 a_IsNew = False
                                                 # RBFN越
-                                                if (h_overRBFNVal[h_overSum -1 ] != -1):
+                                                if (h_overRBFNVal[len(h_overRBFNVal) -1 ] != -1):
                                                     # 検出済の年が設定されている
                                                     # RBFN値が大きいものを優先
-                                                    if (a_cnt2 < int(h_overRBFNVal[h_overSum - 1])):
+                                                    if (a_cnt2 < int(h_overRBFNVal[len(h_overRBFNVal) - 1])):
                                                         a_IsNew = True
                                                 else:
                                                     # 検出済の年が設定されていない
                                                     a_IsNew = True
 
                                                 if (a_IsNew == True):
-                                                    h_overRBFNTime[h_overSum - 1] = a_OccurT(h_overSum - 1, 1)   # RBFN越時間
-                                                    h_overRBFNVal[h_overSum -1 ] = a_cnt2 # RBFN値
+                                                    h_overRBFNTime[len(h_overRBFNTime) - 1] = a_OccurT[len(a_OccurT) - 1][1]   # RBFN越時間
+                                                    #h_overRBFNTime[h_overSum - 1] = a_OccurT(h_overSum - 1, 1)   # RBFN越時間
+                                                    h_overRBFNVal[len(h_overRBFNVal) -1 ] = a_cnt2 # RBFN値
 
                                     if (self.com.g_PastKind != 0):
                                         # 取込あり
                                         if (a_IsRBFN == True):
                                             break
 
+                del self.com.g_textline_OccurRainfallFile[:]
+                gc.collect()
+
             a_TimeD2 = datetime.datetime.now()
-            for a_cnt in range(0, h_overSum):
+            for a_cnt in range(0, h_overSum + 1):
                 a_fFlagD2 = False
                 for a_cntD2 in range(1, self.com.g_textSum_DisasterFile):
                     a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
                     if (a_splitD2[0].strip() == h_meshNo):
                         # メッシュ番号が同じ
                         a_tmpTime = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
-                        if (a_tmpTime >= a_OccurT[a_cntD2][0]) and (a_tmpTime <= a_OccurT[a_cntD2][1]):
+                        if (a_tmpTime >= a_OccurT[a_cnt][0]) and (a_tmpTime <= a_OccurT[a_cnt][1]):
                             if (a_fFlagD2 == True):
                                 if (a_tmpTime < a_TimeD2):
                                     a_TimeD2 = a_tmpTime
@@ -1815,6 +1743,9 @@ class MakeOverRainfall3_2():
                 if (a_fFlagD2 == False):
                     # 災害発生時刻が検出されなかった場合
                     h_overRBFNVal[a_cnt] = -1
+
+            del self.com.g_textline_ContourReviseByMesh[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getRBFNReadTime', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1861,7 +1792,7 @@ class MakeOverRainfall8():
         a_TemperatureInfo = ""
 
         try:
-            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0, 0])
+            a_TemperatureInfo = self.com.GetTemperatureInfo(self.meshList[0][1])
             a_RBFN = 0
             for a_index, a_meshNo in self.meshList:
                 if (self.kind == 0):
@@ -1870,7 +1801,10 @@ class MakeOverRainfall8():
                         a_sw = open(self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_ChainOccurRainfall0Symbol + str(a_cnt2) + ".csv", 'w', encoding='shift_jis')
                         # 一連の発生降雨の抽出結果：予測雨量
                         self.com.g_textSum_ChainOccurRainfallFile = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_ChainOccurRainfallSymbol + str(a_cnt2) + ".csv", self.com.g_textline_ChainOccurRainfallFile)
-                        a_sw.write(self.com.g_textline_ChainOccurRainfallFile[0]) # 1行目の書込
+
+                        self.com.Write_TextLine(a_sw, self.com.g_textline_ChainOccurRainfallFile[0])
+                        a_sw.write("\n") # 1行目の書込
+
                         # 全解析雨量・土壌雨量指数：実況雨量
                         self.com.g_textSum_AllRainfall = self.com.Store_DataFile(self.com.g_OutPath + "\\" + a_meshNo + "\\" + self.com.g_AllRainfall0Symbol + str(a_cnt2) + ".csv", self.com.g_textline_AllRainfall)
                         for a_cntR1 in range(1, self.com.g_textSum_ChainOccurRainfallFile):
@@ -1879,15 +1813,19 @@ class MakeOverRainfall8():
                                 a_split0 = self.com.g_textline_AllRainfall[a_cntR0]
                                 if (a_split0[0] == a_split1[0]):
                                     # データ番号が一致
-                                    a_sw.write(a_split0[0] + "," + a_split1[1] + "," + a_split0[1] + "," + a_split0[2] + "," + a_split0[3] + "," + a_split0[4] + "," + a_split0[5] + "," + a_split0[6] + "," + a_split0[7])
+                                    a_sw.write(a_split0[0] + "," + a_split1[1] + "," + a_split0[1] + "," + a_split0[2] + "," + a_split0[3] + "," + a_split0[4] + "," + a_split0[5] + "," + a_split0[6] + "," + a_split0[7] + "\n")
                                     break
                         a_sw.close()
+
+                        del self.com.g_textline_ChainOccurRainfallFile[:]
+                        del self.com.g_textline_AllRainfall[:]
+                        gc.collect()
 
                 a_RBFN = 0
                 a_soilMin = 0
                 a_rainMax = -1
-                a_overTimeS = [[None]*9]
-                a_overTimeE = [[None]*9]
+                a_overTimeS = []
+                a_overTimeE = []
 
                 # 既往CLの取り込み
                 if (self.com.g_PastKind != 0):
@@ -1920,12 +1858,14 @@ class MakeOverRainfall8():
                 a_sTmp = ""
                 a_sCL1 = ""
                 a_sCL2 = ""
+                #print(a_overSum)
                 for a_cnt3 in range(0, a_overSum):
                     a_sw.write(a_meshNo)
                     for a_cnt in range(0, 9):
-                        if (a_overTimeS[a_cnt3][a_cnt] == None):
+                        if (a_overTimeS[a_cnt3][a_cnt] == ""):
                             a_sw.write(",")
                         else:
+                            #print(a_overTimeS[a_cnt3][a_cnt])
                             a_sw.write("," + a_overTimeS[a_cnt3][a_cnt])
 
                         if (self.com.g_PastKind == 0):
@@ -1934,12 +1874,13 @@ class MakeOverRainfall8():
                         else:
                             # 既往CL取込あり
                             if (a_cnt == a_RBFN):
-                                a_sCL1 = str(1 - (a_cnt + 1) / 10)
+                                a_sCL1 = str(self.com.My_round(1 - ((a_cnt + 1) / 10), 1))
+                                #a_sCL1 = str(1 - (a_cnt + 1) / 10)
 
                     a_sw.write("," + a_sCL1)
                     a_sw.write("\n")
 
-                if (a_overSum < 0):
+                if (a_overSum <= 0):
                     a_sw.write(a_meshNo)
                     for a_cnt in range(0, 9):
                         a_sw.write(",")
@@ -1949,7 +1890,8 @@ class MakeOverRainfall8():
                         else:
                             # 既往CL取込あり
                             if (a_cnt == a_RBFN):
-                                a_sCL1 = str(1 - (a_cnt + 1) / 10)
+                                a_sCL1 = str(self.com.My_round(1 - ((a_cnt + 1) / 10), 1))
+                                #a_sCL1 = str(1 - (a_cnt + 1) / 10)
 
                     a_sw.write("," + a_sCL1)
                     a_sw.write("\n")
@@ -1999,12 +1941,14 @@ class MakeOverRainfall8():
             self.com.g_textSum_ContourReviseByMesh = self.com.Store_DataFile(a_sFileName, self.com.g_textline_ContourReviseByMesh)
 
             a_overSum = [0]*9
+            del h_overTimeS[:]
+            del h_overTimeE[:]
 
             for a_cnt in range(int(self.com.g_TargetStartYear), int(self.com.g_TargetEndYear) + 1):
                 if (h_kind == 0):
-                    a_sFileName = self.com.g_OutPath + "\\" + h_meshNo  + self.com.g_ChainOccurRainfall0Symbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
+                    a_sFileName = self.com.g_OutPath + "\\" + h_meshNo + "\\" + self.com.g_ChainOccurRainfall0Symbol + str(a_cnt) + ".csv"
                 else:
-                    a_sFileName = self.com.g_OutPath + "\\" + h_meshNo + self.com.g_ChainOccurRainfallSymbol + "-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv"
+                    a_sFileName = self.com.g_OutPath + "\\" + h_meshNo + "\\" + self.com.g_ChainOccurRainfallSymbol + str(a_cnt) + ".csv"
                 self.com.g_textSum_ChainOccurRainfallFile = self.com.Store_DataFile(a_sFileName, self.com.g_textline_ChainOccurRainfallFile)
 
                 a_IsOver = [False]*9
@@ -2028,17 +1972,19 @@ class MakeOverRainfall8():
 
                     if (a_prev_DataNo > 0):
                         if ((a_prev_DataNo + 1) < a_now_DataNo):
+                            #print("a_prev_DataNo=" + str(a_prev_DataNo) + "a_now_DataNo=" + str(a_now_DataNo))
                             for a_cnt2 in range(0, 9):
                                 a_IsOver[a_cnt2] = False
                             # ★異なる一連の降雨となる。
-                            if (h_overSum > 0):
-                                h_overTimeS.append([[None]*9])
-                                h_overTimeE.append([[None]*9])
+                            #if (h_overSum > 0):
+                            h_overTimeS.append([""]*9)
+                            h_overTimeE.append([""]*9)
                             h_overSum += 1
                     else:
-                        if (h_overSum > 0):
-                            h_overTimeS.append([[None]*9])
-                            h_overTimeE.append([[None]*9])
+                        #print("a_prev_DataNo=" + str(a_prev_DataNo) + "a_now_DataNo=" + str(a_now_DataNo))
+                        #if (h_overSum > 0):
+                        h_overTimeS.append([""]*9)
+                        h_overTimeE.append([""]*9)
                         h_overSum += 1
                     a_prev_DataNo = a_now_DataNo
 
@@ -2064,9 +2010,29 @@ class MakeOverRainfall8():
                                 for a_cnt2 in range(0, 9):
                                     if (a_IsOver[a_cnt2] == False):
                                         a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                        self._checkOverRainfall(h_meshNo, self.com.g_textline_ContourReviseByMesh, self.com.g_textSum_ContourReviseByMesh, a_cnt3, a_cnt2, a_shisu1, a_rain1, a_shisu3, a_rain3, h_overSum, a_IsOver, h_soilMin, h_rainMax)   # 60分積算雨量上限値の追加
+                                        self.com.CheckOverRainfall(
+                                            h_meshNo,
+                                            self.com.g_textline_ContourReviseByMesh,
+                                            self.com.g_textSum_ContourReviseByMesh,
+                                            a_cnt3,
+                                            a_cnt2,
+                                            a_shisu1,
+                                            a_rain1,
+                                            a_shisu3,
+                                            a_rain3,
+                                            a_overSum,
+                                            a_IsOver,
+                                            h_soilMin,
+                                            h_rainMax
+                                        )   # 60分積算雨量上限値の追加
                                         if (a_IsOver[a_cnt2] == True):
-                                            h_overTimeS[h_overSum - 1][a_cnt2] += a_nowTime
+                                            h_overTimeS[len(h_overTimeS) - 1][a_cnt2] += a_nowTime
+
+                del self.com.g_textline_ChainOccurRainfallFile[:]
+                gc.collect()
+
+            del self.com.g_textline_ContourReviseByMesh[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getForecastPredictive', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -2218,7 +2184,7 @@ class MakeOverRainfallByMesh():
                 # 既往CL取込あり
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
-                        a_sw.write("," + str(a_overSum1[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                        a_sw.write("," + str(a_overSum1[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
 
             # 非発生降雨超過数
@@ -2230,7 +2196,7 @@ class MakeOverRainfallByMesh():
                 # 既往CL取込あり
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
-                        a_sw.write("," + str(a_overSum2[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                        a_sw.write("," + str(a_overSum2[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
 
             # 発生降雨超過数
@@ -2246,7 +2212,7 @@ class MakeOverRainfallByMesh():
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
                         if (a_occurSum != 0):
-                            a_sw.write("," + str(a_overSum1[a_cnt2] - a_overSum2[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write("," + str(a_overSum1[a_cnt2] - a_overSum2[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
                         else:
                             a_sw.write(",無し" + "," + str(1 - (a_cnt2 + 1) / 10))
             a_sw.write("\n")
@@ -2260,7 +2226,7 @@ class MakeOverRainfallByMesh():
                 # 既往CL取込あり
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
-                        a_sw.write("," + str(a_timeSum[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                        a_sw.write("," + str(a_timeSum[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
 
             # 9)実質災害捕捉率【降雨数】
@@ -2276,9 +2242,9 @@ class MakeOverRainfallByMesh():
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
                         if (a_occurSum != 0):
-                            a_sw.write("," + str(a_overSum9_1[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write("," + str(a_overSum9_1[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
                         else:
-                            a_sw.write(",無し" + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write(",無し" + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
 
             # ④実質災害捕捉率【件数】
@@ -2298,9 +2264,9 @@ class MakeOverRainfallByMesh():
                 for a_cnt2 in range(0, 9):
                     if (a_cnt2 == a_RBFN):
                         if (a_occurSum != 0):
-                            a_sw.write("," + str(a_overSum9_2[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write("," + str(a_overSum9_2[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
                         else:
-                            a_sw.write(",無し" + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write(",無し" + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
 
             # 実質災害捕捉率【降雨数】による非発生降雨数
@@ -2318,10 +2284,13 @@ class MakeOverRainfallByMesh():
                 for a_cnt2 in range(0,9):
                     if (a_cnt2 == a_RBFN):
                         if (a_occurSum != 0):
-                            a_sw.write("," + str(a_overSum1[a_cnt2] - a_overSum9_1[a_cnt2]) + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write("," + str(a_overSum1[a_cnt2] - a_overSum9_1[a_cnt2]) + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
                         else:
-                            a_sw.write(",無し" + "," + str(1 - (a_cnt2 + 1) / 10))
+                            a_sw.write(",無し" + "," + str(self.com.My_round(1 - ((a_cnt2 + 1) / 10), 1)))
             a_sw.write("\n")
+
+            del self.com.g_textline_ContourReviseByMesh[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -2348,86 +2317,6 @@ class MakeOverRainfallByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getDisasterOccurSumByMesh', a_strErr + "," + sys.exc_info())
 
         return a_iRet
-
-    # 超過をチェックする
-    def _checkOverRainfall(
-            self,
-            h_meshNo,
-            h_contLine,
-            h_contSum,
-            h_contIdx,
-            h_lineIdx,
-            h_srcShisu,
-            h_srcRain,
-            h_dstShisu,
-            h_dstRain,
-            h_overSum,
-            h_isOver,
-            h_soilMin,
-            h_rainMax
-    ):
-        a_strErr = "meshNo=" + h_meshNo
-        #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_checkOverRainfall', a_strErr)
-
-        a_bFlag = True
-
-        try:
-            if (h_srcShisu > h_dstShisu):
-                # 土壌雨量指数が等高線を超えている。
-                if (h_srcRain >= h_dstRain):
-                    h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
-                    h_isOver[h_lineIdx] = True
-                else:
-                    a_bFlag = False
-            elif (h_srcShisu == h_dstShisu):
-                # 土壌雨量指数が同じ。
-                if (h_srcRain >= h_dstRain):
-                    # 雨量が等高線を超えている。
-                    # カウント対象とする。
-                    h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
-                    h_isOver[h_lineIdx] = True
-            else:
-                # 60分積算雨量上限値の追加
-                if (h_srcShisu < h_soilMin) and (h_rainMax > 0):
-                    # 土壌雨量指数下限値内、かつ60分積算雨量上限値越え
-                    if (h_srcRain > h_rainMax):
-                        # 雨量が上限値を超えている。
-                        # カウント対象とする。
-                        h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
-                        h_isOver[h_lineIdx] = True
-
-            a_x = [0]*5
-            a_y = [0]*5
-            if (a_bFlag == False):
-                # 次の等高線があればそれとチェックする。
-                if (h_contIdx < h_contSum - 1):
-                    a_split4 = h_contLine[h_contIdx + 1]
-                    a_shisu = float(a_split4[0])    # 土壌雨量指数
-                    if (a_shisu > 0):
-                        # 0は意味がない
-                        a_rain = float(a_split4[h_lineIdx + 1])   # 解析雨量
-                        if (a_rain < h_dstRain) and (a_shisu > h_dstShisu):
-                            a_x[1] = h_dstShisu
-                            a_x[2] = a_shisu
-                            a_x[3] = a_shisu
-                            a_x[4] = h_dstShisu
-                            a_y[1] = h_dstRain
-                            a_y[2] = a_rain
-                            a_y[3] = h_dstRain
-                            a_y[4] = h_dstRain
-                            if (self._naigai(h_srcShisu, h_srcRain, a_x, a_y) == True):
-                                h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
-                                h_isOver[h_lineIdx] = True
-                else:
-                    if (h_srcShisu >= h_dstShisu):
-                        h_overSum[h_lineIdx] = h_overSum[h_lineIdx] + 1
-                        h_isOver[h_lineIdx] = True
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + "," + " ".join(map(str, exp.args)))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_checkOverRainfall', a_strErr + "," + sys.exc_info())
 
     # 超過をチェックする
     '''
@@ -2608,7 +2497,7 @@ class MakeOverRainfallByMesh():
                                 for a_cnt2 in range(0, 9):
                                     if (a_IsOver[a_cnt2] == False):
                                         a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                        self._checkOverRainfall(
+                                        self.com.CheckOverRainfall(
                                             h_meshNo,
                                             self.com.g_textline_ContourReviseByMesh,
                                             self.com.g_textSum_ContourReviseByMesh,
@@ -2638,6 +2527,9 @@ class MakeOverRainfallByMesh():
                         a_IsOver,
                         a_overTime
                     )
+
+                del self.com.g_textline_ChainOccurRainfallFile[:]
+                gc.collect()
 
             a_sw2.close()
             a_sw.close()
@@ -2745,7 +2637,21 @@ class MakeOverRainfallByMesh():
                                 for a_cnt2 in range(0, 9):
                                     if (a_IsOver[a_cnt2] == False):
                                         a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                        self._checkOverRainfall(h_meshNo, self.com.g_textline_ContourReviseByMesh, self.com.g_textSum_ContourReviseByMesh, a_cnt3, a_cnt2, a_shisu1, a_rain1, a_shisu3, a_rain3, h_overSum, a_IsOver, h_soilMin, h_rainMax)   # 60分積算雨量上限値の追加
+                                        self.com.CheckOverRainfall(
+                                            h_meshNo,
+                                            self.com.g_textline_ContourReviseByMesh,
+                                            self.com.g_textSum_ContourReviseByMesh,
+                                            a_cnt3,
+                                            a_cnt2,
+                                            a_shisu1,
+                                            a_rain1,
+                                            a_shisu3,
+                                            a_rain3,
+                                            h_overSum,
+                                            a_IsOver,
+                                            h_soilMin,
+                                            h_rainMax
+                                        )   # 60分積算雨量上限値の追加
                                         if (a_IsOver[a_cnt2] == True):
                                             a_overTime[a_cnt2] = a_nowTime
                                 # 空振り時間は超過しているもの全てをカウント
@@ -2754,7 +2660,7 @@ class MakeOverRainfallByMesh():
                                     if (a_IsOverW[a_cnt2] == False):
                                         a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
                                         #CheckOverWhiffTime(
-                                        self._checkOverRainfall(
+                                        self.com.CheckOverRainfall(
                                             h_meshNo,
                                             self.com.g_textline_ContourReviseByMesh,
                                             self.com.g_textSum_ContourReviseByMesh,
@@ -2778,7 +2684,8 @@ class MakeOverRainfallByMesh():
                                             else:
                                                 a_isOK = True
                                             if (a_isOK == True):
-                                                a_sw.write(a_split1[0] + "," + a_nowTime + "," + str((9 - a_cnt2) / 10) + '\n')
+                                                a_sw.write(a_split1[0] + "," + a_nowTime + "," + str(self.com.My_round((9 - a_cnt2) / 10, 1)) + '\n')
+                                                #a_sw.write(a_split1[0] + "," + a_nowTime + "," + str((9 - a_cnt2) / 10) + '\n')
                                                 a_IsExists = True   # 既にCLを越えている。
 
                 # 開始・終了時刻を出力
@@ -2788,6 +2695,9 @@ class MakeOverRainfallByMesh():
                         a_splitB2 = a_strEnd.split(",")
                         # 開始・終了時刻を出力
                         break
+
+                del self.com.g_textline_ChainOnlyOccurRainfallFile[:]
+                gc.collect()
 
             a_sw.close()
 
@@ -2932,7 +2842,21 @@ class MakeOverRainfallByMesh():
                                         for a_cnt2 in range(0, 9):
                                             if (a_IsOver[a_cnt2] == False):
                                                 a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                                self._checkOverRainfall(h_meshNo, self.com.g_textline_ContourReviseByMesh, self.com.g_textSum_ContourReviseByMesh, a_cnt3, a_cnt2, a_shisu1, a_rain1, a_shisu3, a_rain3, h_overSum, a_IsOver, h_soilMin, h_rainMax)   # 60分積算雨量上限値の追加
+                                                self.com.CheckOverRainfall(
+                                                    h_meshNo,
+                                                    self.com.g_textline_ContourReviseByMesh,
+                                                    self.com.g_textSum_ContourReviseByMesh,
+                                                    a_cnt3,
+                                                    a_cnt2,
+                                                    a_shisu1,
+                                                    a_rain1,
+                                                    a_shisu3,
+                                                    a_rain3,
+                                                    h_overSum,
+                                                    a_IsOver,
+                                                    h_soilMin,
+                                                    h_rainMax
+                                                )   # 60分積算雨量上限値の追加
                                                 if (a_IsOver[a_cnt2] == True):
                                                     if (a_IsFirstOccur == True):
                                                         a_firstOccurTime = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
@@ -2954,6 +2878,9 @@ class MakeOverRainfallByMesh():
                     a_IsOver,
                     a_overTime
                 )
+
+                del self.com.g_textline_OccurRainfallFile[:]
+                gc.collect()
 
             a_sw.close()
 
@@ -3099,7 +3026,21 @@ class MakeOverRainfallByMesh():
                                         for a_cnt2 in range(0, 9):
                                             if (a_IsOver[a_cnt2] == False):
                                                 a_rain3 = float(a_split3[a_cnt2 + 1])   # 解析雨量
-                                                self._checkOverRainfall(h_meshNo, self.com.g_textline_ContourReviseByMesh, self.com.g_textSum_ContourReviseByMesh, a_cnt3, a_cnt2, a_shisu1, a_rain1, a_shisu3, a_rain3, h_overSum, a_IsOver, h_soilMin, h_rainMax)   # 60分積算雨量上限値の追加
+                                                self.com.CheckOverRainfall(
+                                                    h_meshNo,
+                                                    self.com.g_textline_ContourReviseByMesh,
+                                                    self.com.g_textSum_ContourReviseByMesh,
+                                                    a_cnt3,
+                                                    a_cnt2,
+                                                    a_shisu1,
+                                                    a_rain1,
+                                                    a_shisu3,
+                                                    a_rain3,
+                                                    h_overSum,
+                                                    a_IsOver,
+                                                    h_soilMin,
+                                                    h_rainMax
+                                                )   # 60分積算雨量上限値の追加
                                                 if (a_IsOver[a_cnt2] == True):
                                                     if (a_overTime[a_cnt2] != ""):
                                                         a_overTime[a_cnt2] += ";"
@@ -3130,6 +3071,9 @@ class MakeOverRainfallByMesh():
                     a_overTime
                 )
 
+                del self.com.g_textline_OccurRainfallFile[:]
+                gc.collect()
+
             a_sw.close()
 
         except Exception as exp:
@@ -3137,103 +3081,6 @@ class MakeOverRainfallByMesh():
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getOverOccurRainfallSum9_2', a_strErr + "," + sys.exc_info())
-
-    def _naigai(self, r_X, r_Y, m_PXR, m_PYR):
-        a_bRet = False
-
-        try:
-            m_PXL = [0]*5
-            m_PYL = [0]*5
-
-            # 座標を反対並びにする
-            self._reSort(m_PXR, m_PYR, m_PXL, m_PYL)
-
-            if (self._naigaiR(r_X, r_Y, m_PXR, m_PYR) == True) or (self._naigaiL(r_X, r_Y, m_PXL, m_PYL) == True):
-                a_bRet = True
-            else:
-                a_bRet = False
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigai', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigai', sys.exc_info())
-
-        return a_bRet
-
-    def _naigaiL(self, r_X, r_Y, m_PXL, m_PYL):
-        a_bRet = False
-
-        try:
-            CT = 0
-            # 内外判定処理
-            for i in range(1, 4):
-                RX = r_X - m_PXL[i]
-                NX = r_X - m_PXL[i + 1]
-                if (RX < 0 and NX >= 0) or (RX >= 0 and NX < 0):
-                    RY = r_Y - m_PYL[i]
-                    DX = m_PXL[i + 1] - m_PXL[i]
-                    DY = m_PYL[i + 1] - m_PYL[i]
-                    if (RX * DY < RY * DX):
-                        CT = CT + 1
-                    else:
-                        CT = CT - 1
-            # １以上の場合は、ポリゴン内に含まれる
-            if CT > 0:
-                a_bRet = True
-            else:
-                a_bRet = False
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiL', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiL', sys.exc_info())
-
-        return a_bRet
-
-    def _naigaiR(self, r_X, r_Y, m_PXR, m_PYR):
-        a_bRet = False
-
-        try:
-            CT = 0
-            # 内外判定処理
-            for i in range(1, 4):
-                RX = r_X - m_PXR[i]
-                NX = r_X - m_PXR[i + 1]
-                if (RX < 0 and NX >= 0) or (RX >= 0 and NX < 0):
-                    RY = r_Y - m_PYR[i]
-                    DX = m_PXR[i + 1] - m_PXR[i]
-                    DY = m_PYR[i + 1] - m_PYR[i]
-                    if (RX * DY < RY * DX):
-                        CT = CT + 1
-                    else:
-                        CT = CT - 1
-            # １以上の場合は、ポリゴン内に含まれる
-            if CT > 0:
-                a_bRet = True
-            else:
-                a_bRet = False
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiR', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_naigaiR', sys.exc_info())
-
-        return a_bRet
-
-    def _reSort(self, m_PXR, m_PYR, m_PXL, m_PYL):
-        try:
-            for i in range(0, 4):
-                m_PXL[i + 1] = m_PXR[4 - i]
-                m_PYL[i + 1] = m_PYR[4 - i]
-
-        except Exception as exp:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_reSort', str(exp.args[0]))
-            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
-        except:
-            self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_reSort', sys.exc_info())
 
     def _writeChainOccurRainfall(
             self,
@@ -3693,14 +3540,15 @@ class MakeOverRainfallMix3_2():
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix8():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_kind,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_kind,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3840,7 +3688,8 @@ class MakeWhiff():
                     if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                         if (float(a_split1[a_cnt2]) != 0):
                             if (float(a_split2[a_cnt2]) != 0):
-                                a_sTmp = '%3.2f' % ((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100, 2))
+                                #a_sTmp = '%3.2f' % ((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -3858,13 +3707,18 @@ class MakeWhiff():
                         a_sCL = "-,-"
                     else:
                         # 既往CL取込あり
-                        if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                        if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                             a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + a_sCL
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverAllRainfallFile[:]
+            del self.com.g_textline_OverNonOccurRainfallFile[:]
+            gc.collect()
+
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -3940,7 +3794,8 @@ class MakeWhiff_New():
                         if (float(a_split1[a_cnt2]) != 0):
                             if (self.com.Str_isfloat(a_split2[a_cnt2]) == True):
                                 if (float(a_split2[a_cnt2]) != 0):
-                                    a_sTmp = '%3.2f' % ((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100)
+                                    a_sTmp = str(self.com.My_round((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100, 2))
+                                    #a_sTmp = '%3.1f' % ((float(a_split2[a_cnt2]) / float(a_split1[a_cnt2])) * 100)
                                 else:
                                     a_sTmp = "0"
                             else:
@@ -3960,13 +3815,17 @@ class MakeWhiff_New():
                         a_sCL = "-,-"
                     else:
                         # 既往CL取込あり
-                        if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                        if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                             a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + a_sCL
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverAllRainfallFile[:]
+            del self.com.g_textline_OverNonOccurRainfall9_1File[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiff_New-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -4025,6 +3884,7 @@ class MakeWhiffFrequency():
 
             # 該当メッシュの対象期間を算出する
             a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, self.meshList[0])
+            a_tyear = int(self.com.My_round(a_tyear, 0))
             for a_cnt1 in range(1, self.com.g_textSum_OverNonOccurRainfallFile):
                 a_split1 = self.com.g_textline_OverNonOccurRainfallFile[a_cnt1]
                 a_writeline = a_split1[0]
@@ -4034,7 +3894,8 @@ class MakeWhiffFrequency():
                     if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                         if (float(a_split1[a_cnt2]) != 0):
                             if (a_tyear > 0):
-                                a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_tyear) * 100, 2))
+                                #a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -4055,6 +3916,9 @@ class MakeWhiffFrequency():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverNonOccurRainfallFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -4113,6 +3977,7 @@ class MakeWhiffFrequency_New():
 
             # 該当メッシュの対象期間を算出する
             a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, self.meshList[0])
+            a_tyear = int(self.com.My_round(a_tyear, 0))
             for a_cnt1 in range(1, self.com.g_textSum_OverNonOccurRainfall9_1File):
                 a_split1 = self.com.g_textline_OverNonOccurRainfall9_1File[a_cnt1]
                 a_writeline = a_split1[0]
@@ -4122,7 +3987,8 @@ class MakeWhiffFrequency_New():
                     if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                         if (float(a_split1[a_cnt2]) != 0):
                             if (a_tyear > 0):
-                                a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_tyear), 2))
+                                #a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -4135,7 +4001,7 @@ class MakeWhiffFrequency_New():
                         a_sCL = "-,-"
                     else:
                         # 既往CL取込あり
-                        if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                        if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                             a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_tyear)
@@ -4143,6 +4009,9 @@ class MakeWhiffFrequency_New():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_OverNonOccurRainfall9_1File[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffFrequency_New-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -4201,6 +4070,7 @@ class MakeWhiffTime():
 
             # 該当メッシュの対象期間を算出する
             a_tyear = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear, self.com.g_OutPath, self.meshList[0])
+            a_tyear = int(self.com.My_round(a_tyear, 0))
             for a_cnt1 in range(1, self.com.g_textSum_WhiffTimeFile):
                 a_split1 = self.com.g_textline_WhiffTimeFile[a_cnt1]
                 a_writeline = a_split1[0]
@@ -4210,7 +4080,8 @@ class MakeWhiffTime():
                     if (self.com.Str_isfloat(a_split1[a_cnt2]) == True):
                         if (float(a_split1[a_cnt2]) != 0):
                             if (a_tyear > 0):
-                                a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
+                                a_sTmp = str(self.com.My_round((float(a_split1[a_cnt2]) / a_tyear), 2))
+                                #a_sTmp = '%10.2f' % ((float(a_split1[a_cnt2]) / a_tyear) * 100)
                             else:
                                 a_sTmp = "0"
                         else:
@@ -4223,7 +4094,7 @@ class MakeWhiffTime():
                         a_sCL = "-,-"
                     else:
                         # 既往CL取込あり
-                        if (str(1 - (a_cnt2) / 10) == a_split1[11]):
+                        if (str(self.com.My_round(1 - (a_cnt2) / 10, 1)) == a_split1[11]):
                             a_sCL = a_sTmp + "," + a_split1[11]
 
                 a_writeline += "," + str(a_tyear)
@@ -4231,6 +4102,9 @@ class MakeWhiffTime():
                 a_sw.write(a_writeline + "\n")
 
             a_sw.close()
+
+            del self.com.g_textline_WhiffTimeFile[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeWhiffTime-run', a_strErr + "," + " ".join(map(str, exp.args)))

@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 import shutil
 import com_functions
 import threading
+import gc
 
 # 降雨超過数を作成する
 class MakeContourByMesh():
@@ -18,6 +19,7 @@ class MakeContourByMesh():
     prv_rightMargin = 148.0
     prv_bottomMargin = 53.333333333333336
 
+    '''
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
@@ -30,8 +32,9 @@ class MakeContourByMesh():
                  h_soilMin,
                  h_rainMax
                  ):
-        '''
-        def __init__(self,
+                 '''
+
+    def __init__(self,
                      h_proc_num,
                      h_ini_path,
                      h_meshNo,
@@ -40,7 +43,7 @@ class MakeContourByMesh():
                      h_soilMin,
                      h_rainMax
                      ):
-            '''
+
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -49,12 +52,14 @@ class MakeContourByMesh():
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
 
+        '''
         self.com.g_textline_DisasterFile = h_DisasterFile
         self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile
         self.com.g_textline_TargetMeshFile = h_TargetMeshFile
         self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
         self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+        '''
 
         self.meshNo = h_meshNo
         self.kind = h_kind
@@ -62,16 +67,20 @@ class MakeContourByMesh():
         self.soilMin = h_soilMin
         self.rainMax = h_rainMax
 
+        self.isProc = False
+        if (self.meshNo != ""):
+            #proc
+            self.isProc = True
+
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
         self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
-        '''
 
-        self.run()  # multiprocess
+        if (self.isProc == True):
+            self.run()  # multiprocess
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path + ",meshNo=" + self.meshNo
@@ -314,6 +323,9 @@ class MakeContourByMesh():
                 a_sw.write("\n")
                 #a_sw.write(a_textline[a_cnt1] + "\n")
             a_sw.close()
+
+            del a_textline[:]
+            gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_contourRevise', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -830,6 +842,13 @@ class MakeContourByMesh():
                     )
                 )
 
+            del a_textline[:]
+            del a_drawInfo[:]
+            del a_occurColor[:]
+            del a_occurTime[:]
+            del a_occurMark[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawContour', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
@@ -1076,6 +1095,9 @@ class MakeContourByMesh():
 
                         a_iCnt2 += 1
 
+            del a_textline[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawLegendS', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
@@ -1110,6 +1132,9 @@ class MakeContourByMesh():
                         fill=a_fill,
                         outline=a_outline
                     )
+
+                del a_textline[:]
+                gc.collect()
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawNonOccurRainFall', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -1207,11 +1232,12 @@ class MakeContourByMesh():
             a_nextLine = 1
 
             del occurColor[:]
-            occurColor.append([0]*3)
-            #occurColor = [[0]*3]*a_textSum2
-
             del h_occurTime[:]
             del h_occurMark[:]
+            gc.collect()
+
+            occurColor.append([0]*3)
+            #occurColor = [[0]*3]*a_textSum2
 
             a_pen_style = a_lineStyle[0]
             a_pen_color = (a_colorRGB[0][0], a_colorRGB[0][1], a_colorRGB[0][2])
@@ -1386,6 +1412,9 @@ class MakeContourByMesh():
                 if (a_IsPlot == True):
                     a_nextLine = a_nowLine + 1
 
+                del a_textline[:]
+                gc.collect()
+
             a_iMark = 0
             for a_cnt2 in range(0, a_textSum2):
                 a_split2 = a_textline2[a_cnt2].split(",")
@@ -1467,6 +1496,9 @@ class MakeContourByMesh():
                                 outline=(0, 0, 0)
                             )
 
+            del a_textline2[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_drawOccurRainFall', a_strErr + "," + " ".join(map(str, exp.args)))
         except:
@@ -1527,6 +1559,7 @@ class MakeContourByMesh():
 
         try:
             del h_drawInfo[:]
+            gc.collect()
 
             a_iCnt2 = 0
             a_IsOK = False
@@ -1559,6 +1592,7 @@ class MakeContourByMesh():
                                 h_drawInfo[a_iCnt] = a_split1[a_iCnt]
                     else:
                         del h_drawInfo[:]
+                        gc.collect()
                     break
 
         except Exception as exp:
