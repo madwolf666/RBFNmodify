@@ -8,8 +8,9 @@ import math
 import csv
 import xlrd
 import openpyxl as px
-import com_functions
 import threading
+import numba
+import com_functions
 
 prv_xlWkb = None
 
@@ -19,6 +20,7 @@ class MakeBlockAll():
     g_blockNameList = []
     g_blockNoList = []
 
+    #@numba.jit
     def __init__(self,
                  h_proc_num,
                  h_ini_path
@@ -43,9 +45,10 @@ class MakeBlockAll():
 
         self.run()  # multiprocess
 
+    #@numba.jit
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
-        self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'MakeBlockAll-run', a_strErr)
+        self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeBlockAll', "start")
 
         try:
             a_retsu, a_gyo = self._getBlockList()
@@ -53,34 +56,36 @@ class MakeBlockAll():
 
             # 集計結果ファイルを読み込み、ブロック毎に集計し直す。
             # 一連の発生降雨
-            #self._makeRainfallByBlock()
+            self._makeRainfallByBlock()
             # 災害発生降雨
             self._makeOccurRainfallByBlock()
             # 非発生降雨
-            #self._makeNonOccurRainfallByBlock()
+            self._makeNonOccurRainfallByBlock()
             # 一連の発生降雨
-            #self._makeRainfall2ByBlock()
+            self._makeRainfall2ByBlock()
             # 災害発生降雨
-            #self._makeOccurRainfall2ByBlock()
+            self._makeOccurRainfall2ByBlock()
             # 空振り時間
-            #self._makeWiffTimeByBlock()
+            self._makeWiffTimeByBlock()
             # 発生降雨超過数【災害捕捉率】
-            #self._makeOccurRainfall9_1ByBlock()
+            self._makeOccurRainfall9_1ByBlock()
             # 災害発生件数【災害捕捉率】
-            #self._makeOccurRainfall9_2ByBlock()
+            self._makeOccurRainfall9_2ByBlock()
             # 警戒情報リードタイム
-            #self._makeReadTimeByBlock(self.com.g_CalcCautionAnnounceReadTimeSymbolByBlock)
+            self._makeReadTimeByBlock(self.com.g_CalcCautionAnnounceReadTimeSymbolByBlock)
             # RBFN越リードタイム
-            #self._makeReadTimeByBlock(self.com.g_CalcRBFNReadTimeSymbolByBlock)
+            self._makeReadTimeByBlock(self.com.g_CalcRBFNReadTimeSymbolByBlock)
 
-            #self._makeStatisticsByBlock()
+            self._makeStatisticsByBlock()
 
             # ①土砂災害警戒情報の災害捕捉率、③土砂災害警戒情報の発表頻度
-            #self._makeStatisticsByBlock2()
+            self._makeStatisticsByBlock2()
             # ②土砂災害警戒情報のリードタイム
-            #self._makeStatisticsByBlock3_1()
+            self._makeStatisticsByBlock3_1()
             # ⑥RBFN越のリードタイム
-            #self._makeStatisticsByBlock3_2()
+            self._makeStatisticsByBlock3_2()
+
+            self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, 'MakeBlockAll', "end")
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -88,6 +93,7 @@ class MakeBlockAll():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + sys.exc_info())
 
+    @numba.jit
     def _getBlockList(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getBlockList-run', a_strErr)
@@ -145,13 +151,14 @@ class MakeBlockAll():
         return a_restu, a_gyo
 
     # 空振り率を作成する
+    #@numba.jit
     def _makeForecastPredictiveByBlock(self, h_sw, h_meshList):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeForecastPredictiveByBlock', a_strErr)
 
         try:
             a_textline1 = []
-            a_textSum1 = self.com.Store_DataFile(self.com.g_OutPath + "\\" + self.com.g_CalcForecastPredictiveSymbol + "【ブロック】-" + (self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", a_textline1)
+            a_textSum1 = self.com.Store_DataFile(self.com.g_OutPath + "\\" + self.com.g_CalcForecastPredictiveSymbol + "【ブロック】-" + str(self.com.g_TargetStartYear) + "-" + str(self.com.g_TargetEndYear) + ".csv", a_textline1)
             a_FSum = 0    # 予測超過メッシュ数
             a_PSum = 0    # 予測適中メッシュ数
             a_sTmp = ""
@@ -187,10 +194,11 @@ class MakeBlockAll():
                         break
 
             if (a_FSum > 0) and (a_PSum > 0):
-                a_sTmp = "%3,1f" % ((float(a_PSum) /float(a_FSum)) * 100) + ",予測適中メッシュ数⇒," + str(a_PSum) + ",予測超過メッシュ数⇒," + str(a_FSum)
+                a_sTmp = str(self.com.My_round((float(a_PSum) /float(a_FSum)) * 100, 1)) + ",予測適中メッシュ数⇒," + str(a_PSum) + ",予測超過メッシュ数⇒," + str(a_FSum)
+                #a_sTmp = "%3,1f" % ((float(a_PSum) /float(a_FSum)) * 100) + ",予測適中メッシュ数⇒," + str(a_PSum) + ",予測超過メッシュ数⇒," + str(a_FSum)
             else:
                 a_sTmp = "0"
-            h_sw.write("予測適中率,", a_sTmp + "\n")
+            h_sw.write("予測適中率," + a_sTmp + "\n")
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -199,6 +207,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeForecastPredictiveByBlock', a_strErr + "," + sys.exc_info())
 
     # 非発生降雨
+    #@numba.jit
     def _makeNonOccurRainfallByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeNonOccurRainfallByBlock', a_strErr)
@@ -208,12 +217,12 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
                 # 災害発生降雨データをメモリに退避
                 a_textlineC = []
-                a_textSumC = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineC)
+                a_textSumC = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineC)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOnlyOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOnlyOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1\n")
 
                 for a_cnt3 in range(1, a_textSumR):
@@ -237,7 +246,7 @@ class MakeBlockAll():
                             a_IsOK = True
 
                     if (a_IsOK == True):
-                        a_sw.write(a_textlineR[a_cnt3])
+                        self.com.Write_TextLine(a_sw, a_textlineR[a_cnt3])
                         a_sw.write("\n")
 
                 a_sw.close()
@@ -249,6 +258,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeNonOccurRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生降雨
+    #@numba.jit
     def _makeOccurRainfallByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfallByBlock', a_strErr)
@@ -353,6 +363,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生降雨
+    #@numba.jit
     def _makeOccurRainfall2ByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall2ByBlock', a_strErr)
@@ -362,12 +373,11 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfall2SymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OccurRainfall2SymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,メッシュ番号,災害発生時刻\n")
 
-                a_bIsSet = [False]*a_textSumR
                 a_index = []
                 a_sTime = []
                 a_eTime = []
@@ -406,9 +416,9 @@ class MakeBlockAll():
                                                 a_IsOK = True
                                             else:
                                                 a_IsOK = False
-                                                if (a_tmpTime < a_OTime[a_rSum]):
-                                                    a_OTime[a_rSum] = a_tmpTime
-                                                    a_OMeshNo[a_rSum] = a_splitD2[0]
+                                                if (a_tmpTime < a_OTime[len(a_OTime) - 1]):
+                                                    a_OTime[len(a_OTime) - 1] = a_tmpTime
+                                                    a_OMeshNo[len(a_OMeshNo) - 1] = a_splitD2[0]
                                             break
 
                                     if (a_IsOK == True):
@@ -421,8 +431,8 @@ class MakeBlockAll():
 
                                         for a_cnt5 in range(9, 18):
                                             if (a_splitR[a_cnt5] != ""):
-                                                a_CLTime[a_rSum][a_cnt5 - 9] = datetime.datetime.strptime(a_splitR[a_cnt5], '%Y/%m/%d %H:%M')
-                                                a_MeshNo[a_rSum][a_cnt5 - 9] = a_meshList[a_cnt3]
+                                                a_CLTime[len(a_CLTime) - 1][a_cnt5 - 9] = datetime.datetime.strptime(a_splitR[a_cnt5], '%Y/%m/%d %H:%M')
+                                                a_MeshNo[len(a_MeshNo) - 1][a_cnt5 - 9] = a_meshList[a_cnt3]
 
                                         a_OMeshNo.append(a_splitD2[0])
                                         a_OTime.append(a_tmpTime)
@@ -458,6 +468,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 発生降雨超過数【災害捕捉率】
+    #@numba.jit
     def _makeOccurRainfall9_1ByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall9_1ByBlock', a_strErr)
@@ -467,9 +478,9 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OverOccurRainFallNum9_1TimeSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),メッシュ番号,災害発生時刻\n")
 
                 a_bIsSet = [False]*a_textSumR
@@ -555,6 +566,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_1ByBlock', a_strErr + "," + sys.exc_info())
 
     # 災害発生件数【災害捕捉率】
+    #@numba.jit
     def _makeOccurRainfall9_2ByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeOccurRainfall9_2ByBlock', a_strErr)
@@ -564,9 +576,9 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_OverOccurRainFallNum9_2TimeSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),メッシュ番号,災害発生時刻\n")
 
                 a_bIsSet = [False]*a_textSumR
@@ -617,7 +629,7 @@ class MakeBlockAll():
                                                 # 既に同一範囲内でヒットしている場合
                                                 if (a_split1[18] != ""):    # 災害時刻
                                                     #a_split1(18)には「;」区切りで複数の災害時刻がある為、バラしてチェック
-                                                    a_splitSepCL = a_CLTime[a_rSum].split(";")
+                                                    a_splitSepCL = a_CLTime[len(a_CLTime) - 1].split(";")
                                                     a_splitSep1 = a_split1[18].split(";")
                                                     a_IsExists = False
                                                     a_AddMesh = False
@@ -636,8 +648,8 @@ class MakeBlockAll():
                                                                 break
                                                         if (a_IsExists == False):
                                                             # 同一時刻でない災害
-                                                            a_MeshNo[a_rSum] += ";" + a_meshList[a_cnt3]
-                                                            a_CLTime[a_rSum] += ";" + str(a_tmpTime1.year) + "/" + str(a_tmpTime1.month) + "/" + str(a_tmpTime1.day) + " " + str(a_tmpTime1.hour) + ":" + str(a_tmpTime1.minute).rjust(2, "0")
+                                                            a_MeshNo[len(a_MeshNo) - 1] += ";" + a_meshList[a_cnt3]
+                                                            a_CLTime[len(a_CLTime) - 1] += ";" + str(a_tmpTime1.year) + "/" + str(a_tmpTime1.month) + "/" + str(a_tmpTime1.day) + " " + str(a_tmpTime1.hour) + ":" + str(a_tmpTime1.minute).rjust(2, "0")
 
                                     if (a_IsOK == True):
                                         a_index.append(a_splitR[0])
@@ -645,13 +657,13 @@ class MakeBlockAll():
                                         a_eTime.append(a_noweTime)
                                         a_CLTime.append(a_split1[18])   # 災害時刻
 
-                                        a_splitSepCL = a_CLTime[a_rSum].aplit(";")
+                                        a_splitSepCL = a_CLTime[len(a_CLTime) - 1].split(";")
                                         a_splitNum = 0
                                         a_MeshNo.append("")
                                         for a_splitNum in range(0, len(a_splitSepCL)):
                                             if (a_splitNum > 0):
-                                                a_MeshNo[a_rSum] += ";"
-                                            a_MeshNo[a_rSum] += a_meshList[a_cnt3]
+                                                a_MeshNo[len(a_MeshNo) - 1] += ";"
+                                            a_MeshNo[len(a_MeshNo) - 1] += a_meshList[a_cnt3]
 
                                         a_bIsSet[a_cnt4] = True     # ★重複カウント不具合
                                         a_rSum += 1
@@ -677,6 +689,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeOccurRainfall9_2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 一連の発生降雨
+    #@numba.jit
     def _makeRainfallByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeRainfallByBlock', a_strErr)
@@ -824,6 +837,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + "," + sys.exc_info())
 
     # 一連の発生降雨
+    #@numba.jit
     def _makeRainfall2ByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeRainfall2ByBlock', a_strErr)
@@ -831,10 +845,9 @@ class MakeBlockAll():
         try:
             a_blockSum = len(self.g_blockNameList)
             for a_cnt1 in range(0, a_blockSum):
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfall2SymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfall2SymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,メッシュ番号(開始),メッシュ番号(終了)\n")
 
-                a_bIsSet = [False]*a_textSumR
                 a_sTime = []
                 a_eTime = []
                 a_CLTime = []
@@ -969,6 +982,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfall2ByBlock', a_strErr + "," + sys.exc_info())
 
     # 警戒情報リードタイム/RBFN越リードタイム
+    #@numba.jit
     def _makeReadTimeByBlock(self, h_sKind):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeReadTimeByBlock', a_strErr)
@@ -987,9 +1001,9 @@ class MakeBlockAll():
             for a_cnt1 in range(0, a_blockSum):
                 # 一連の降雨データをメモリに退避
                 a_textlineR = []
-                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", a_textlineR)
+                a_textSumR = self.com.Store_DataFile(self.com.g_OutPath + "\\block\\" + self.com.g_ChainOccurRainfallSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", a_textlineR)
 
-                a_sw = open(self.com.g_OutPath + "\\block\\" + h_sKind + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + h_sKind + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("データ番号,年(S),月(S),日(S),時(S),年(E),月(E),日(E),時(E),メッシュ番号,年,月,日,時,メッシュ番号,年,月,日,時,リードタイム")
                 if (h_sKind == self.com.g_CalcRBFNReadTimeSymbolByBlock):
                     a_sw.write(",RBFN値")
@@ -1035,23 +1049,23 @@ class MakeBlockAll():
                                                 a_IsOK = True
                                             else:
                                                 a_IsOK = False
-                                                if (a_tmpTime1 < a_RTimeS[a_rSum]):
+                                                if (a_tmpTime1 < a_RTimeS[len(a_RTimeS) - 1]):
                                                     # リードタイムはブロック内の最速超過メッシュと最速災害発生時刻の差
-                                                    a_MeshNoS[a_rSum] = a_splitD2[0]
-                                                    a_RTimeS[a_rSum] = a_tmpTime1
-                                                    a_RTimeV[a_rSum] = a_splitD2[9]
+                                                    a_MeshNoS[len(a_MeshNoS) - 1] = a_splitD2[0]
+                                                    a_RTimeS[len(a_RTimeS) - 1] = a_tmpTime1
+                                                    a_RTimeV[len(a_RTimeV) - 1] = a_splitD2[9]
                                                     if (h_sKind == self.com.g_CalcRBFNReadTimeSymbolByBlock):
-                                                        a_RBFN[a_rSum] = a_splitD2[10]
+                                                        a_RBFN[len(a_RBFN) - 1] = a_splitD2[10]
                                                 #elif (a_tmpTime1 == a_RTimeS[a_rSum]):
                                                 #    # 同じ開始時刻
 
                                                 # リードタイムはブロック内の最速超過メッシュと最速災害発生時刻の差
-                                                if (a_tmpTime2 < a_RTimeE[a_rSum]):
-                                                    a_MeshNoE[a_rSum] = a_splitD2[0]
-                                                    a_RTimeE[a_rSum] = a_tmpTime2
+                                                if (a_tmpTime2 < a_RTimeE[len(a_RTimeE) - 1]):
+                                                    a_MeshNoE[len(a_MeshNoE) - 1] = a_splitD2[0]
+                                                    a_RTimeE[len(a_RTimeE) - 1] = a_tmpTime2
 
-                                                a_delta = a_RTimeE[a_rSum] - a_RTimeS[a_rSum]
-                                                a_RTimeV[a_rSum] = a_delta.total.minutes()
+                                                a_delta = a_RTimeE[len(a_RTimeE) - 1] - a_RTimeS[len(a_RTimeS) - 1]
+                                                a_RTimeV[len(a_RTimeV) - 1] = str(self.com.My_round(a_delta.total_seconds() / 60, 0))
                                                 break
 
                                     if (a_IsOK == True):
@@ -1098,6 +1112,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeReadTimeByBlock', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理
+    #@numba.jit
     def _makeStatisticsByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock', a_strErr)
@@ -1185,7 +1200,7 @@ class MakeBlockAll():
                     a_sw.write("災害捕捉率")
                     for a_cnt2 in range(1, 10):
                         if a_c[a_cnt2 -1] > 0 and a_cSum > 0:
-                            a_sw.write("," + str((float(a_c[a_cnt2]) / float(a_cSum)) * 100))
+                            a_sw.write("," + str((float(a_c[a_cnt2 - 1]) / float(a_cSum)) * 100))
                         else:
                             a_sw.write(",0")
                     a_sw.write("\n")
@@ -1199,6 +1214,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock', a_strErr + "," + sys.exc_info())
 
     # ブロック毎集計処理2
+    #@numba.jit
     def _makeStatisticsByBlock2(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock2', a_strErr)
@@ -1235,7 +1251,7 @@ class MakeBlockAll():
                             a_dKikan = self.com.GetTargetYearByMesh(self.com.g_TargetStartYear, self.com.g_TargetEndYear,self.com.g_OutPath, a_splitB[a_cnt2])
                             break
 
-                    a_sw.write(self.g_blockNameList[a_cnt1])
+                    a_sw.write(self.g_blockNameList[a_cnt1] + "\n")
                     a_sw.write(",any")
 
                     # 災害発生降雨の読込
@@ -1373,7 +1389,7 @@ class MakeBlockAll():
                     # 警戒情報の災害捕捉率【件数】
                     if (a_meshNo != ""):
                         a_sw.write("警戒情報の災害捕捉率【件数】" + "," + str((a_Sum / a_SaigaiSum) * 100))
-                        a_sw.write(",警戒発表中の災害件数⇒," + a_Sum.ToString() + ",災害発生件数⇒," + str(a_SaigaiSum))
+                        a_sw.write(",警戒発表中の災害件数⇒," + str(a_Sum) + ",災害発生件数⇒," + str(a_SaigaiSum))
                         a_sw.write(",災害時刻⇒")
                         for a_cntD in range(0, a_Sum):
                             a_sw.write("," + a_findKOSMsno[a_cntD] + "#" + a_findKOSTime[a_cntD])
@@ -1581,6 +1597,7 @@ class MakeBlockAll():
 
     # ブロック毎集計処理3
     # ②土砂災害警戒情報のリードタイム
+    #@numba.jit
     def _makeStatisticsByBlock3_1(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock3_1', a_strErr)
@@ -1633,6 +1650,7 @@ class MakeBlockAll():
 
     # ブロック毎集計処理3
     # ⑥RBFN越のリードタイム
+    #@numba.jit
     def _makeStatisticsByBlock3_2(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeStatisticsByBlock3_2', a_strErr)
@@ -1684,6 +1702,7 @@ class MakeBlockAll():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeStatisticsByBlock3_2', a_strErr + "," + sys.exc_info())
 
     # 空振り時間
+    #@numba.jit
     def _makeWiffTimeByBlock(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeWiffTimeByBlock', a_strErr)
@@ -1691,7 +1710,7 @@ class MakeBlockAll():
         try:
             a_blockSum = len(self.g_blockNameList)
             for a_cnt1 in range(0, a_blockSum):
-                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_WhiffTimeSymbolByBlock + "-" + self.blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
+                a_sw = open(self.com.g_OutPath + "\\block\\" + self.com.g_WhiffTimeSymbolByBlock + "-" + self.g_blockNameList[a_cnt1] + ".csv", "w", encoding="shift_jis")
                 a_sw.write("年,月,日,時,meshNO\n")
 
                 a_index = []
@@ -1730,7 +1749,7 @@ class MakeBlockAll():
                             break
 
                 for a_cnt3 in range(0, a_rSum):
-                    a_sw.write("," + str(a_wTime[a_cnt3].year) + "/" + str(a_wTime[a_cnt3].month) + "/" + str(a_wTime[a_cnt3].day) + " " + str(a_wTime[a_cnt3].hour) + ":" + str(a_wTime[a_cnt3].minute).rjust(2, "0"))
+                    a_sw.write(str(a_wTime[a_cnt3].year) + "/" + str(a_wTime[a_cnt3].month) + "/" + str(a_wTime[a_cnt3].day) + " " + str(a_wTime[a_cnt3].hour) + ":" + str(a_wTime[a_cnt3].minute).rjust(2, "0"))
                     a_sw.write("," + a_wMeshNo[a_cnt3])
 
                     a_sw.write("\n")
