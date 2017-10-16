@@ -450,10 +450,10 @@ class ComFunctions:
             a_newDate=datetime.datetime.strptime(a_newDataStr, "%Y/%m/%d")
             return True
         except Exception as exp:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + " ".join(map(str, exp.args)))
             return False
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + sys.exc_info())
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'CheckDate', a_strErr + "," + sys.exc_info())
             return False
 
     # 超過をチェックする
@@ -1110,7 +1110,7 @@ class ComFunctions:
         a_strErr = "year=" + str(h_tyear) + ',msno=' + h_msno
         self.Outputlog(self.g_LOGMODE_TRACE1, 'GetTargetMeshNoByCL', a_strErr)
 
-        a_msno = ''
+        a_msno = h_msno
 
         try:
             if (self.g_TargetRainMesh == 1):
@@ -1710,12 +1710,10 @@ class ComFunctions:
 
         #except ValueError as err:
         except Exception as exp:
-            #self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]' + str(err), a_strErr)
-            #self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + str(exp.args[0]))
-            self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_ERROR, '[Str_isfloat]', a_strErr + "," + " ".join(map(str, exp.args)))
             return False
         except:
-            self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + "," + sys.exc_info())
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Str_isfloat', a_strErr + "," + sys.exc_info())
             return False
 
     def Write_TextLine(self, h_sw, h_textline):

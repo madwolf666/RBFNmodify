@@ -8,9 +8,9 @@ import math
 import csv
 from PIL import Image, ImageDraw, ImageFont
 import shutil
-import com_functions
 import threading
 import gc
+import com_functions
 
 # 降雨超過数を作成する
 class MakeContourByMesh():

@@ -93,7 +93,7 @@ class MakeBlockAll():
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeBlockAll-run', a_strErr + "," + sys.exc_info())
 
-    @numba.jit
+    #@numba.jit
     def _getBlockList(self):
         a_strErr = ""
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getBlockList-run', a_strErr)
@@ -311,9 +311,9 @@ class MakeBlockAll():
                                                 a_IsOK = True
                                             else:
                                                 a_IsOK = False
-                                                if (a_tmpTime < a_OTime[a_rSum - 1]):
-                                                    a_OTime[a_rSum - 1] = a_tmpTime
-                                                    a_OMeshNo[a_rSum - 1] = a_splitD2[0]
+                                                if (a_tmpTime < a_OTime[len(a_OTime) - 1]):
+                                                    a_OTime[len(a_OTime) - 1] = a_tmpTime
+                                                    a_OMeshNo[len(a_OMeshNo) - 1] = a_splitD2[0]
                                                 break
 
                                     if (a_IsOK == True):
@@ -326,8 +326,8 @@ class MakeBlockAll():
 
                                         for a_cnt5 in range(9, 18):
                                             if (a_splitR[a_cnt5] != ""):
-                                                a_CLTime[a_rSum][a_cnt5 - 9] = datetime.datetime.strptime(a_splitR[a_cnt5], '%Y/%m/%d %H:%M')
-                                                a_MeshNo[a_rSum][a_cnt5 - 9] = a_meshList[a_cnt3]
+                                                a_CLTime[len(a_CLTime) - 1][a_cnt5 - 9] = datetime.datetime.strptime(a_splitR[a_cnt5], '%Y/%m/%d %H:%M')
+                                                a_MeshNo[len(a_MeshNo) - 1][a_cnt5 - 9] = a_meshList[a_cnt3]
 
                                         a_OMeshNo.append(a_splitD2[0])
                                         a_OTime.append(a_tmpTime)
@@ -771,12 +771,12 @@ class MakeBlockAll():
 
                                 for a_cnt2 in range(9, 18):
                                     if (a_split1[a_cnt2] != ""):
-                                        a_CLTime[a_rSum][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2], '%Y/%m/%d %H:%M')
-                                        a_MeshNo[a_rSum][a_cnt2 - 9] = a_meshList[a_cnt3]
+                                        a_CLTime[len(a_CLTime) -1 ][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2], '%Y/%m/%d %H:%M')
+                                        a_MeshNo[len(a_MeshNo) - 1][a_cnt2 - 9] = a_meshList[a_cnt3]
 
-                                a_rMeshNoS[a_rSum] = a_meshList[a_cnt3]
-                                a_rMeshNoE[a_rSum] = a_meshList[a_cnt3]
-                                a_chkOK[a_rSum] = True
+                                a_rMeshNoS[len(a_rMeshNoS) - 1] = a_meshList[a_cnt3]
+                                a_rMeshNoE[len(a_rMeshNoE) - 1] = a_meshList[a_cnt3]
+                                a_chkOK[len(a_chkOK) - 1] = True
                                 a_rSum += 1
                             else:
                                 # 異なる範囲のものが繋がる可能性があった。
@@ -835,6 +835,7 @@ class MakeBlockAll():
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeRainfallByBlock', a_strErr + "," + sys.exc_info())
+
 
     # 一連の発生降雨
     #@numba.jit
@@ -913,15 +914,18 @@ class MakeBlockAll():
 
                                 a_CLTime.append([None]*9)
                                 a_MeshNo.append([""]*9)
+                                a_rMeshNoS.append("")
+                                a_rMeshNoE.append("")
+                                a_chkOK.append(False)
 
                                 for a_cnt2 in range(9, 18):
                                     if (a_split1[a_cnt2] != ""):
-                                        a_CLTime[a_rSum][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2])
-                                        a_MeshNo[a_rSum][a_cnt2 - 9] = a_meshList[a_cnt3]
+                                        a_CLTime[len(a_CLTime) - 1][a_cnt2 - 9] = datetime.datetime.strptime(a_split1[a_cnt2])
+                                        a_MeshNo[len(a_MeshNo) - 1][a_cnt2 - 9] = a_meshList[a_cnt3]
 
-                                a_rMeshNoS[a_rSum] = a_meshList[a_cnt3]
-                                a_rMeshNoE[a_rSum] = a_meshList[a_cnt3]
-                                a_chkOK[a_rSum] = True
+                                a_rMeshNoS[len(a_rMeshNoS) - 1] = a_meshList[a_cnt3]
+                                a_rMeshNoE[len(a_rMeshNoE) - 1] = a_meshList[a_cnt3]
+                                a_chkOK[len(a_chkOK) - 1] = True
                                 a_rSum += 1
                             else:
                                 # 異なる範囲のものが繋がる可能性があった。

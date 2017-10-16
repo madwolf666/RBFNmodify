@@ -180,8 +180,8 @@ class Main(wx.Frame):
             self.g_button_13_2.Enabled = False
             self.g_button_13_3.Enabled = False
             self.g_button_13_4.Enabled = False
-            self._makeContour()
-            #self._makeContour_proc()
+            #self._makeContour()
+            self._makeContour_proc()
             wx.MessageBox("RBFN出力値からの等高線作成が完了しました。", g_System_Title)
             self._enable_MenuBar(True)
             self.g_button_13_1.Enabled = True
@@ -325,6 +325,8 @@ class Main(wx.Frame):
             self.g_button_11_2.Enabled = True
             self._get_environ()
             self._set_title("■RBFNプログラム用入力データ作成")
+            if (self.g_listBox_11.GetItemCount() > 0):
+                self.g_listBox_11.DeleteAllItems()
             self.g_panel_11.Show()
         elif event_id == 12:
             # RBFNプログラムの起動
@@ -357,7 +359,9 @@ class Main(wx.Frame):
             self._get_environ()
             self._set_title("■ブロック集計")
             if (wx.MessageBox("ブロック集計を行います。\n集計には時間がかかります。", g_System_Title, wx.YES_NO) == wx.YES):
+                self._enable_MenuBar(False)
                 self._makeBlockAll()
+                self._enable_MenuBar(True)
                 wx.MessageBox("ブロック集計が完了しました！", g_System_Title)
                 # ブロック集計
                 self.g_panel_23.Show()
@@ -619,8 +623,8 @@ class Main(wx.Frame):
 
         # RBFNデータ入力
 
-        #for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
-        for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
+        for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
+        #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
             print('***a_year=' + str(a_year))
 
             self.prv_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
@@ -1133,8 +1137,8 @@ class Main(wx.Frame):
         # 全降雨の超過数
         # 非発生降雨の超過数
         # 発生降雨の超過数
-        #self._makeOverRainfall()
-        #self._makeOverRainfallMix()
+        self._makeOverRainfall()
+        self._makeOverRainfallMix()
         self.g_listBox_13_2.SetItem(0, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1145,7 +1149,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         #災害捕捉率
-        #self._makeDisasterSupplement()
+        self._makeDisasterSupplement()
         self.g_listBox_13_2.SetItem(1, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(1, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1156,9 +1160,9 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り率
-        #self._makeWiff()
+        self._makeWiff()
         # 空振り率2
-        #self._makeWiff_New()
+        self._makeWiff_New()
         self.g_listBox_13_2.SetItem(2, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(2, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1169,9 +1173,9 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り頻度
-        #self._makeWhiffFrequency()
+        self._makeWhiffFrequency()
         # 空振り頻度2
-        #self._makeWhiffFrequency_New()
+        self._makeWhiffFrequency_New()
         self.g_listBox_13_2.SetItem(3, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(3, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1182,7 +1186,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 空振り時間
-        #self._makeWhiffTime()
+        self._makeWhiffTime()
         self.g_listBox_13_2.SetItem(4, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(4, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1193,7 +1197,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # 警報発表頻度
-        #self._makeAlarmAnnounce()
+        self._makeAlarmAnnounce()
         self.g_listBox_13_2.SetItem(5, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(5, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1205,9 +1209,9 @@ class Main(wx.Frame):
         self.Update()
         # 9)実質災害捕捉率
         # 災害捕捉率【降雨数】
-        #self._makeDisasterSupplement9_1()
+        self._makeDisasterSupplement9_1()
         # 災害捕捉率【件数】
-        #self._makeDisasterSupplement9_2()
+        self._makeDisasterSupplement9_2()
         self.g_listBox_13_2.SetItem(6, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(6, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1219,15 +1223,15 @@ class Main(wx.Frame):
         self.Update()
         # ④実質災害捕捉率
         # 年毎メッシュ単位の算出結果
-        #self._makeOverRainfall2()
+        self._makeOverRainfall2()
         # 警戒発表中災害発生件数
         # 警戒発表中災害発生降雨数
-        #self._makeOverRainfallMix2()
+        self._makeOverRainfallMix2()
 
         # 土砂災害警戒情報の災害捕捉率（降雨数）
-        #self._makeCautionAnnounceRateOccurRainFallNum()
+        self._makeCautionAnnounceRateOccurRainFallNum()
         # 土砂災害警戒情報の災害捕捉率（件数）
-        #self._makeCautionAnnounceRateOccurNum()
+        self._makeCautionAnnounceRateOccurNum()
         self.g_listBox_13_2.SetItem(7, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(7, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1238,8 +1242,8 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ②土砂災害警戒情報のリードタイム
-        #self._makeOverRainfall3_1()
-        #self._makeOverRainfallMix3_1()
+        self._makeOverRainfall3_1()
+        self._makeOverRainfallMix3_1()
         self.g_listBox_13_2.SetItem(8, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(8, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1250,7 +1254,7 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ③土砂災害警戒情報の発表頻度
-        #self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
+        self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
         self.g_listBox_13_2.SetItem(9, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(9, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1261,8 +1265,8 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ⑥RBFN越のリードタイム
-        #self._makeOverRainfall3_2()
-        #self._makeOverRainfallMix3_2()
+        self._makeOverRainfall3_2()
+        self._makeOverRainfallMix3_2()
         self.g_listBox_13_2.SetItem(10, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1273,12 +1277,10 @@ class Main(wx.Frame):
         self.g_listBox_13_2.Update()
         self.Update()
         # ⑧予測適中率
-        '''
         if (com.g_RainKind != 0):
             self._makeOverRainfall8()
             self._makeOverRainfallMix8()
             self._makeForecastPredictive()
-            '''
         self.g_listBox_13_2.SetItem(11, 3, "集計処理が完了しました。")
         self.g_listBox_13_2.SetItemTextColour(11, wx.BLUE)
         self.g_listBox_13_2.Update()
@@ -1314,20 +1316,103 @@ class Main(wx.Frame):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_proc = clsFigure.MakeNIGeDaS(
-            0,
-            com.g_strIni,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                # チェックされたものを処理対象
+                a_proc = Process(target=clsFigure.MakeNIGeDaS,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+            '''
+            # チェックされたものを処理対象
+            a_proc = clsFigure.MakeNIGeDaS(
+                0,
+                com.g_strIni,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+            '''
 
     def _makeNIGeDaS_NonOccurCalc(self):
         global com
         global g_meshList_check
 
+        # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                a_proc = Process(target=clsFigure.MakeNIGeDaS_NonOccurCalc,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        '''
         # チェックされたものを処理対象
         a_proc = clsFigure.MakeNIGeDaS_NonOccurCalc(
             0,
@@ -1337,6 +1422,7 @@ class Main(wx.Frame):
             0,
             -1
         )
+        '''
 
     def _makeOverRainfall(self):
         global com
@@ -1395,6 +1481,47 @@ class Main(wx.Frame):
         global g_meshList_check
 
         # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                a_proc = Process(target=clsFigure.MakeOverRainfall2,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        '''
+        # チェックされたものを処理対象
         a_proc = clsFigure.MakeOverRainfall2(
             0,
             com.g_strIni,
@@ -1403,11 +1530,53 @@ class Main(wx.Frame):
             0,
             -1
         )
+        '''
 
     def _makeOverRainfall3_1(self):
         global com
         global g_meshList_check
 
+        # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                a_proc = Process(target=clsFigure.MakeOverRainfall3_1,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        '''
         # チェックされたものを処理対象
         a_proc = clsFigure.MakeOverRainfall3_1(
             0,
@@ -1417,11 +1586,53 @@ class Main(wx.Frame):
             0,
             -1
         )
+        '''
 
     def _makeOverRainfall3_2(self):
         global com
         global g_meshList_check
 
+        # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                a_proc = Process(target=clsFigure.MakeOverRainfall3_2,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        '''
         # チェックされたものを処理対象
         a_proc = clsFigure.MakeOverRainfall3_2(
             0,
@@ -1431,11 +1642,95 @@ class Main(wx.Frame):
             0,
             -1
         )
+        '''
 
     def _makeOverRainfall8(self):
         global com
         global g_meshList_check
 
+        # チェックされたものを処理対象
+        a_meshSum = len(g_meshList_check)
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                # 予測雨量の算出
+                a_proc = Process(target=clsFigure.MakeOverRainfall8,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     1,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        a_sum = 0
+        while (a_sum < a_meshSum):
+            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+            if (a_cnt_max > a_meshSum):
+                a_cnt_max = a_meshSum
+
+            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+            a_procs = []
+            a_proc_num = 0
+            for a_cnt in range(a_sum, a_cnt_max):
+                a_proc_num += 1
+                #print('a_cnt=' + str(a_cnt))
+                a_mlist = [[0, ""]]
+                a_mlist[0][0] = 0
+                a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                print('a_meshNo=' + a_mlist[0][1])
+                # 実況雨量の算出
+                a_proc = Process(target=clsFigure.MakeOverRainfall8,
+                                 args=(
+                                     a_proc_num,
+                                     com.g_strIni,
+                                     0,
+                                     a_mlist,
+                                     0,
+                                     0,
+                                     -1
+                                 ))
+                a_procs.append(a_proc)
+
+            for a_proc in a_procs:
+                a_proc.start()
+            for a_proc in a_procs:
+                a_proc.join()
+            for a_proc in a_procs:
+                a_proc.terminate()
+
+            print('All process is ended.')
+
+            a_sum = a_cnt_max
+
+        '''
         # チェックされたものを処理対象
         # 予測雨量の算出
         a_proc = clsFigure.MakeOverRainfall8(
@@ -1458,6 +1753,7 @@ class Main(wx.Frame):
             0,
             -1
         )
+        '''
 
     def _makeOverRainfallMix(self):
         global com
