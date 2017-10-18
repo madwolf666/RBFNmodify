@@ -1,11 +1,13 @@
+#import mmap
 import os
 import sys
 import wx
 import wx.lib.mixins.listctrl as listmix
-from PIL import Image
+#from PIL import Image
 from subprocess import check_call
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Value  #Manager
 import gc
+from ctypes import *
 import com_functions
 import clsRainfall
 import clsContour
@@ -17,12 +19,24 @@ com = com_functions.ComFunctions()
 #g_ini_path = "C:\\Users\\hal\\Documents\\CTI\\東京\\RBFN修正ツール\\2015年度\\program-source\\bin\\rbfnmdf.ini"
 g_ini_path = ".\\rbfnmdf.ini"
 g_System_Title = "RBFN修正ツール Ver 3.0"
-g_meshSum_targer = 0
+g_meshSum_target = 0
 g_meshSum_list = 0
 g_meshList_check = 0
 g_meshList_target = []
 g_meshList_list = []
 g_meshList_check = []
+
+def Testing(
+        h_m
+):
+    try:
+        #a_aaa = h_DisasterFile
+        print(h_m)
+        #h_DisasterFile.value = 666
+    except Exception as exp:
+        a_strErr = " ".join(map(str, exp.args))
+    except:
+        a_strErr = sys.exc_info()
 
 class CheckBoxList(wx.ListCtrl, listmix.CheckListCtrlMixin, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, *args, **kwargs):
@@ -994,14 +1008,23 @@ class Main(wx.Frame):
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "start")
 
         '''
+        a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
+        a_DisasterFile = Value("i", 666)
+        #a_DisasterFile = Value(c_wchar_p, "chappy")
+        #a_buf2 = create_string_buffer(a_buf.encode("sjis"))
+        #a_DisasterFile = cast(a_buf2, POINTER(c_char))
+        '''
+
+        '''
         # 災害情報
-        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
+        com.g_textSum_DisasterFile = com.Store_DataFile_all(com.g_DisasterFileName, com.g_textline_DisasterFile)
         # 警戒情報
         com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
         # 対象メッシュ情報
         com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+        '''
 
-        a_manager = Manager()
+        '''
         a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
         a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
         a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
@@ -1057,7 +1080,12 @@ class Main(wx.Frame):
                                      -1
                                  ))
                                  '''
-
+                '''
+                a_proc = Process(target=Testing,
+                                 args=(
+                                     com.g_strIni
+                                 ))
+                                 '''
                 a_proc = Process(target=clsContour.MakeContourByMesh,
                                  args=(
                                      a_proc_num,
@@ -1068,7 +1096,6 @@ class Main(wx.Frame):
                                      0,
                                      -1
                                  ))
-
 
                 a_procs.append(a_proc)
 

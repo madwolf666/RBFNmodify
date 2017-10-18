@@ -2,18 +2,21 @@
 # 等高線の作成
 ################################################################################
 import sys
+import mmap
 import os
 import datetime
 import math
 import csv
 from PIL import Image, ImageDraw, ImageFont
 import shutil
-import threading
+from multiprocessing import Process, Value  #Manager
 import gc
 import com_functions
 
-# 降雨超過数を作成する
+#  降雨超過数を作成する
 class MakeContourByMesh():
+    global g_meshList_check
+
     prv_leftMargin = 53.333333333333336
     prv_topMargin = 26.666666666666668
     prv_rightMargin = 148.0
@@ -34,16 +37,16 @@ class MakeContourByMesh():
                  ):
                  '''
 
-    def __init__(self,
-                     h_proc_num,
-                     h_ini_path,
-                     h_meshNo,
-                     h_kind,
-                     h_unReal,
-                     h_soilMin,
-                     h_rainMax
-                     ):
-
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshNo,
+            h_kind,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 

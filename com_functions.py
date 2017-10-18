@@ -1,3 +1,4 @@
+import mmap
 import os
 import sys
 import configparser
@@ -1519,6 +1520,25 @@ class ComFunctions:
             self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + "," + sys.exc_info())
 
         return a_iRet
+
+    # CSVファイル退避
+    def Store_DataFile_all(self, h_fileName):
+        a_strErr = "filename=" + h_fileName
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_DataFile_all', a_strErr)
+
+        a_buf = None
+        try:
+            a_sr = open(h_fileName, "r", encoding="shift_jis")
+            a_buf = a_sr.read()
+            a_sr.close()
+
+        except Exception as exp:
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile_all', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile_all', a_strErr + "," + sys.exc_info())
+
+        return a_buf
 
     '''
     def Store_DisasterFile(self):
