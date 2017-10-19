@@ -9,7 +9,8 @@ import math
 import csv
 from PIL import Image, ImageDraw, ImageFont
 import shutil
-from multiprocessing import Process, Value  #Manager
+#import multiprocessing
+#from multiprocessing import Process, Array  #Manager
 import gc
 import com_functions
 
@@ -41,6 +42,8 @@ class MakeContourByMesh():
             self,
             h_proc_num,
             h_ini_path,
+            h_DisasterFile,
+            h_TargetMeshFile,
             h_meshNo,
             h_kind,
             h_unReal,
@@ -54,6 +57,16 @@ class MakeContourByMesh():
 
         self.com.proc_num = h_proc_num
         self.com.ini_path = h_ini_path
+
+        '''
+        a_buf = h_DisasterFile[:].split("\n")
+        for a_str in a_buf:
+            print(a_str)
+
+        a_buf = h_TargetMeshFile[:].split("\n")
+        for a_str in a_buf:
+            print(a_str)
+            '''
 
         '''
         self.com.g_textline_DisasterFile = h_DisasterFile
@@ -78,9 +91,23 @@ class MakeContourByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        if(h_DisasterFile != None):
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+
+        if(h_TargetMeshFile != None):
+            del self.com.g_textline_TargetMeshFile[:]
+            gc.collect()
+            self.com.g_textline_TargetMeshFile = h_TargetMeshFile[:].split("\n")
+            self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+
+        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
         self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
+        '''
 
         if (self.isProc == True):
             self.run()  # multiprocess
@@ -116,11 +143,17 @@ class MakeContourByMesh():
             self.com.g_textSum_RBFNFile = self.com.Store_DataFile(a_RBFNFile, self.com.g_textline_RBFNFile)
 
             # オリジナル等高線の作成
-            self._makeAutoContourOrigin(self.meshNo)
+            self._makeAutoContourOrigin(
+                self.meshNo
+            )
             # 等高線の補正
-            self._makeAutoContourRevise(self.meshNo)
+            self._makeAutoContourRevise(
+                self.meshNo
+            )
             # スネーク曲線の作成
-            self._makeAutoContourSnake(self.meshNo)
+            self._makeAutoContourSnake(
+                self.meshNo
+            )
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeContourByMesh-run', a_strErr + "," + " ".join(map(str, exp.args)))
@@ -887,7 +920,7 @@ class MakeContourByMesh():
             a_textSum = 0
 
             for a_cntDF in range(1, self.com.g_textSum_DisasterFile):
-                a_split = self.com.g_textline_DisasterFile[a_cntDF]
+                a_split = self.com.g_textline_DisasterFile[a_cntDF].split(",")
                 if (a_split[0].strip() == str(self.TargetMeshNo)):
                     if (int(a_split[1].strip()) >= int(self.StartYear)) and (int(a_split[1].strip()) <= int(self.EndYear)):
 
@@ -1173,9 +1206,10 @@ class MakeContourByMesh():
             # 災害発生情報を読み込む
             a_textline2 = []
             a_textSum2 = 0
+
             for a_cntDF in range(1, self.com.g_textSum_DisasterFile):
-                a_strTmp = self.com.g_textline_DisasterFile[a_cntDF]
-                a_split = a_strTmp
+                a_split = self.com.g_textline_DisasterFile[a_cntDF].split(",")
+                #a_split = a_strTmp
                 if (a_split[0].strip() == str(self.TargetMeshNo)):
                     # 同じメッシュ番号
                     a_textline2.append(a_split[0] + "," + a_split[1]+ "," + a_split[2]+ "," + a_split[3]+ "," + a_split[4]+ "," + a_split[5])
@@ -1568,7 +1602,7 @@ class MakeContourByMesh():
             a_IsOK = False
 
             for a_iCnt2 in range(0, self.com.g_textSum_TargetMeshFile):
-                a_split1 = self.com.g_textline_TargetMeshFile[a_iCnt2]
+                a_split1 = self.com.g_textline_TargetMeshFile[a_iCnt2].split(",")
 
                 if (self.com.g_TargetRainMesh == 1):
                     a_chkSum = 37
@@ -1604,7 +1638,10 @@ class MakeContourByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_getGraphDrawInfo', a_strErr + "," + sys.exc_info())
 
     # オリジナル等高線の作成
-    def _makeAutoContourOrigin(self, h_meshNo):
+    def _makeAutoContourOrigin(
+            self,
+            h_meshNo
+    ):
         a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAutoContourOrigin', a_strErr)
 
@@ -1621,7 +1658,10 @@ class MakeContourByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeAutoContourOrigin', a_strErr + "," + sys.exc_info())
 
     # 等高線の補正
-    def _makeAutoContourRevise(self, h_meshNo):
+    def _makeAutoContourRevise(
+            self,
+            h_meshNo
+    ):
         a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAutoContourRevise', a_strErr)
 
@@ -1638,7 +1678,10 @@ class MakeContourByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, '_makeAutoContourRevise', a_strErr + "," + sys.exc_info())
 
     # スネーク曲線の作成
-    def _makeAutoContourSnake(self, h_meshNo):
+    def _makeAutoContourSnake(
+            self,
+            h_meshNo
+    ):
         a_strErr = "meshNo=" + self.meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAutoContourSnake', a_strErr)
 

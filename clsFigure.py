@@ -1158,6 +1158,8 @@ class MakeOverRainfall2():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
+                 h_DisasterFile,
+                 h_CautionAnnounceFile,
                  h_meshList,
                  h_unReal,
                  h_soilMin,
@@ -1178,8 +1180,22 @@ class MakeOverRainfall2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        if(h_DisasterFile != None):
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+
+        if(h_CautionAnnounceFile != None):
+            del self.com.g_textline_CautionAnnounceFile[:]
+            gc.collect()
+            self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile[:].split("\n")
+            self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+
+        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+        '''
 
         self.run()  # multiprocess
 
@@ -1245,7 +1261,13 @@ class MakeOverRainfall2():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfall2-run', a_strErr + "," + sys.exc_info())
 
     # 警戒発表中の発生降雨数を取得する
-    def _getCautionAnnounceOccurRainfallSum(self, h_meshNo, h_unReal, h_soilMin, h_rainMax):
+    def _getCautionAnnounceOccurRainfallSum(
+            self,
+            h_meshNo,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         a_strErr = "meshNo=" + h_meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getCautionAnnounceOccurRainfallSum', a_strErr)
 
@@ -1276,13 +1298,13 @@ class MakeOverRainfall2():
                             # 土砂災害警戒情報発表中の災害件数チェック
                             a_IsExists = False
                             for a_cnt in range(1, self.com.g_textSum_CautionAnnounceFile):
-                                a_split = self.com.g_textline_CautionAnnounceFile[a_cnt]
+                                a_split = self.com.g_textline_CautionAnnounceFile[a_cnt].split(",")
                                 if (a_split[0] == h_meshNo):
                                     # メッシュ番号が同じ
                                     a_sTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
                                     a_eTime = datetime.datetime.strptime(a_split[5] + "/" + a_split[6] + "/" + a_split[7] + " " + a_split[8], '%Y/%m/%d %H:%M')
                                     for a_cntD in range(1, self.com.g_textSum_DisasterFile):
-                                        a_splitD = self.com.g_textline_DisasterFile[a_cntD]
+                                        a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(",")
                                         if (a_splitD[0].strip() == h_meshNo):
                                             # メッシュ番号が同じ
                                             a_mTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
@@ -1311,13 +1333,13 @@ class MakeOverRainfall2():
                 # 土砂災害警戒情報発表中の災害件数チェック
                 a_IsExists = False
                 for a_cnt in range(1, self.com.g_textSum_CautionAnnounceFile):
-                    a_split = self.com.g_textline_CautionAnnounceFile[a_cnt]
+                    a_split = self.com.g_textline_CautionAnnounceFile[a_cnt].split(",")
                     if (a_split[0] == h_meshNo):
                         # メッシュ番号が同じ
                         a_sTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
                         a_eTime = datetime.datetime.strptime(a_split[5] + "/" + a_split[6] + "/" + a_split[7] + " " + a_split[8], '%Y/%m/%d %H:%M')
                         for a_cntD in range(1, self.com.g_textSum_DisasterFile):
-                            a_splitD = self.com.g_textline_DisasterFile[a_cntD]
+                            a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(",")
                             if (a_splitD[0].strip() == h_meshNo):
                                 # メッシュ番号が同じ
                                 a_mTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
@@ -1347,7 +1369,13 @@ class MakeOverRainfall2():
         return a_iRet
 
     # 警戒発表中の災害件数を取得する
-    def _getCautionAnnounceOccurSum(self, h_meshNo, h_unReal, h_soilMin, h_rainMax):
+    def _getCautionAnnounceOccurSum(
+            self,
+            h_meshNo,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         a_strErr = "meshNo=" + h_meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getCautionAnnounceOccurSum', a_strErr)
 
@@ -1355,13 +1383,13 @@ class MakeOverRainfall2():
 
         try:
             for a_cnt in range(1, self.com.g_textSum_CautionAnnounceFile):
-                a_split = self.com.g_textline_CautionAnnounceFile[a_cnt]
+                a_split = self.com.g_textline_CautionAnnounceFile[a_cnt].split(",")
                 if (a_split[0] == h_meshNo):
                     # メッシュ番号が同じ
                     a_sTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
                     a_eTime = datetime.datetime.strptime(a_split[5] + "/" + a_split[6] + "/" + a_split[7] + " " + a_split[8], '%Y/%m/%d %H:%M')
                     for a_cntD in range(1, self.com.g_textSum_DisasterFile):
-                        a_splitD = self.com.g_textline_DisasterFile[a_cntD]
+                        a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(",")
                         if (a_splitD[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_mTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
@@ -1450,6 +1478,7 @@ class MakeOverRainfall3_2():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
+                 h_DisasterFile,
                  h_meshList,
                  h_unReal,
                  h_soilMin,
@@ -1470,8 +1499,16 @@ class MakeOverRainfall3_2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        if(h_DisasterFile != None):
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+
+        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+        '''
 
         self.run()  # multiprocess
 
@@ -1715,7 +1752,7 @@ class MakeOverRainfall3_2():
             for a_cnt in range(0, h_overSum + 1):
                 a_fFlagD2 = False
                 for a_cntD2 in range(1, self.com.g_textSum_DisasterFile):
-                    a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
+                    a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2].split(",")
                     if (a_splitD2[0].strip() == h_meshNo):
                         # メッシュ番号が同じ
                         a_tmpTime = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
@@ -2049,6 +2086,7 @@ class MakeOverRainfallByMesh():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
+                 h_DisasterFile,
                  h_meshNo,
                  h_unReal,
                  h_soilMin,
@@ -2092,8 +2130,16 @@ class MakeOverRainfallByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        if(h_DisasterFile != None):
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+
+        '''
         self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
         self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+        '''
 
         self.run()  # multiprocess
 
@@ -2299,7 +2345,11 @@ class MakeOverRainfallByMesh():
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, 'MakeOverRainfallByMesh-run', a_strErr + "," + sys.exc_info())
 
     # 災害発生件数を取得する
-    def _getDisasterOccurSumByMesh(self, h_meshNo, h_tempInfo):
+    def _getDisasterOccurSumByMesh(
+            self,
+            h_meshNo,
+            h_tempInfo
+    ):
         a_strErr = "meshNo=" + h_meshNo
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_getDisasterOccurSumByMesh', a_strErr)
 
@@ -2307,7 +2357,7 @@ class MakeOverRainfallByMesh():
 
         try:
             for a_cnt in range(0, self.com.g_textSum_DisasterFile):
-                a_split1 = self.com.g_textline_DisasterFile[a_cnt]
+                a_split1 = self.com.g_textline_DisasterFile[a_cnt].split(",")
                 if (a_split1[0] == h_meshNo):
                     a_iRet += 1
 
@@ -2798,7 +2848,7 @@ class MakeOverRainfallByMesh():
                     a_IsNew = False
                     a_tmpTime = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
                     for a_cntD2 in range(1, self.com.g_textSum_DisasterFile):
-                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
+                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2].split(",")
                         if (a_splitD2[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_tmpTimeD2 = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
@@ -2981,7 +3031,7 @@ class MakeOverRainfallByMesh():
                     a_iSame = 0
                     a_tmpTime = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
                     for a_cntD2 in range(1, self.com.g_textSum_DisasterFile):
-                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
+                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2].split(",")
                         if (a_splitD2[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_tmpTimeD2 = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
@@ -2993,7 +3043,7 @@ class MakeOverRainfallByMesh():
                                     a_IsOver = [False]*9
                                     # 同時刻の災害がある複数存在する場合の対処
                                     for a_cntD2_2 in range(a_cntD2 + 1 , self.com.g_textSum_DisasterFile):
-                                        a_splitD2_2 = self.com.g_textline_DisasterFile[a_cntD2_2]
+                                        a_splitD2_2 = self.com.g_textline_DisasterFile[a_cntD2_2].split(",")
                                         if (a_splitD2_2[0].strip() == h_meshNo):
                                             a_tmpTimeD2_2 = datetime.datetime.strptime(a_splitD2_2[1] + "/" + a_splitD2_2[2] + "/" + a_splitD2_2[3] + " " + a_splitD2_2[4], '%Y/%m/%d %H:%M')
                                             if (a_tmpTimeD2 == a_tmpTimeD2_2):

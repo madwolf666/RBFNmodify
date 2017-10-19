@@ -7,6 +7,7 @@ import datetime
 import math
 import gc
 #from multiprocessing import Process, Manager
+from ctypes import *
 
 class ComFunctions:
     g_LOG_FILENAME = "rbfnmdf"
@@ -1529,7 +1530,23 @@ class ComFunctions:
         a_buf = None
         try:
             a_sr = open(h_fileName, "r", encoding="shift_jis")
-            a_buf = a_sr.read()
+
+            '''
+            a_bFirst = True
+            a_line = a_sr.readline().strip("\r\n")
+            while a_line:
+                if (a_bFirst == False):
+                    a_buf += ","
+                else:
+                    a_buf = ""
+                a_buf += "\"" + a_line + "\""
+                a_bFirst = False
+                a_line = a_sr.readline().strip("\r\n")
+                '''
+
+            a_buf = a_sr.read().replace("\r", "").strip("\r\n")
+            #a_buf = create_string_buffer(a_sr.read().replace("\r", ""))
+
             a_sr.close()
 
         except Exception as exp:

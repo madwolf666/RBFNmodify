@@ -8,6 +8,8 @@ import csv
 import com_functions
 import threading
 import gc
+from multiprocessing import Value
+from ctypes import *
 
 #class Thread_MakeAllRainfallDataByMesh(threading.Thread):
 class MakeAllRainfallDataByMesh():
@@ -42,6 +44,13 @@ class MakeAllRainfallDataByMesh():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
+                 h_DisasterFile,
+                 h_CautionAnnounceFile,
+                 h_TemperatureFile,
+                 h_RainfallFile,
+                 h_SoilRainFile,
+                 h_RainfallFile1,
+                 h_SoilRainFile1,
                  h_year,
                  h_meshIdx,
                  h_meshList
@@ -96,35 +105,87 @@ class MakeAllRainfallDataByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+        try:
+            # 災害情報
+            if (h_DisasterFile != None):
+                #print(h_DisasterFile[:])
+                del self.com.g_textline_DisasterFile[:]
+                gc.collect()
+                self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+                self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+            # 警戒情報
+            if (h_CautionAnnounceFile != None):
+                del self.com.g_textline_CautionAnnounceFile[:]
+                gc.collect()
+                self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile[:].split("\n")
+                self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+            # 気温情報
+            if (h_TemperatureFile != None):
+                del self.com.g_textline_TemperatureFile[:]
+                gc.collect()
+                self.com.g_textline_TemperatureFile = h_TemperatureFile[:].split("\n")
+                self.com.g_textSum_TemperatureFile = len(self.com.g_textline_TemperatureFile)
 
-        self.prv_TemperatureFileName = self.com.g_OutPath + "\\" + self.com.g_TemperatureFileSId + str(self.year) +self.com. g_TemperatureFileEId
+            # 全降雨
+            if (h_RainfallFile != None):
+                del self.com.g_textline_RainfallFile[:]
+                gc.collect()
+                self.com.g_textline_RainfallFile = h_RainfallFile[:].split("\n")
+                self.com.g_textSum_RainfallFile = len(self.com.g_textline_RainfallFile)
+            if (h_SoilRainFile != None):
+                del self.com.g_textline_SoilRainFile[:]
+                gc.collect()
+                self.com.g_textline_SoilRainFile = h_SoilRainFile[:].split("\n")
+                self.com.g_textSum_SoilRainFile = len(self.com.g_textline_SoilRainFile)
 
-        self.prv_RainfallFileName = self.com.g_OutPath + "\\" + self.com.g_RainfallFileSId + str(self.year) + self.com.g_RainfallFileEId
-        self.prv_SoilRainFileName = self.com.g_OutPath + "\\" + self.com.g_SoilrainFileSId + str(self.year) + self.com.g_SoilrainFileEId
-        # 予測的中率
-        self.prv_RainfallFileName1 = self.com.g_OutPathReal + "\\" + self.com.g_RainfallFileSId + str(self.year) + self.com.g_RainfallFileEId
-        self.prv_SoilRainFileName1 = self.com.g_OutPathReal + "\\" + self.com.g_SoilrainFileSId + str(self.year) + self.com.g_SoilrainFileEId
-
-        self.com.g_textSum_TemperatureFile = self.com.Store_DataFile(self.prv_TemperatureFileName, self.com.g_textline_TemperatureFile)
-
-        '''
-        if (self.isProc == False):
-            self.com.g_textSum_RainfallFile = self.com.Store_DataFile(self.prv_RainfallFileName, self.com.g_textline_RainfallFile)
-            self.com.g_textSum_SoilRainFile = self.com.Store_DataFile(self.prv_SoilRainFileName, self.com.g_textline_SoilRainFile)
             if self.com.g_RainKind != 0:
-                self.com.g_textSum_RainfallFile1 = self.com.Store_DataFile(self.prv_RainfallFileName1, self.com.g_textline_RainfallFile1)
-                self.com.g_textSum_SoilRainFile1 = self.com.Store_DataFile(self.prv_SoilRainFileName1, self.com.g_textline_SoilRainFile1)
-                '''
+                if (h_RainfallFile1 != None):
+                    del self.com.g_textline_RainfallFile1[:]
+                    gc.collect()
+                    self.com.g_textline_RainfallFile1 = h_RainfallFile1[:].split("\n")
+                    self.com.g_textSum_RainfallFile1 = len(self.com.g_textline_RainfallFile1)
+                if (h_SoilRainFile1 != None):
+                    del self.com.g_textline_SoilRainFile1[:]
+                    gc.collect()
+                    self.com.g_textline_SoilRainFile1 = h_SoilRainFile1[:].split("\n")
+                    self.com.g_textSum_SoilRainFile1 = len(self.com.g_textline_SoilRainFile1)
 
-        self.textSum_Rainfall = 0
-        self.textline_Rainfall = []
-        self.textSum_SoilRain = 0
-        self.textline_SoilRain = []
+            '''
+            self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+            self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+    
+            self.prv_TemperatureFileName = self.com.g_OutPath + "\\" + self.com.g_TemperatureFileSId + str(self.year) +self.com. g_TemperatureFileEId
+    
+            self.prv_RainfallFileName = self.com.g_OutPath + "\\" + self.com.g_RainfallFileSId + str(self.year) + self.com.g_RainfallFileEId
+            self.prv_SoilRainFileName = self.com.g_OutPath + "\\" + self.com.g_SoilrainFileSId + str(self.year) + self.com.g_SoilrainFileEId
+            # 予測的中率
+            self.prv_RainfallFileName1 = self.com.g_OutPathReal + "\\" + self.com.g_RainfallFileSId + str(self.year) + self.com.g_RainfallFileEId
+            self.prv_SoilRainFileName1 = self.com.g_OutPathReal + "\\" + self.com.g_SoilrainFileSId + str(self.year) + self.com.g_SoilrainFileEId
+    
+            self.com.g_textSum_TemperatureFile = self.com.Store_DataFile(self.prv_TemperatureFileName, self.com.g_textline_TemperatureFile)
+            '''
 
-        if (self.isProc == True):
-            self.run()   # multiprocess
+            '''
+            if (self.isProc == False):
+                self.com.g_textSum_RainfallFile = self.com.Store_DataFile(self.prv_RainfallFileName, self.com.g_textline_RainfallFile)
+                self.com.g_textSum_SoilRainFile = self.com.Store_DataFile(self.prv_SoilRainFileName, self.com.g_textline_SoilRainFile)
+                if self.com.g_RainKind != 0:
+                    self.com.g_textSum_RainfallFile1 = self.com.Store_DataFile(self.prv_RainfallFileName1, self.com.g_textline_RainfallFile1)
+                    self.com.g_textSum_SoilRainFile1 = self.com.Store_DataFile(self.prv_SoilRainFileName1, self.com.g_textline_SoilRainFile1)
+                    '''
+
+            self.textSum_Rainfall = 0
+            self.textline_Rainfall = []
+            self.textSum_SoilRain = 0
+            self.textline_SoilRain = []
+
+            if (self.isProc == True):
+                self.run()   # multiprocess
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-init",  " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-init", sys.exc_info())
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path +  ",Year=" + str(self.year) + ",meshIdx=" + str(self.meshIdx)
@@ -150,10 +211,28 @@ class MakeAllRainfallDataByMesh():
                 # 比較対象の実況雨量データの算出
                 self._makeAllRainfallDataByMesh(self.year, 1, self.meshIdx, a_meshList)
                 '''
-            self._makeAllRainfallDataByMesh(self.year, 0, self.meshIdx, self.meshList)
+            self._makeAllRainfallDataByMesh(
+                self.com.g_textSum_RainfallFile,
+                self.com.g_textline_RainfallFile,
+                self.com.g_textSum_SoilRainFile,
+                self.com.g_textline_SoilRainFile,
+                self.year,
+                0,
+                self.meshIdx,
+                self.meshList
+            )
             if self.com.g_RainKind != 0:
                 # 比較対象の実況雨量データの算出
-                self._makeAllRainfallDataByMesh(self.year, 1, self.meshIdx, self.meshList)
+                self._makeAllRainfallDataByMesh(
+                    self.com.g_textSum_RainfallFile1,
+                    self.com.g_textline_RainfallFile1,
+                    self.com.g_textSum_SoilRainFile1,
+                    self.com.g_textline_SoilRainFile1,
+                    self.year,
+                    1,
+                    self.meshIdx,
+                    self.meshList
+                )
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-run",  a_strErr + "," + " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
@@ -436,8 +515,8 @@ class MakeAllRainfallDataByMesh():
                     a_IsOccur = False
                     # 発生降雨フラグが「*」の場合
                     for a_cntD in range(1, self.com.g_textSum_CautionAnnounceFile):
-                        #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD].split(',')
-                        a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
+                        a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD].split(',')
+                        #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
                         if (a_splitD[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_sTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
@@ -516,8 +595,8 @@ class MakeAllRainfallDataByMesh():
                     a_fFlagD2 = False
                     # 一連の降雨で最初の災害発生日時を検出
                     for a_cntD2 in range(1, self.com.g_textSum_DisasterFile):
-                        #a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2].split(',')
-                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
+                        a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2].split(',')
+                        #a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
                         if (a_splitD2[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_tmpTime = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
@@ -547,8 +626,8 @@ class MakeAllRainfallDataByMesh():
                     a_fFlagD = False
                     # 一連の降雨で最初の警戒発表日時を検出
                     for a_cntD in range(1, self.com.g_textSum_CautionAnnounceFile):
-                        #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD].split(',')
-                        a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
+                        a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD].split(',')
+                        #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
                         if (a_splitD[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
                             a_tmpTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
@@ -663,8 +742,8 @@ class MakeAllRainfallDataByMesh():
                 a_rainTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
                 #print(a_rainTime)
                 for a_cntD in range(1, self.com.g_textSum_DisasterFile):
-                    #a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(',')
-                    a_splitD = self.com.g_textline_DisasterFile[a_cntD]
+                    a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(',')
+                    #a_splitD = self.com.g_textline_DisasterFile[a_cntD]
                     if (a_splitD[0].strip() == h_meshNo):
                         # メッシュ番号が同じ
                         # ⑧予測適中率
@@ -937,7 +1016,17 @@ class MakeAllRainfallDataByMesh():
             '''
 
     # メッシュ単位の全降雨データを作成する
-    def _makeAllRainfallDataByMesh(self, h_year, h_kind, h_idx, h_meshList):
+    def _makeAllRainfallDataByMesh(
+            self,
+            h_textSum_Rainfall,
+            h_textline_RainfallFile,
+            h_textSum_SoilRain,
+            h_textline_SoilRainFile,
+            h_year,
+            h_kind,
+            h_idx,
+            h_meshList
+    ):
         a_strErr = "Year=" + str(h_year) + ",kind=" + str(h_kind) + ",idx=" + str(h_idx)
         self.com.Outputlog(self.com.g_LOGMODE_TRACE1, '_makeAllRainfallDataByMesh', a_strErr)
 
@@ -984,8 +1073,10 @@ class MakeAllRainfallDataByMesh():
                     a_textSum_Rainfall = self.com.g_textSum_RainfallFile1
                     a_textline_Rainfall = self.com.g_textline_RainfallFile1
                     '''
+            '''
             if (self.isProc == True):
                 self.textSum_Rainfall = self.com.Store_DataFile(a_sFileName, self.textline_Rainfall)
+                '''
 
             # 土壌雨量指数ファイルを開く
             if h_kind == 0:
@@ -1002,8 +1093,11 @@ class MakeAllRainfallDataByMesh():
                     a_textSum_SoilRain = self.com.g_textSum_SoilRainFile1
                     a_textline_SoilRain = self.com.g_textline_SoilRainFile1
                     '''
+
+            '''
             if (self.isProc == True):
                 self.textSum_SoilRain = self.com.Store_DataFile(a_sFileName, self.textline_SoilRain)
+                '''
 
             # 気温情報ファイルを開く
             '''
@@ -1013,27 +1107,27 @@ class MakeAllRainfallDataByMesh():
                 '''
 
             # 4行分、読み飛ばす
-            for a_cnt in range(0, self.textSum_Rainfall):
+            for a_cnt in range(0, h_textSum_Rainfall):
             #for a_cnt in range(0, self.com.g_textSum_RainfallFile):
-                #a_textline1 = self.com.g_textline_RainfallFile[a_cnt]
-                #a_textline2 = self.com.g_textline_SoilRainFile[a_cnt]
-                a_textline1 = self.textline_Rainfall[a_cnt]
-                a_textline2 = self.textline_SoilRain[a_cnt]
+                a_textline1 = h_textline_RainfallFile[a_cnt]
+                a_textline2 = h_textline_SoilRainFile[a_cnt]
+                #a_textline1 = self.textline_Rainfall[a_cnt]
+                #a_textline2 = self.textline_SoilRain[a_cnt]
                 if self.com.g_TemperatureKind == 1 or self.com.g_TemperatureKind == 2:
                     # 平均気温、もしくは最高気温
                     #a_textline3 = a_sr3.readline().rstrip('\r\n')
                     a_textline3 = self.com.g_textline_TemperatureFile[a_cnt]
                 if a_cnt == 3:
-                    #a_split1 = a_textline1.split(',')
-                    #a_split2 = a_textline2.split(',')
-                    a_split1 = a_textline1
-                    a_split2 = a_textline2
+                    a_split1 = a_textline1.split(',')
+                    a_split2 = a_textline2.split(',')
+                    #a_split1 = a_textline1
+                    #a_split2 = a_textline2
                     # メッシュ番号を取得する
                     if self.com.g_TargetRainMesh == 1:
                         # 1km
-                        #a_textline1 = self.com.g_textline_RainfallFile[a_cnt + 1]
-                        a_textline1 = self.textline_Rainfall[a_cnt + 1]
-                        a_split1 = a_textline1
+                        a_split1 = h_textline_RainfallFile[a_cnt + 1].split(",")
+                        #a_textline1 = self.textline_Rainfall[a_cnt + 1]
+                        #a_split1 = a_textline1
                         for a_iCnt in range(1, len(a_split2)):
                             if a_split2[a_iCnt] == a_PmeshNO:
                                 a_soilIdx = a_iCnt
@@ -1065,31 +1159,35 @@ class MakeAllRainfallDataByMesh():
             a_sw = open(a_sFileNameW, 'w', encoding='shift_jis')
             a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温' + self.com.SetTemperatureInfo() + '\n')
             # 5行目以降、データを取得する
-            for a_cntRF in range(4, self.textSum_SoilRain):
+            for a_cntRF in range(4, h_textSum_SoilRain):
+                '''
+                if (a_cntRF == 17523):
+                    a_tmp = 1
+                    '''
             #for a_cntRF in range(4, self.com.g_textSum_SoilRainFile):
                 a_writeline = ''
                 if self.com.g_TargetRainMesh == 1:
                     # 1km
-                    #a_textline1 = self.com.g_textline_RainfallFile[a_cntRF + 1]
-                    a_textline1 = self.textline_Rainfall[a_cntRF + 1]
+                    a_textline1 = h_textline_RainfallFile[a_cntRF + 1]
+                    #a_textline1 = self.textline_Rainfall[a_cntRF + 1]
                 else:
                     # 5km
-                    #a_textline1 = self.com.g_textline_RainfallFile[a_cntRF]
-                    a_textline1 = self.textline_Rainfall[a_cntRF]
-                #a_textline2 = self.com.g_textline_SoilRainFile[a_cntRF]
-                a_textline2 = self.textline_SoilRain[a_cntRF]
+                    a_textline1 = h_textline_RainfallFile[a_cntRF]
+                    #a_textline1 = self.textline_Rainfall[a_cntRF]
+                a_textline2 = h_textline_SoilRainFile[a_cntRF]
+                #a_textline2 = self.textline_SoilRain[a_cntRF]
                 if self.com.g_TemperatureKind == 1 or self.com.g_TemperatureKind == 2:
                     # 5行目以降をリスト変数に読み込む。
                     #a_textline3 = a_sr3.readline().rstrip('\r\n')
                     a_textline3 = self.com.g_textline_TemperatureFile[a_cntRF]
-                #a_split1 = a_textline1.split(',')
-                #a_split2 = a_textline2.split(',')
-                a_split1 = a_textline1
-                a_split2 = a_textline2
+                a_split1 = a_textline1.split(',')
+                a_split2 = a_textline2.split(',')
+                #a_split1 = a_textline1
+                #a_split2 = a_textline2
                 if self.com.g_TemperatureKind == 1 or self.com.g_TemperatureKind == 2:
                     # 5行目以降をリスト変数に読み込む。
-                    #a_split3 = a_textline3.split(',')
-                    a_split3 = a_textline3
+                    a_split3 = a_textline3.split(',')
+                    #a_split3 = a_textline3
 
                 a_splitTime = a_split1[0].split(' ')
                 a_splitDate = a_splitTime[0].split('/')
@@ -1128,10 +1226,12 @@ class MakeAllRainfallDataByMesh():
 
             #del self.com.g_textline_RainfallFile[:]
             #del self.com.g_textline_SoilRainFile[:]
+            '''
             if (self.isProc == True):
                 del self.textline_Rainfall[:]
                 del self.textline_SoilRain[:]
                 gc.collect()
+                '''
 
             #self.com.Store_AllRainfall(a_sFileNameW)
             self.com.g_textSum_AllRainfall = self.com.Store_DataFile(a_sFileNameW, self.com.g_textline_AllRainfall)

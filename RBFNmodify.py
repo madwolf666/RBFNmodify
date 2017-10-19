@@ -5,7 +5,10 @@ import wx
 import wx.lib.mixins.listctrl as listmix
 #from PIL import Image
 from subprocess import check_call
-from multiprocessing import Process, Value  #Manager
+import multiprocessing
+from multiprocessing import sharedctypes
+#from multiprocessing.sharedctypes import synchronized
+#from multiprocessing import Process, Value, Array  #Manager
 import gc
 from ctypes import *
 import com_functions
@@ -158,8 +161,8 @@ class Main(wx.Frame):
             self._enable_MenuBar(False)
             self.g_button_11_1.Enabled = False
             self.g_button_11_2.Enabled = False
-            self._makeAllRainfallData()
-            #self._makeAllRainfallData_proc()
+            #self._makeAllRainfallData()
+            self._makeAllRainfallData_proc()
             wx.MessageBox("RBFNプログラム用の入力データを自動作成しました。\n引き続き、RBFNプログラムを起動し、RBFN値を算出して下さい。", g_System_Title)
             self._enable_MenuBar(True)
             self.g_menu_bar.Enabled = True
@@ -381,143 +384,173 @@ class Main(wx.Frame):
                 self.g_panel_23.Show()
 
     def _dispStatistics(self, h_fname, h_row):
-        if (self.g_listBox_22_1.GetItemCount() > 0):
-            self.g_listBox_22_1.DeleteAllItems()
-        if (self.g_listBox_22_1.GetColumnCount() > 0):
-            self.g_listBox_22_1.DeleteAllColumns()
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_dispStatistics', "start")
 
-        if (h_row < 0):
-            return
+        try:
+            if (self.g_listBox_22_1.GetItemCount() > 0):
+                self.g_listBox_22_1.DeleteAllItems()
+            if (self.g_listBox_22_1.GetColumnCount() > 0):
+                self.g_listBox_22_1.DeleteAllColumns()
 
-        self.g_listBox_22_1.InsertColumn(0, "メッシュ番号", width=100)
-        if (h_row == 0) or (h_row == 1) or (h_row == 2):
-            self.g_listBox_22_1.InsertColumn(1, "0.9", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(2, "0.8", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(3, "0.7", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(4, "0.6", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(5, "0.5", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(6, "0.4", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(7, "0.3", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(8, "0.2", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(9, "0.1", format=wx.LIST_FORMAT_CENTER, width=60)
-        elif (h_row == 3) or (h_row == 4):
-            self.g_listBox_22_1.InsertColumn(1, "0.9(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(2, "0.8(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(3, "0.7(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(4, "0.6(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(5, "0.5(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(6, "0.4(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(7, "0.3(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(8, "0.2(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            self.g_listBox_22_1.InsertColumn(9, "0.1(%)", format=wx.LIST_FORMAT_CENTER, width=60)
-            if  (h_row == 3):
-                self.g_listBox_22_1.InsertColumn(10, "発生降雨数", format=wx.LIST_FORMAT_CENTER, width=100)
-        elif (h_row == 5) or (h_row == 7):
-            self.g_listBox_22_1.InsertColumn(1, "0.9(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(2, "0.8(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(3, "0.7(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(4, "0.6(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(5, "0.5(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(6, "0.4(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(7, "0.3(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(8, "0.2(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(9, "0.1(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(10, "対象期間(年)", format=wx.LIST_FORMAT_CENTER, width=100)
-        elif (h_row == 6):
-            self.g_listBox_22_1.InsertColumn(1, "0.9(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(2, "0.8(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(3, "0.7(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(4, "0.6(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(5, "0.5(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(6, "0.4(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(7, "0.3(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(8, "0.2(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(9, "0.1(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
-            self.g_listBox_22_1.InsertColumn(10, "対象期間(年)", format=wx.LIST_FORMAT_CENTER, width=100)
+            if (h_row < 0):
+                return
+
+            self.g_listBox_22_1.InsertColumn(0, "メッシュ番号", width=100)
+            if (h_row == 0) or (h_row == 1) or (h_row == 2):
+                self.g_listBox_22_1.InsertColumn(1, "0.9", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(2, "0.8", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(3, "0.7", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(4, "0.6", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(5, "0.5", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(6, "0.4", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(7, "0.3", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(8, "0.2", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(9, "0.1", format=wx.LIST_FORMAT_CENTER, width=60)
+            elif (h_row == 3) or (h_row == 4):
+                self.g_listBox_22_1.InsertColumn(1, "0.9(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(2, "0.8(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(3, "0.7(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(4, "0.6(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(5, "0.5(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(6, "0.4(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(7, "0.3(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(8, "0.2(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                self.g_listBox_22_1.InsertColumn(9, "0.1(%)", format=wx.LIST_FORMAT_CENTER, width=60)
+                if  (h_row == 3):
+                    self.g_listBox_22_1.InsertColumn(10, "発生降雨数", format=wx.LIST_FORMAT_CENTER, width=100)
+            elif (h_row == 5) or (h_row == 7):
+                self.g_listBox_22_1.InsertColumn(1, "0.9(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(2, "0.8(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(3, "0.7(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(4, "0.6(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(5, "0.5(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(6, "0.4(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(7, "0.3(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(8, "0.2(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(9, "0.1(回/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(10, "対象期間(年)", format=wx.LIST_FORMAT_CENTER, width=100)
+            elif (h_row == 6):
+                self.g_listBox_22_1.InsertColumn(1, "0.9(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(2, "0.8(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(3, "0.7(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(4, "0.6(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(5, "0.5(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(6, "0.4(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(7, "0.3(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(8, "0.2(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(9, "0.1(時間/年)", format=wx.LIST_FORMAT_CENTER, width=100)
+                self.g_listBox_22_1.InsertColumn(10, "対象期間(年)", format=wx.LIST_FORMAT_CENTER, width=100)
 
 
-        a_sr = open(h_fname, "r", encoding="shift_jis")
-        # 1行分、読み飛ばす
-        a_textline = a_sr.readline().rstrip('\r\n')
-        a_textline = a_sr.readline().rstrip('\r\n')
-        a_i = 0
-        while a_textline:
-            a_split = a_textline.split(",")
-            self.g_listBox_22_1.InsertItem(a_i, a_split[0])
-            self.g_listBox_22_1.SetItem(a_i, 1, a_split[1])
-            self.g_listBox_22_1.SetItem(a_i, 2, a_split[2])
-            self.g_listBox_22_1.SetItem(a_i, 3, a_split[3])
-            self.g_listBox_22_1.SetItem(a_i, 4, a_split[4])
-            self.g_listBox_22_1.SetItem(a_i, 5, a_split[5])
-            self.g_listBox_22_1.SetItem(a_i, 6, a_split[6])
-            self.g_listBox_22_1.SetItem(a_i, 7, a_split[7])
-            self.g_listBox_22_1.SetItem(a_i, 8, a_split[8])
-            self.g_listBox_22_1.SetItem(a_i, 9, a_split[9])
-            if (h_row == 3) or (h_row == 5) or (h_row == 6) or (h_row == 7):
-                self.g_listBox_22_1.SetItem(a_i, 10, a_split[10])
-
+            a_sr = open(h_fname, "r", encoding="shift_jis")
+            # 1行分、読み飛ばす
             a_textline = a_sr.readline().rstrip('\r\n')
-            a_i += 1
-        a_sr.close()
+            a_textline = a_sr.readline().rstrip('\r\n')
+            a_i = 0
+            while a_textline:
+                a_split = a_textline.split(",")
+                self.g_listBox_22_1.InsertItem(a_i, a_split[0])
+                self.g_listBox_22_1.SetItem(a_i, 1, a_split[1])
+                self.g_listBox_22_1.SetItem(a_i, 2, a_split[2])
+                self.g_listBox_22_1.SetItem(a_i, 3, a_split[3])
+                self.g_listBox_22_1.SetItem(a_i, 4, a_split[4])
+                self.g_listBox_22_1.SetItem(a_i, 5, a_split[5])
+                self.g_listBox_22_1.SetItem(a_i, 6, a_split[6])
+                self.g_listBox_22_1.SetItem(a_i, 7, a_split[7])
+                self.g_listBox_22_1.SetItem(a_i, 8, a_split[8])
+                self.g_listBox_22_1.SetItem(a_i, 9, a_split[9])
+                if (h_row == 3) or (h_row == 5) or (h_row == 6) or (h_row == 7):
+                    self.g_listBox_22_1.SetItem(a_i, 10, a_split[10])
+
+                a_textline = a_sr.readline().rstrip('\r\n')
+                a_i += 1
+            a_sr.close()
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatistics', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatistics', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_dispStatistics', "end")
 
     def _dispStatisticsByMesh(self, h_meshNo):
-        a_size = self.g_listBox_21_2.GetItemCount()
-        for a_i in range(0, a_size):
-            self.g_listBox_21_2.SetItem(a_i, 1, "")
-            self.g_listBox_21_2.SetItem(a_i, 2, "")
-            self.g_listBox_21_2.SetItem(a_i, 3, "")
-            self.g_listBox_21_2.SetItem(a_i, 4, "")
-            self.g_listBox_21_2.SetItem(a_i, 5, "")
-            self.g_listBox_21_2.SetItem(a_i, 6, "")
-            self.g_listBox_21_2.SetItem(a_i, 7, "")
-            self.g_listBox_21_2.SetItem(a_i, 8, "")
-            self.g_listBox_21_2.SetItem(a_i, 9, "")
-            self.g_listBox_21_2.SetItem(a_i, 10, "")
-            self.g_listBox_21_2.SetItem(a_i, 11, "")
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_dispStatisticsByMesh', "start")
 
-        # 全降雨の超過数
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverAllRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 0)
-        # 非発生降雨の超過数
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverNonOccurRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 1)
-        # 発生降雨の超過数
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverOccurRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 2)
-        # 災害捕捉率
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_DisasterSupplementSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 3)
-        # 空振り率
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 4)
-        # 空振り頻度
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffFrequencySymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 5)
-        # 空振り時間
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffTimeSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 6)
-        # 警報発表の頻度
-        self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_AlarmAnnounceSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 7)
+        try:
+            a_size = self.g_listBox_21_2.GetItemCount()
+            for a_i in range(0, a_size):
+                self.g_listBox_21_2.SetItem(a_i, 1, "")
+                self.g_listBox_21_2.SetItem(a_i, 2, "")
+                self.g_listBox_21_2.SetItem(a_i, 3, "")
+                self.g_listBox_21_2.SetItem(a_i, 4, "")
+                self.g_listBox_21_2.SetItem(a_i, 5, "")
+                self.g_listBox_21_2.SetItem(a_i, 6, "")
+                self.g_listBox_21_2.SetItem(a_i, 7, "")
+                self.g_listBox_21_2.SetItem(a_i, 8, "")
+                self.g_listBox_21_2.SetItem(a_i, 9, "")
+                self.g_listBox_21_2.SetItem(a_i, 10, "")
+                self.g_listBox_21_2.SetItem(a_i, 11, "")
 
-        self.g_listBox_21_2.Update()
+            # 全降雨の超過数
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverAllRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 0)
+            # 非発生降雨の超過数
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverNonOccurRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 1)
+            # 発生降雨の超過数
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_OverOccurRainFallNumSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 2)
+            # 災害捕捉率
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_DisasterSupplementSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 3)
+            # 空振り率
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 4)
+            # 空振り頻度
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffFrequencySymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 5)
+            # 空振り時間
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_WhiffTimeSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 6)
+            # 警報発表の頻度
+            self._dispStatisticsByMesh_sub(h_meshNo, com.g_OutPath + "\\" + com.g_AlarmAnnounceSymbol + "-" + str(com.g_TargetStartYear) + "-" + str(com.g_TargetEndYear) + ".csv", 7)
+
+            self.g_listBox_21_2.Update()
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatisticsByMesh', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatisticsByMesh', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_dispStatisticsByMesh', "end")
 
     def _dispStatisticsByMesh_sub(self, h_meshNo, h_fname, h_row):
-        a_sr = open(h_fname, "r", encoding="shift_jis")
-        # 1行分、読み飛ばす
-        a_textline = a_sr.readline().rstrip('\r\n')
-        a_textline = a_sr.readline().rstrip('\r\n')
-        while a_textline:
-            a_split = a_textline.split(",")
-            if (a_split[0] == h_meshNo):
-                self.g_listBox_21_2.SetItem(h_row, 1, a_split[1])
-                self.g_listBox_21_2.SetItem(h_row, 2, a_split[2])
-                self.g_listBox_21_2.SetItem(h_row, 3, a_split[3])
-                self.g_listBox_21_2.SetItem(h_row, 4, a_split[4])
-                self.g_listBox_21_2.SetItem(h_row, 5, a_split[5])
-                self.g_listBox_21_2.SetItem(h_row, 6, a_split[6])
-                self.g_listBox_21_2.SetItem(h_row, 7, a_split[7])
-                self.g_listBox_21_2.SetItem(h_row, 8, a_split[8])
-                self.g_listBox_21_2.SetItem(h_row, 9, a_split[9])
-                if (h_row == 3):
-                    self.g_listBox_21_2.SetItem(h_row, 10, a_split[10])
-                if (h_row == 5) or (h_row == 6) or (h_row == 7):
-                    self.g_listBox_21_2.SetItem(h_row, 11, a_split[10])
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeContour_proc', "start")
 
+        try:
+            a_sr = open(h_fname, "r", encoding="shift_jis")
+            # 1行分、読み飛ばす
             a_textline = a_sr.readline().rstrip('\r\n')
-        a_sr.close()
+            a_textline = a_sr.readline().rstrip('\r\n')
+            while a_textline:
+                a_split = a_textline.split(",")
+                if (a_split[0] == h_meshNo):
+                    self.g_listBox_21_2.SetItem(h_row, 1, a_split[1])
+                    self.g_listBox_21_2.SetItem(h_row, 2, a_split[2])
+                    self.g_listBox_21_2.SetItem(h_row, 3, a_split[3])
+                    self.g_listBox_21_2.SetItem(h_row, 4, a_split[4])
+                    self.g_listBox_21_2.SetItem(h_row, 5, a_split[5])
+                    self.g_listBox_21_2.SetItem(h_row, 6, a_split[6])
+                    self.g_listBox_21_2.SetItem(h_row, 7, a_split[7])
+                    self.g_listBox_21_2.SetItem(h_row, 8, a_split[8])
+                    self.g_listBox_21_2.SetItem(h_row, 9, a_split[9])
+                    if (h_row == 3):
+                        self.g_listBox_21_2.SetItem(h_row, 10, a_split[10])
+                    if (h_row == 5) or (h_row == 6) or (h_row == 7):
+                        self.g_listBox_21_2.SetItem(h_row, 11, a_split[10])
+
+                a_textline = a_sr.readline().rstrip('\r\n')
+            a_sr.close()
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatisticsByMesh_sub', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_dispStatisticsByMesh_sub', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_dispStatisticsByMesh_sub', "end")
 
     def _enable_MenuBar(self, h_enable):
         self.g_menu_bar.EnableTop(0, h_enable)
@@ -621,88 +654,56 @@ class Main(wx.Frame):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeAlarmAnnounce(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeAlarmAnnounce', "start")
+
+        try:
+            a_proc = clsFigure.MakeAlarmAnnounce(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAlarmAnnounce', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAlarmAnnounce', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeAlarmAnnounce', "end")
 
     def _makeAllRainfallData(self):
         global com
         global g_meshList_target
 
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "start")
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeAllRainfallData', "start")
 
-        # RBFNデータ入力
+        try:
+            # RBFNデータ入力
 
-        for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
-        #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
-            print('***a_year=' + str(a_year))
+            for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
+            #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
+                print('***a_year=' + str(a_year))
 
-            self.prv_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
-            self.prv_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
-            # 予測的中率
-            self.prv_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
-            self.prv_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+                self.prv_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+                self.prv_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+                # 予測的中率
+                self.prv_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+                self.prv_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
 
-            a_clsRainfall = clsRainfall.MakeAllRainfallDataByMesh(
-                1,
-                com.g_strIni,
-                a_year,
-                -1,
-                g_meshList_target
-            )
+                a_clsRainfall = clsRainfall.MakeAllRainfallDataByMesh(
+                    1,
+                    com.g_strIni,
+                    a_year,
+                    -1,
+                    g_meshList_target
+                )
 
 
-            a_meshSum = len(g_meshList_target)
+                a_meshSum = len(g_meshList_target)
 
-            # 通常
-            a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName, a_clsRainfall.textline_Rainfall)
-            a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName, a_clsRainfall.textline_SoilRain)
-
-            a_count = self.g_listBox_11.GetItemCount()
-            for a_cnt in range(0, a_meshSum):
-                a_split = g_meshList_target[a_cnt].split(',')
-                a_meshNo = ''
-                if (com.g_TargetRainMesh == 1):
-                    # 対象Surfaceが1km
-                    a_meshNo = a_split[1]
-                else:
-                    # 対象Surfaceが5km
-                    a_meshNo = a_split[0]
-                print('a_meshNo=' + a_meshNo)
-
-                self.g_listBox_11.InsertItem(a_cnt + a_count, str(a_year))
-                self.g_listBox_11.SetItem(a_cnt + a_count, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
-                self.g_listBox_11.SetItem(a_cnt + a_count, 2, a_meshNo)
-                self.g_listBox_11.SetItem(a_cnt + a_count, 3, "処理中......")
-                self.g_listBox_11.SetItemTextColour(a_cnt, wx.RED)
-                #self.g_listBox_11.Refresh()
-                self.g_listBox_11.Update()
-                #self.Refresh()
-                self.Update()
-
-                a_clsRainfall.meshIdx = a_cnt
-                #a_clsRainfall.run()
-                a_clsRainfall._makeAllRainfallDataByMesh(a_year, 0, a_cnt, g_meshList_target)
-
-                self.g_listBox_11.SetItem(a_cnt + a_count, 3, "入力データ作成が完了しました。")
-                self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.BLUE)
-                #self.g_listBox_11.Refresh()
-                self.g_listBox_11.Update()
-                #self.Refresh()
-                self.Update()
-
-            del a_clsRainfall.textline_Rainfall[:]
-            del a_clsRainfall.textline_SoilRain[:]
-            gc.collect()
-
-            if com.g_RainKind != 0:
-                # 比較対象の実況雨量データの算出
-                a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName1, a_clsRainfall.textline_Rainfall)
-                a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName1, a_clsRainfall.textline_SoilRain)
+                # 通常
+                a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName, a_clsRainfall.textline_Rainfall)
+                a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName, a_clsRainfall.textline_SoilRain)
 
                 a_count = self.g_listBox_11.GetItemCount()
                 for a_cnt in range(0, a_meshSum):
@@ -719,8 +720,8 @@ class Main(wx.Frame):
                     self.g_listBox_11.InsertItem(a_cnt + a_count, str(a_year))
                     self.g_listBox_11.SetItem(a_cnt + a_count, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
                     self.g_listBox_11.SetItem(a_cnt + a_count, 2, a_meshNo)
-                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の処理中......")
-                    self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.RED)
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "処理中......")
+                    self.g_listBox_11.SetItemTextColour(a_cnt, wx.RED)
                     #self.g_listBox_11.Refresh()
                     self.g_listBox_11.Update()
                     #self.Refresh()
@@ -728,9 +729,9 @@ class Main(wx.Frame):
 
                     a_clsRainfall.meshIdx = a_cnt
                     #a_clsRainfall.run()
-                    a_clsRainfall._makeAllRainfallDataByMesh(a_year, 1, a_cnt, g_meshList_target)
+                    a_clsRainfall._makeAllRainfallDataByMesh(a_year, 0, a_cnt, g_meshList_target)
 
-                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の入力データ作成が完了しました。")
+                    self.g_listBox_11.SetItem(a_cnt + a_count, 3, "入力データ作成が完了しました。")
                     self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.BLUE)
                     #self.g_listBox_11.Refresh()
                     self.g_listBox_11.Update()
@@ -741,7 +742,54 @@ class Main(wx.Frame):
                 del a_clsRainfall.textline_SoilRain[:]
                 gc.collect()
 
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData', "end")
+                if com.g_RainKind != 0:
+                    # 比較対象の実況雨量データの算出
+                    a_clsRainfall.textSum_Rainfall = com.Store_DataFile(self.prv_RainfallFileName1, a_clsRainfall.textline_Rainfall)
+                    a_clsRainfall.textSum_SoilRain = com.Store_DataFile(self.prv_SoilRainFileName1, a_clsRainfall.textline_SoilRain)
+
+                    a_count = self.g_listBox_11.GetItemCount()
+                    for a_cnt in range(0, a_meshSum):
+                        a_split = g_meshList_target[a_cnt].split(',')
+                        a_meshNo = ''
+                        if (com.g_TargetRainMesh == 1):
+                            # 対象Surfaceが1km
+                            a_meshNo = a_split[1]
+                        else:
+                            # 対象Surfaceが5km
+                            a_meshNo = a_split[0]
+                        print('a_meshNo=' + a_meshNo)
+
+                        self.g_listBox_11.InsertItem(a_cnt + a_count, str(a_year))
+                        self.g_listBox_11.SetItem(a_cnt + a_count, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                        self.g_listBox_11.SetItem(a_cnt + a_count, 2, a_meshNo)
+                        self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の処理中......")
+                        self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.RED)
+                        #self.g_listBox_11.Refresh()
+                        self.g_listBox_11.Update()
+                        #self.Refresh()
+                        self.Update()
+
+                        a_clsRainfall.meshIdx = a_cnt
+                        #a_clsRainfall.run()
+                        a_clsRainfall._makeAllRainfallDataByMesh(a_year, 1, a_cnt, g_meshList_target)
+
+                        self.g_listBox_11.SetItem(a_cnt + a_count, 3, "実況雨量の入力データ作成が完了しました。")
+                        self.g_listBox_11.SetItemTextColour(a_cnt + a_count, wx.BLUE)
+                        #self.g_listBox_11.Refresh()
+                        self.g_listBox_11.Update()
+                        #self.Refresh()
+                        self.Update()
+
+                    del a_clsRainfall.textline_Rainfall[:]
+                    del a_clsRainfall.textline_SoilRain[:]
+                    gc.collect()
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeAllRainfallData', "end")
 
     def _makeAllRainfallData_proc(self):
         global com
@@ -749,158 +797,172 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "start")
 
-        # RBFNデータ入力
+        try:
+            # RBFNデータ入力
 
-        '''
-        a_manager = Manager()
-        # 災害情報
-        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
-        # 警戒情報
-        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
-        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
-        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
-        '''
+            # 災害情報
+            a_DisasterFile = None
+            a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
+            #print(a_buf.encode("utf-8"))
+            #a_DisasterFile = multiprocessing.Value("i", 1)
+            #a_DisasterFile = multiprocessing.Value(c_wchar_p, a_buf)
+            a_DisasterFile = multiprocessing.Array("u", a_buf)
+            #print(a_DisasterFile.value)
+            # 警戒情報
+            a_CautionAnnounceFile = None
+            a_buf = com.Store_DataFile_all(com.g_CautionAnnounceFileName)
+            #a_CautionAnnounceFile = multiprocessing.Value(c_wchar_p, a_buf)
+            a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
+            #print(a_DisasterFile.value)
 
-        #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
-        for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
-            print('***a_year=' + str(a_year))
+            #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
+            for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
+                print('***a_year=' + str(a_year))
 
-            '''
-            a_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
-            a_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+                #気温情報
+                a_TemperatureFile = None
+                a_TemperatureFileName = com.g_OutPath + "\\" + com.g_TemperatureFileSId + str(a_year) + com.g_TemperatureFileEId
+                a_buf = com.Store_DataFile_all(a_TemperatureFileName)
+                if (a_buf != None):
+                    #a_TemperatureFile = multiprocessing.Value(c_wchar_p, a_buf)
+                    a_TemperatureFile = multiprocessing.Array("u", a_buf)
 
-            # 予測的中率
-            a_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
-            a_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+                # 全降雨
+                a_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+                a_SoilRainFileName = com.g_OutPath + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
+                # 予測的中率
+                a_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
+                a_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
 
-            a_TemperatureFileName = com.g_OutPath + "\\" + com.g_TemperatureFileSId + str(a_year) + com.g_TemperatureFileEId
-            com.g_textSum_TemperatureFile = com.Store_DataFile(a_TemperatureFileName, com.g_textline_TemperatureFile)
+                a_RainfallFile = None
+                a_buf = com.Store_DataFile_all(a_RainfallFileName)
+                #a_RainfallFile = multiprocessing.Value(c_wchar_p, a_buf)
+                a_RainfallFile = multiprocessing.Array("u", a_buf)
+                a_SoilRainFile = None
+                a_buf = com.Store_DataFile_all(a_SoilRainFileName)
+                #a_SoilRainFile = multiprocessing.Value(c_wchar_p, a_buf)
+                a_SoilRainFile = multiprocessing.Array("u", a_buf)
 
-            #print(prv_RainfallFileName)
-            #com.Store_RainfallFile(prv_RainfallFileName)
-            com.g_textSum_RainfallFile = com.Store_DataFile(a_RainfallFileName, com.g_textline_RainfallFile)
-            #com.Store_SoilRainFile(prv_SoilRainFileName)
-            com.g_textSum_SoilRainFile = com.Store_DataFile(a_SoilRainFileName, com.g_textline_SoilRainFile)
-            if com.g_RainKind != 0:
-                #com.Store_RainfallFile1(prv_RainfallFileName1)
-                com.g_textSum_RainfallFile1 = com.Store_DataFile(a_RainfallFileName1, com.g_textline_RainfallFile1)
-                #com.Store_SoilRainFile1(prv_SoilRainFileName1)
-                com.g_textSum_SoilRainFile1 = com.Store_DataFile(a_SoilRainFileName1, com.g_textline_SoilRainFile1)
+                a_RainfallFile1 = None
+                a_SoilRainFile1 = None
 
-            a_RainfallFile = a_manager.list([])
-            a_SoilRainFile = a_manager.list([])
-            a_TemperatureFile = a_manager.list([])
-            a_RainfallFile1 = a_manager.list([])
-            a_SoilRainFile1 = a_manager.list([])
+                if com.g_RainKind != 0:
+                    a_buf = com.Store_DataFile_all(a_RainfallFileName1)
+                    #a_RainfallFile1 = multiprocessing.Value(c_wchar_p, a_buf)
+                    a_RainfallFile1 = multiprocessing.Array("u", a_buf)
+                    a_buf = com.Store_DataFile_all(a_SoilRainFileName1)
+                    #a_SoilRainFile1 = multiprocessing.Value(c_wchar_p, a_buf)
+                    a_SoilRainFile1 = multiprocessing.Array("u", a_buf)
 
-            a_RainfallFile = a_manager.list(com.g_textline_RainfallFile)
-            a_SoilRainFile = a_manager.list(com.g_textline_SoilRainFile)
-            a_TemperatureFile = a_manager.list(com.g_textline_TemperatureFile)
-            if com.g_RainKind != 0:
-                a_RainfallFile1 = a_manager.list(com.g_textline_RainfallFile1)
-                a_SoilRainFile1 = a_manager.list(com.g_textline_SoilRainFile1)
-            else:
-                a_RainfallFile1 = a_manager.list([])
-                a_SoilRainFile1 = a_manager.list([])
+                a_meshSum = len(g_meshList_target)
+
+                ''' testing...
+                self.g_listBox_11.SetItem(0, 3, "入力データ作成が完了しました。")
+                self.g_listBox_11.Refresh(0)
+                return
                 '''
 
-            a_meshSum = len(g_meshList_target)
+                a_sum = 0
+                a_count = self.g_listBox_11.GetItemCount()
+                while (a_sum < a_meshSum):
+                    #a_cnt_max = (a_sum + com.g_cpu_count)
+                    a_cnt_max = (a_sum + com.g_MakeAllRainfallDataExecNum)
+                    if (a_cnt_max > a_meshSum):
+                        a_cnt_max = a_meshSum
 
-            ''' testing...
-            self.g_listBox_11.SetItem(0, 3, "入力データ作成が完了しました。")
-            self.g_listBox_11.Refresh(0)
-            return
-            '''
+                    print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                    a_procs = []
+                    a_proc_num = 0
+                    for a_cnt in range(a_sum, a_cnt_max):
+                        a_proc_num += 1
+                        #print('a_cnt=' + str(a_cnt))
+                        a_split = g_meshList_target[a_cnt].split(',')
+                        a_meshNo = ''
+                        if (com.g_TargetRainMesh == 1):
+                            # 対象Surfaceが1km
+                            a_meshNo = a_split[1]
+                        else:
+                            # 対象Surfaceが5km
+                            a_meshNo = a_split[0]
+                        print('a_meshNo=' + a_meshNo)
 
-            a_sum = 0
-            a_count = self.g_listBox_11.GetItemCount()
-            while (a_sum < a_meshSum):
-                #a_cnt_max = (a_sum + com.g_cpu_count)
-                a_cnt_max = (a_sum + com.g_MakeAllRainfallDataExecNum)
-                if (a_cnt_max > a_meshSum):
-                    a_cnt_max = a_meshSum
+                        '''
+                        a_proc = multiprocessing.Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                         args=(
+                                             a_proc_num,
+                                             com.g_strIni,
+                                             a_DisasterFile,
+                                             a_CautionAnnounceFile,
+                                             a_year,
+                                             a_cnt,
+                                             g_meshList_target
+                                         ))
+                                         '''
+                        '''
+                        a_proc = multiprocessing.Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                         args=(
+                                             a_proc_num,
+                                             com.g_strIni,
+                                             a_DisasterFile,
+                                             a_CautionAnnounceFile,
+                                             a_TemperatureFile,
+                                             a_RainfallFile,
+                                             a_SoilRainFile,
+                                             a_RainfallFile1,
+                                             a_SoilRainFile1,
+                                             a_year,
+                                             a_cnt,
+                                             g_meshList_target
+                                         ))
+                                         '''
 
-                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-                a_procs = []
-                a_proc_num = 0
-                for a_cnt in range(a_sum, a_cnt_max):
-                    a_proc_num += 1
-                    #print('a_cnt=' + str(a_cnt))
-                    a_split = g_meshList_target[a_cnt].split(',')
-                    a_meshNo = ''
-                    if (com.g_TargetRainMesh == 1):
-                        # 対象Surfaceが1km
-                        a_meshNo = a_split[1]
-                    else:
-                        # 対象Surfaceが5km
-                        a_meshNo = a_split[0]
-                    print('a_meshNo=' + a_meshNo)
-
-                    '''
-                    a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
-                                     args=(
-                                         a_proc_num,
-                                         com.g_strIni,
-                                         a_DisasterFile,
-                                         a_CautionAnnounceFile,
-                                         a_year,
-                                         a_cnt,
-                                         g_meshList_target
-                                     ))
-                                     '''
-                    '''
-                    a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
-                                     args=(
-                                         a_proc_num,
-                                         com.g_strIni,
-                                         a_DisasterFile,
-                                         a_CautionAnnounceFile,
-                                         a_TemperatureFile,
-                                         a_RainfallFile,
-                                         a_SoilRainFile,
-                                         a_RainfallFile1,
-                                         a_SoilRainFile1,
-                                         a_year,
-                                         a_cnt,
-                                         g_meshList_target
-                                     ))
-                                     '''
-
-                    a_proc = Process(target=clsRainfall.MakeAllRainfallDataByMesh,
-                                     args=(
-                                         a_proc_num,
-                                         com.g_strIni,
-                                         a_year,
-                                         a_cnt,
-                                         g_meshList_target
-                                     ))
+                        a_proc = multiprocessing.Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                         args=(
+                                             a_proc_num,
+                                             com.g_strIni,
+                                             a_DisasterFile,
+                                             a_CautionAnnounceFile,
+                                             a_TemperatureFile,
+                                             a_RainfallFile,
+                                             a_SoilRainFile,
+                                             a_RainfallFile1,
+                                             a_SoilRainFile1,
+                                             a_year,
+                                             a_cnt,
+                                             g_meshList_target
+                                         ))
 
 
-                    a_procs.append(a_proc)
+                        a_procs.append(a_proc)
 
-                    self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
-                    self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
-                    self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
-                    self.g_listBox_11.Update()
+                        self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
+                        self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
+                        self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
+                        self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
+                        self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
+                        self.g_listBox_11.Update()
 
-                for a_proc in a_procs:
-                    a_proc.start()
-                for a_proc in a_procs:
-                    a_proc.join()
-                for a_proc in a_procs:
-                    a_proc.terminate()
+                    for a_proc in a_procs:
+                        a_proc.start()
+                    for a_proc in a_procs:
+                        a_proc.join()
+                    for a_proc in a_procs:
+                        a_proc.terminate()
 
-                for a_i in range(a_sum, a_cnt_max):
-                    self.g_listBox_11.SetItem(a_count + a_i , 3, "入力データ作成が完了しました。")
-                    self.g_listBox_11.SetItemTextColour(a_count + a_i, wx.BLUE)
-                    self.g_listBox_11.Update()
-                    self.Update()
+                    for a_i in range(a_sum, a_cnt_max):
+                        self.g_listBox_11.SetItem(a_count + a_i , 3, "入力データ作成が完了しました。")
+                        self.g_listBox_11.SetItemTextColour(a_count + a_i, wx.BLUE)
+                        self.g_listBox_11.Update()
+                        self.Update()
 
-                print('All process is ended.')
+                    print('All process is ended.')
 
-                a_sum = a_cnt_max
+                    a_sum = a_cnt_max
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData_proc', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData_proc', sys.exc_info())
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "end")
 
@@ -916,147 +978,101 @@ class Main(wx.Frame):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeCautionAnnounceFrequencyOverOccurRainFallNum(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceFrequencyOverOccurRainFallNum', "start")
+
+        try:
+            a_proc = clsFigure.MakeCautionAnnounceFrequencyOverOccurRainFallNum(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceFrequencyOverOccurRainFallNum', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceFrequencyOverOccurRainFallNum', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceFrequencyOverOccurRainFallNum', "end")
 
     def _makeCautionAnnounceRateOccurNum(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeCautionAnnounceRateOccurNum(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceRateOccurNum', "start")
+
+        try:
+            a_proc = clsFigure.MakeCautionAnnounceRateOccurNum(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceRateOccurNum', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceRateOccurNum', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceRateOccurNum', "end")
 
     def _makeCautionAnnounceRateOccurRainFallNum(self, ):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeCautionAnnounceRateOccurRainFallNum(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceRateOccurRainFallNum', "start")
+
+        try:
+            a_proc = clsFigure.MakeCautionAnnounceRateOccurRainFallNum(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceRateOccurRainFallNum', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeCautionAnnounceRateOccurRainFallNum', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeCautionAnnounceRateOccurRainFallNum', "end")
 
     def _makeContour(self):
         global com
         global g_meshList_check
 
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "start")
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeContour', "start")
 
-        '''
-        # 災害情報
-        com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
-        # 警戒情報
-        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
-        # 対象メッシュ情報
-        com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+        try:
+            '''
+            # 災害情報
+            com.g_textSum_DisasterFile = com.Store_DataFile(com.g_DisasterFileName, com.g_textline_DisasterFile)
+            # 警戒情報
+            com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+            # 対象メッシュ情報
+            com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+    
+            a_manager = Manager()
+            a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
+            a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+            a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
+            '''
+            a_clsContour = clsContour.MakeContourByMesh(
+                1,
+                com.g_strIni,
+                "",
+                0,
+                0,
+                0,
+                -1
+            )
 
-        a_manager = Manager()
-        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
-        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
-        a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
-        '''
-        a_clsContour = clsContour.MakeContourByMesh(
-            1,
-            com.g_strIni,
-            "",
-            0,
-            0,
-            0,
-            -1
-        )
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-
-        for a_cnt in range(0, a_meshSum):
-            a_index = g_meshList_check[a_cnt][0]   # インデックス
-            a_meshNo = g_meshList_check[a_cnt][1]   # メッシュ番号
-            print('a_meshNo=' + a_meshNo)
-            self.g_listBox_13_1.SetItem(a_index , 3, "処理中......")
-            self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
-            #self.g_listBox_13_1.Select(a_index, 1)
-            #self.SetScrollPos(wx.VERTICAL, a_index)
-            self.g_listBox_13_1.Update()
-            self.Update()
-
-            a_clsContour.meshNo = a_meshNo
-            a_clsContour.run()
-
-            self.g_listBox_13_1.SetItem(a_index , 3, "抽出処理が完了しました。")
-            self.g_listBox_13_1.SetItemTextColour(a_index, wx.BLUE)
-            self.g_listBox_13_1.Update()
-            self.Update()
-
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour', "end")
-
-    def _makeContour_proc(self):
-        global com
-        global g_meshList_check
-
-        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "start")
-
-        '''
-        a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
-        a_DisasterFile = Value("i", 666)
-        #a_DisasterFile = Value(c_wchar_p, "chappy")
-        #a_buf2 = create_string_buffer(a_buf.encode("sjis"))
-        #a_DisasterFile = cast(a_buf2, POINTER(c_char))
-        '''
-
-        '''
-        # 災害情報
-        com.g_textSum_DisasterFile = com.Store_DataFile_all(com.g_DisasterFileName, com.g_textline_DisasterFile)
-        # 警戒情報
-        com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
-        # 対象メッシュ情報
-        com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
-        '''
-
-        '''
-        a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
-        a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
-        a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
-        '''
-
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            #a_cnt_max = (a_sum + com.g_cpu_count)
-            a_cnt_max = (a_sum + com.g_MakeContourExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
-
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
+            for a_cnt in range(0, a_meshSum):
                 a_index = g_meshList_check[a_cnt][0]   # インデックス
                 a_meshNo = g_meshList_check[a_cnt][1]   # メッシュ番号
-                '''
-                a_split = g_meshList_check[a_cnt].split(',')
-                a_meshNo = ''
-                if (com.g_TargetRainMesh == 1):
-                    # 対象Surfaceが1km
-                    a_meshNo = a_split[1]
-                else:
-                    # 対象Surfaceが5km
-                    a_meshNo = a_split[0]
-                    '''
                 print('a_meshNo=' + a_meshNo)
                 self.g_listBox_13_1.SetItem(a_index , 3, "処理中......")
                 self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
@@ -1065,56 +1081,149 @@ class Main(wx.Frame):
                 self.g_listBox_13_1.Update()
                 self.Update()
 
-                '''
-                a_proc = Process(target=clsContour.MakeContourByMesh,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_DisasterFile,
-                                     a_CautionAnnounceFile,
-                                     a_TargetMeshFile,
-                                     a_meshNo,
-                                     0,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                                 '''
-                '''
-                a_proc = Process(target=Testing,
-                                 args=(
-                                     com.g_strIni
-                                 ))
-                                 '''
-                a_proc = Process(target=clsContour.MakeContourByMesh,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_meshNo,
-                                     0,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
+                a_clsContour.meshNo = a_meshNo
+                a_clsContour.run()
 
-                a_procs.append(a_proc)
-
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
-
-            for a_i in range(a_sum, a_cnt_max):
-                self.g_listBox_13_1.SetItem(a_i , 3, "抽出処理が完了しました。")
-                self.g_listBox_13_1.SetItemTextColour(a_i, wx.BLUE)
+                self.g_listBox_13_1.SetItem(a_index , 3, "抽出処理が完了しました。")
+                self.g_listBox_13_1.SetItemTextColour(a_index, wx.BLUE)
                 self.g_listBox_13_1.Update()
                 self.Update()
 
-            print('All process is ended.')
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour', sys.exc_info())
 
-            a_sum = a_cnt_max
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeContour', "end")
+
+    def _makeContour_proc(self):
+        global com
+        global g_meshList_check
+
+        com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "start")
+
+        try:
+            # 災害情報
+            a_DisasterFile = None
+            a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
+            a_DisasterFile = multiprocessing.Array("u", a_buf)
+            '''
+            # 警戒情報
+            a_buf = com.Store_DataFile_all(com.g_CautionAnnounceFileName)
+            a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
+            '''
+            # 対象メッシュ情報
+            a_TargetMeshFile = None
+            a_buf = com.Store_DataFile_all(com.g_TargetMeshFile)
+            a_TargetMeshFile = multiprocessing.Array("u", a_buf)
+
+            '''
+            # 災害情報
+            com.g_textSum_DisasterFile = com.Store_DataFile_all(com.g_DisasterFileName, com.g_textline_DisasterFile)
+            # 警戒情報
+            com.g_textSum_CautionAnnounceFile = com.Store_DataFile(com.g_CautionAnnounceFileName, com.g_textline_CautionAnnounceFile)
+            # 対象メッシュ情報
+            com.g_textSum_TargetMeshFile = com.Store_DataFile(com.g_TargetMeshFile, com.g_textline_TargetMeshFile)
+            '''
+
+            '''
+            a_DisasterFile = a_manager.list(com.g_textline_DisasterFile)
+            a_CautionAnnounceFile = a_manager.list(com.g_textline_CautionAnnounceFile)
+            a_TargetMeshFile = a_manager.list(com.g_textline_TargetMeshFile)
+            '''
+
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                #a_cnt_max = (a_sum + com.g_cpu_count)
+                a_cnt_max = (a_sum + com.g_MakeContourExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
+
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_index = g_meshList_check[a_cnt][0]   # インデックス
+                    a_meshNo = g_meshList_check[a_cnt][1]   # メッシュ番号
+                    '''
+                    a_split = g_meshList_check[a_cnt].split(',')
+                    a_meshNo = ''
+                    if (com.g_TargetRainMesh == 1):
+                        # 対象Surfaceが1km
+                        a_meshNo = a_split[1]
+                    else:
+                        # 対象Surfaceが5km
+                        a_meshNo = a_split[0]
+                        '''
+                    print('a_meshNo=' + a_meshNo)
+                    self.g_listBox_13_1.SetItem(a_index , 3, "処理中......")
+                    self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
+                    #self.g_listBox_13_1.Select(a_index, 1)
+                    #self.SetScrollPos(wx.VERTICAL, a_index)
+                    self.g_listBox_13_1.Update()
+                    self.Update()
+
+                    '''
+                    a_proc = multiprocessing.Process(target=clsContour.MakeContourByMesh,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_DisasterFile,
+                                         a_CautionAnnounceFile,
+                                         a_TargetMeshFile,
+                                         a_meshNo,
+                                         0,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                                     '''
+                    '''
+                    a_proc = multiprocessing.Process(target=Testing,
+                                     args=(
+                                         com.g_strIni
+                                     ))
+                                     '''
+                    a_proc = multiprocessing.Process(target=clsContour.MakeContourByMesh,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_DisasterFile,
+                                         a_TargetMeshFile,
+                                         a_meshNo,
+                                         0,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+
+                    a_procs.append(a_proc)
+
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
+
+                for a_i in range(a_sum, a_cnt_max):
+                    self.g_listBox_13_1.SetItem(a_i , 3, "抽出処理が完了しました。")
+                    self.g_listBox_13_1.SetItemTextColour(a_i, wx.BLUE)
+                    self.g_listBox_13_1.Update()
+                    self.Update()
+
+                print('All process is ended.')
+
+                a_sum = a_cnt_max
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour_proc', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour_proc', sys.exc_info())
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "end")
 
@@ -1122,208 +1231,251 @@ class Main(wx.Frame):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeDisasterSupplement(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement', "start")
+
+        try:
+            a_proc = clsFigure.MakeDisasterSupplement(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement', "end")
 
     def _makeDisasterSupplement9_1(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeDisasterSupplement9_1(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement9_1', "start")
+
+        try:
+            a_proc = clsFigure.MakeDisasterSupplement9_1(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement9_1', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement9_1', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement9_1', "end")
 
     def _makeDisasterSupplement9_2(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeDisasterSupplement9_2(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement9_2', "start")
+
+        try:
+            a_proc = clsFigure.MakeDisasterSupplement9_2(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement9_2', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeDisasterSupplement9_2', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeDisasterSupplement9_2', "end")
 
     def _makeFigure(self):
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "start")
 
-        self.g_listBox_13_2.SetItem(0, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(0, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 全降雨の超過数
-        # 非発生降雨の超過数
-        # 発生降雨の超過数
-        self._makeOverRainfall()
-        self._makeOverRainfallMix()
-        self.g_listBox_13_2.SetItem(0, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+        try:
 
-        self.g_listBox_13_2.SetItem(1, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(1, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        #災害捕捉率
-        self._makeDisasterSupplement()
-        self.g_listBox_13_2.SetItem(1, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(1, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            # 災害情報
+            a_DisasterFile = None
+            a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
+            a_DisasterFile = multiprocessing.Array("u", a_buf)
+            # 警戒情報
+            a_CautionAnnounceFile = None
+            a_buf = com.Store_DataFile_all(com.g_CautionAnnounceFileName)
+            a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
 
-        self.g_listBox_13_2.SetItem(2, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(2, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 空振り率
-        self._makeWiff()
-        # 空振り率2
-        self._makeWiff_New()
-        self.g_listBox_13_2.SetItem(2, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(2, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(0, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(0, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 全降雨の超過数
+            # 非発生降雨の超過数
+            # 発生降雨の超過数
+            self._makeOverRainfall(a_DisasterFile)
+            self._makeOverRainfallMix()
+            self.g_listBox_13_2.SetItem(0, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(3, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(3, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 空振り頻度
-        self._makeWhiffFrequency()
-        # 空振り頻度2
-        self._makeWhiffFrequency_New()
-        self.g_listBox_13_2.SetItem(3, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(3, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(1, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(1, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            #災害捕捉率
+            self._makeDisasterSupplement()
+            self.g_listBox_13_2.SetItem(1, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(1, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(4, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(4, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 空振り時間
-        self._makeWhiffTime()
-        self.g_listBox_13_2.SetItem(4, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(4, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(2, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(2, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 空振り率
+            self._makeWiff()
+            # 空振り率2
+            self._makeWiff_New()
+            self.g_listBox_13_2.SetItem(2, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(2, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(5, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(5, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 警報発表頻度
-        self._makeAlarmAnnounce()
-        self.g_listBox_13_2.SetItem(5, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(5, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(3, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(3, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 空振り頻度
+            self._makeWhiffFrequency()
+            # 空振り頻度2
+            self._makeWhiffFrequency_New()
+            self.g_listBox_13_2.SetItem(3, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(3, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(6, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(6, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # 9)実質災害捕捉率
-        # 災害捕捉率【降雨数】
-        self._makeDisasterSupplement9_1()
-        # 災害捕捉率【件数】
-        self._makeDisasterSupplement9_2()
-        self.g_listBox_13_2.SetItem(6, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(6, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(4, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(4, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 空振り時間
+            self._makeWhiffTime()
+            self.g_listBox_13_2.SetItem(4, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(4, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(7, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(7, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ④実質災害捕捉率
-        # 年毎メッシュ単位の算出結果
-        self._makeOverRainfall2()
-        # 警戒発表中災害発生件数
-        # 警戒発表中災害発生降雨数
-        self._makeOverRainfallMix2()
+            self.g_listBox_13_2.SetItem(5, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(5, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 警報発表頻度
+            self._makeAlarmAnnounce()
+            self.g_listBox_13_2.SetItem(5, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(5, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        # 土砂災害警戒情報の災害捕捉率（降雨数）
-        self._makeCautionAnnounceRateOccurRainFallNum()
-        # 土砂災害警戒情報の災害捕捉率（件数）
-        self._makeCautionAnnounceRateOccurNum()
-        self.g_listBox_13_2.SetItem(7, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(7, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(6, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(6, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # 9)実質災害捕捉率
+            # 災害捕捉率【降雨数】
+            self._makeDisasterSupplement9_1()
+            # 災害捕捉率【件数】
+            self._makeDisasterSupplement9_2()
+            self.g_listBox_13_2.SetItem(6, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(6, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(8, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(8, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ②土砂災害警戒情報のリードタイム
-        self._makeOverRainfall3_1()
-        self._makeOverRainfallMix3_1()
-        self.g_listBox_13_2.SetItem(8, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(8, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(7, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(7, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ④実質災害捕捉率
+            # 年毎メッシュ単位の算出結果
+            self._makeOverRainfall2(a_DisasterFile, a_CautionAnnounceFile)
+            # 警戒発表中災害発生件数
+            # 警戒発表中災害発生降雨数
+            self._makeOverRainfallMix2()
 
-        self.g_listBox_13_2.SetItem(9, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(9, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ③土砂災害警戒情報の発表頻度
-        self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
-        self.g_listBox_13_2.SetItem(9, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(9, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            # 土砂災害警戒情報の災害捕捉率（降雨数）
+            self._makeCautionAnnounceRateOccurRainFallNum()
+            # 土砂災害警戒情報の災害捕捉率（件数）
+            self._makeCautionAnnounceRateOccurNum()
+            self.g_listBox_13_2.SetItem(7, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(7, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(10, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(10, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ⑥RBFN越のリードタイム
-        self._makeOverRainfall3_2()
-        self._makeOverRainfallMix3_2()
-        self.g_listBox_13_2.SetItem(10, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(8, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(8, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ②土砂災害警戒情報のリードタイム
+            self._makeOverRainfall3_1()
+            self._makeOverRainfallMix3_1()
+            self.g_listBox_13_2.SetItem(8, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(8, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(11, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(11, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ⑧予測適中率
-        if (com.g_RainKind != 0):
-            self._makeOverRainfall8()
-            self._makeOverRainfallMix8()
-            self._makeForecastPredictive()
-        self.g_listBox_13_2.SetItem(11, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(11, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(9, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(9, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ③土砂災害警戒情報の発表頻度
+            self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
+            self.g_listBox_13_2.SetItem(9, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(9, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
 
-        self.g_listBox_13_2.SetItem(12, 3, "処理中......")
-        self.g_listBox_13_2.SetItemTextColour(12, wx.RED)
-        self.g_listBox_13_2.Update()
-        self.Update()
-        # ⑨NIGeDaS、NIGeDaSⅡ
-        self._makeNIGeDaS()
-        self._makeNIGeDaS_NonOccurCalc()
-        self.g_listBox_13_2.SetItem(12, 3, "集計処理が完了しました。")
-        self.g_listBox_13_2.SetItemTextColour(12, wx.BLUE)
-        self.g_listBox_13_2.Update()
-        self.Update()
+            self.g_listBox_13_2.SetItem(10, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(10, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ⑥RBFN越のリードタイム
+            self._makeOverRainfall3_2(a_DisasterFile)
+            self._makeOverRainfallMix3_2()
+            self.g_listBox_13_2.SetItem(10, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
+
+            self.g_listBox_13_2.SetItem(11, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(11, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ⑧予測適中率
+            if (com.g_RainKind != 0):
+                self._makeOverRainfall8()
+                self._makeOverRainfallMix8()
+                self._makeForecastPredictive()
+            self.g_listBox_13_2.SetItem(11, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(11, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
+
+            self.g_listBox_13_2.SetItem(12, 3, "処理中......")
+            self.g_listBox_13_2.SetItemTextColour(12, wx.RED)
+            self.g_listBox_13_2.Update()
+            self.Update()
+            # ⑨NIGeDaS、NIGeDaSⅡ
+            self._makeNIGeDaS()
+            self._makeNIGeDaS_NonOccurCalc()
+            self.g_listBox_13_2.SetItem(12, 3, "集計処理が完了しました。")
+            self.g_listBox_13_2.SetItemTextColour(12, wx.BLUE)
+            self.g_listBox_13_2.Update()
+            self.Update()
+
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeFigure', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeFigure', sys.exc_info())
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "end")
 
@@ -1331,61 +1483,138 @@ class Main(wx.Frame):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeForecastPredictive(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeForecastPredictive', "start")
+
+        try:
+            a_proc = clsFigure.MakeForecastPredictive(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeForecastPredictive', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeForecastPredictive', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeForecastPredictive', "end")
 
     def _makeNIGeDaS(self):
         global com
         global g_meshList_check
 
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeNIGeDaS', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
+        try:
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
+
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    # チェックされたものを処理対象
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeNIGeDaS,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
+
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
+
+                print('All process is ended.')
+
+                a_sum = a_cnt_max
+
+                '''
                 # チェックされたものを処理対象
-                a_proc = Process(target=clsFigure.MakeNIGeDaS,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+                a_proc = clsFigure.MakeNIGeDaS(
+                    0,
+                    com.g_strIni,
+                    g_meshList_check,
+                    0,
+                    0,
+                    -1
+                )
+                '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeNIGeDaS', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeNIGeDaS', sys.exc_info())
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeNIGeDaS', "end")
 
-            print('All process is ended.')
+    def _makeNIGeDaS_NonOccurCalc(self):
+        global com
+        global g_meshList_check
 
-            a_sum = a_cnt_max
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeNIGeDaS_NonOccurCalc', "start")
+
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
+
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeNIGeDaS_NonOccurCalc,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
+
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
+
+                print('All process is ended.')
+
+                a_sum = a_cnt_max
 
             '''
             # チェックされたものを処理対象
-            a_proc = clsFigure.MakeNIGeDaS(
+            a_proc = clsFigure.MakeNIGeDaS_NonOccurCalc(
                 0,
                 com.g_strIni,
                 g_meshList_check,
@@ -1394,525 +1623,624 @@ class Main(wx.Frame):
                 -1
             )
             '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeNIGeDaS_NonOccurCalc', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeNIGeDaS_NonOccurCalc', sys.exc_info())
 
-    def _makeNIGeDaS_NonOccurCalc(self):
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeNIGeDaS_NonOccurCalc', "end")
+
+    def _makeOverRainfall(
+            self,
+            h_DisasterFile
+    ):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                a_proc = Process(target=clsFigure.MakeNIGeDaS_NonOccurCalc,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
-
-            print('All process is ended.')
-
-            a_sum = a_cnt_max
-
-        '''
-        # チェックされたものを処理対象
-        a_proc = clsFigure.MakeNIGeDaS_NonOccurCalc(
-            0,
-            com.g_strIni,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
-        '''
-
-    def _makeOverRainfall(self):
-        global com
-        global g_meshList_check
-
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
-
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_meshNo = g_meshList_check[a_cnt][1]
-                '''
-                a_split = g_meshList_check[a_cnt].split(',')
-                a_meshNo = ''
-                if (com.g_TargetRainMesh == 1):
-                    # 対象Surfaceが1km
-                    a_meshNo = a_split[1]
-                else:
-                    # 対象Surfaceが5km
-                    a_meshNo = a_split[0]
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_meshNo = g_meshList_check[a_cnt][1]
                     '''
-                print('a_meshNo=' + a_meshNo)
-                a_proc = Process(target=clsFigure.MakeOverRainfallByMesh,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_meshNo,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+                    a_split = g_meshList_check[a_cnt].split(',')
+                    a_meshNo = ''
+                    if (com.g_TargetRainMesh == 1):
+                        # 対象Surfaceが1km
+                        a_meshNo = a_split[1]
+                    else:
+                        # 対象Surfaceが5km
+                        a_meshNo = a_split[0]
+                        '''
+                    print('a_meshNo=' + a_meshNo)
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfallByMesh,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         h_DisasterFile,
+                                         a_meshNo,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            print('All process is ended.')
+                print('All process is ended.')
 
-            a_sum = a_cnt_max
+                a_sum = a_cnt_max
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall', sys.exc_info())
 
-    def _makeOverRainfall2(self):
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall', "end")
+
+    def _makeOverRainfall2(
+            self,
+            h_DisasterFile,
+            h_CautionAnnounceFile,
+    ):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall2', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                a_proc = Process(target=clsFigure.MakeOverRainfall2,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfall2,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         h_DisasterFile,
+                                         h_CautionAnnounceFile,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            print('All process is ended.')
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            a_sum = a_cnt_max
+                print('All process is ended.')
 
-        '''
-        # チェックされたものを処理対象
-        a_proc = clsFigure.MakeOverRainfall2(
-            0,
-            com.g_strIni,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
-        '''
+                a_sum = a_cnt_max
+
+            '''
+            # チェックされたものを処理対象
+            a_proc = clsFigure.MakeOverRainfall2(
+                0,
+                com.g_strIni,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+            '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall2', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall2', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall2', "end")
 
     def _makeOverRainfall3_1(self):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall3_1', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                a_proc = Process(target=clsFigure.MakeOverRainfall3_1,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfall3_1,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            print('All process is ended.')
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            a_sum = a_cnt_max
+                print('All process is ended.')
 
-        '''
-        # チェックされたものを処理対象
-        a_proc = clsFigure.MakeOverRainfall3_1(
-            0,
-            com.g_strIni,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
-        '''
+                a_sum = a_cnt_max
 
-    def _makeOverRainfall3_2(self):
+            '''
+            # チェックされたものを処理対象
+            a_proc = clsFigure.MakeOverRainfall3_1(
+                0,
+                com.g_strIni,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+            '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall3_1', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall3_1', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall3_1', "end")
+
+    def _makeOverRainfall3_2(
+            self,
+            h_DisasterFile
+    ):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall3_2', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                a_proc = Process(target=clsFigure.MakeOverRainfall3_2,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfall3_2,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         h_DisasterFile,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            print('All process is ended.')
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            a_sum = a_cnt_max
+                print('All process is ended.')
 
-        '''
-        # チェックされたものを処理対象
-        a_proc = clsFigure.MakeOverRainfall3_2(
-            0,
-            com.g_strIni,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
-        '''
+                a_sum = a_cnt_max
+
+            '''
+            # チェックされたものを処理対象
+            a_proc = clsFigure.MakeOverRainfall3_2(
+                0,
+                com.g_strIni,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+            '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall3_2', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall3_2', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall3_2', "end")
 
     def _makeOverRainfall8(self):
         global com
         global g_meshList_check
 
-        # チェックされたものを処理対象
-        a_meshSum = len(g_meshList_check)
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall8', "start")
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                # 予測雨量の算出
-                a_proc = Process(target=clsFigure.MakeOverRainfall8,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     1,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+        try:
+            # チェックされたものを処理対象
+            a_meshSum = len(g_meshList_check)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    # 予測雨量の算出
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfall8,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         1,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            print('All process is ended.')
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            a_sum = a_cnt_max
+                print('All process is ended.')
 
-        a_sum = 0
-        while (a_sum < a_meshSum):
-            a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
-            if (a_cnt_max > a_meshSum):
-                a_cnt_max = a_meshSum
+                a_sum = a_cnt_max
 
-            print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
-            a_procs = []
-            a_proc_num = 0
-            for a_cnt in range(a_sum, a_cnt_max):
-                a_proc_num += 1
-                #print('a_cnt=' + str(a_cnt))
-                a_mlist = [[0, ""]]
-                a_mlist[0][0] = 0
-                a_mlist[0][1] = g_meshList_check[a_cnt][1]
-                print('a_meshNo=' + a_mlist[0][1])
-                # 実況雨量の算出
-                a_proc = Process(target=clsFigure.MakeOverRainfall8,
-                                 args=(
-                                     a_proc_num,
-                                     com.g_strIni,
-                                     0,
-                                     a_mlist,
-                                     0,
-                                     0,
-                                     -1
-                                 ))
-                a_procs.append(a_proc)
+            a_sum = 0
+            while (a_sum < a_meshSum):
+                a_cnt_max = (a_sum + com.g_MakeOverRainfallExecNum)
+                if (a_cnt_max > a_meshSum):
+                    a_cnt_max = a_meshSum
 
-            for a_proc in a_procs:
-                a_proc.start()
-            for a_proc in a_procs:
-                a_proc.join()
-            for a_proc in a_procs:
-                a_proc.terminate()
+                print('***a_sum=' + str(a_sum) + ',a_cnt_max=' + str(a_cnt_max))
+                a_procs = []
+                a_proc_num = 0
+                for a_cnt in range(a_sum, a_cnt_max):
+                    a_proc_num += 1
+                    #print('a_cnt=' + str(a_cnt))
+                    a_mlist = [[0, ""]]
+                    a_mlist[0][0] = 0
+                    a_mlist[0][1] = g_meshList_check[a_cnt][1]
+                    print('a_meshNo=' + a_mlist[0][1])
+                    # 実況雨量の算出
+                    a_proc = multiprocessing.Process(target=clsFigure.MakeOverRainfall8,
+                                     args=(
+                                         a_proc_num,
+                                         com.g_strIni,
+                                         0,
+                                         a_mlist,
+                                         0,
+                                         0,
+                                         -1
+                                     ))
+                    a_procs.append(a_proc)
 
-            print('All process is ended.')
+                for a_proc in a_procs:
+                    a_proc.start()
+                for a_proc in a_procs:
+                    a_proc.join()
+                for a_proc in a_procs:
+                    a_proc.terminate()
 
-            a_sum = a_cnt_max
+                print('All process is ended.')
 
-        '''
-        # チェックされたものを処理対象
-        # 予測雨量の算出
-        a_proc = clsFigure.MakeOverRainfall8(
-            0,
-            com.g_strIni,
-            1,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
+                a_sum = a_cnt_max
 
-        # 実況雨量の算出
-        a_proc = clsFigure.MakeOverRainfall8(
-            0,
-            com.g_strIni,
-            0,
-            g_meshList_check,
-            0,
-            0,
-            -1
-        )
-        '''
+            '''
+            # チェックされたものを処理対象
+            # 予測雨量の算出
+            a_proc = clsFigure.MakeOverRainfall8(
+                0,
+                com.g_strIni,
+                1,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+    
+            # 実況雨量の算出
+            a_proc = clsFigure.MakeOverRainfall8(
+                0,
+                com.g_strIni,
+                0,
+                g_meshList_check,
+                0,
+                0,
+                -1
+            )
+            '''
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall8', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfall8', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfall8', "end")
 
     def _makeOverRainfallMix(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeOverRainfallMix(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix', "start")
+
+        try:
+            a_proc = clsFigure.MakeOverRainfallMix(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix', "end")
 
     def _makeOverRainfallMix2(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeOverRainfallMix2(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix2', "start")
+
+        try:
+            a_proc = clsFigure.MakeOverRainfallMix2(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix2', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix2', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix2', "end")
 
     def _makeOverRainfallMix3_1(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeOverRainfallMix3_1(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix3_1', "start")
+
+        try:
+            a_proc = clsFigure.MakeOverRainfallMix3_1(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix3_1', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix3_1', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix3_1', "end")
 
     def _makeOverRainfallMix3_2(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeOverRainfallMix3_2(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix3_2', "start")
+
+        try:
+            a_proc = clsFigure.MakeOverRainfallMix3_2(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix3_2', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix3_2', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix3_2', "end")
 
     def _makeOverRainfallMix8(self):
         global com
         global g_meshList_list
 
-        # 予測雨量の算出
-        a_proc = clsFigure.MakeOverRainfallMix8(
-            0,
-            com.g_strIni,
-            1,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix8', "start")
 
-        # 実況雨量の算出
-        a_proc = clsFigure.MakeOverRainfallMix8(
-            0,
-            com.g_strIni,
-            0,
-            g_meshList_list,
-            0,
-            -1
-        )
+        try:
+            # 予測雨量の算出
+            a_proc = clsFigure.MakeOverRainfallMix8(
+                0,
+                com.g_strIni,
+                1,
+                g_meshList_list,
+                0,
+                -1
+            )
+
+            # 実況雨量の算出
+            a_proc = clsFigure.MakeOverRainfallMix8(
+                0,
+                com.g_strIni,
+                0,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix8', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeOverRainfallMix8', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeOverRainfallMix8', "end")
 
     def _makeWiff(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeWhiff(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWiff', "start")
+
+        try:
+            a_proc = clsFigure.MakeWhiff(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWiff', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWiff', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWiff', "end")
 
     def _makeWiff_New(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeWhiff_New(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWiff_New', "start")
+
+        try:
+            a_proc = clsFigure.MakeWhiff_New(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWiff_New', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWiff_New', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWiff_New', "end")
 
     def _makeWhiffFrequency(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeWhiffFrequency(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffFrequency', "start")
+
+        try:
+            a_proc = clsFigure.MakeWhiffFrequency(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffFrequency', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffFrequency', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffFrequency', "end")
 
     def _makeWhiffFrequency_New(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeWhiffFrequency_New(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffFrequency_New', "start")
+
+        try:
+            a_proc = clsFigure.MakeWhiffFrequency_New(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffFrequency_New', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffFrequency_New', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffFrequency_New', "end")
 
     def _makeWhiffTime(self):
         global com
         global g_meshList_list
 
-        a_proc = clsFigure.MakeWhiffTime(
-            0,
-            com.g_strIni,
-            g_meshList_list,
-            0,
-            -1
-        )
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffTime', "start")
+
+        try:
+            a_proc = clsFigure.MakeWhiffTime(
+                0,
+                com.g_strIni,
+                g_meshList_list,
+                0,
+                -1
+            )
+        except Exception as exp:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffTime', " ".join(map(str, exp.args)))
+        except:
+            com.Outputlog(com.g_LOGMODE_ERROR, '_makeWhiffTime', sys.exc_info())
+
+        com.Outputlog(com.g_LOGMODE_TRACE1, '_makeWhiffTime', "end")
 
 
     # RBFNプログラム用入力データ
