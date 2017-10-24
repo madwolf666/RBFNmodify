@@ -1557,6 +1557,45 @@ class ComFunctions:
 
         return a_buf
 
+    # 共有メモリ退避
+    def Store_Shm(self, h_cpyMem, h_textline):
+        a_strErr = ""
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_Shm', a_strErr)
+
+        a_iRet = 0
+        a_isInvalid = False
+        try:
+            del h_textline[:]
+            a_mem = h_cpyMem.decode("shift_jis")
+            del h_cpyMem
+            a_split = a_mem.split("\r\n")
+            for a_line in a_split:
+                try:
+                    h_textline.append(a_line)
+                except Exception as exp:
+                    a_isInvalid = True
+                    self.Outputlog(self.g_LOGMODE_ERROR, 'Store_Shm_2', a_strErr + "," + " ".join(map(str, exp.args)))
+                except:
+                    a_isInvalid = True
+                    self.Outputlog(self.g_LOGMODE_ERROR, 'Store_Shm_2', a_strErr + "," + sys.exc_info())
+            del a_split
+            del a_mem
+
+            if (a_isInvalid == False):
+                del h_textline[len(h_textline) - 1]
+
+            a_iRet = len(h_textline)
+            gc.collect()
+
+        except Exception as exp:
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_Shm', a_strErr + "," + " ".join(map(str, exp.args)))
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Store_Shm', str(a_iRet))
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_Shm', a_strErr + "," + sys.exc_info())
+
+        return a_iRet
+
     '''
     def Store_DisasterFile(self):
         a_strErr = "filename=" + self.g_DisasterFileName

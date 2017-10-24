@@ -12,6 +12,8 @@ import shutil
 #import multiprocessing
 #from multiprocessing import Process, Array  #Manager
 import gc
+from ctypes import *
+from ctypes import wintypes
 import com_functions
 
 #  降雨超過数を作成する
@@ -42,14 +44,30 @@ class MakeContourByMesh():
             self,
             h_proc_num,
             h_ini_path,
-            h_DisasterFile,
-            h_TargetMeshFile,
+            h_key_Disaster,
+            h_size_Disaster,
+            h_key_TargetMesh,
+            h_size_TargetMesh,
             h_meshNo,
             h_kind,
             h_unReal,
             h_soilMin,
             h_rainMax
     ):
+        '''
+        def __init__(
+                self,
+                h_proc_num,
+                h_ini_path,
+                h_DisasterFile,
+                h_TargetMeshFile,
+                h_meshNo,
+                h_kind,
+                h_unReal,
+                h_soilMin,
+                h_rainMax
+        ):
+        '''
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -91,26 +109,63 @@ class MakeContourByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        if(h_DisasterFile != None):
-            del self.com.g_textline_DisasterFile[:]
-            gc.collect()
-            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
-            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        # 共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
 
-        if(h_TargetMeshFile != None):
-            del self.com.g_textline_TargetMeshFile[:]
-            gc.collect()
-            self.com.g_textline_TargetMeshFile = h_TargetMeshFile[:].split("\n")
-            self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+        try:
+            # 災害情報
+            if (h_size_Disaster != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Disaster)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Disaster.encode("sjis")),
+                    c_void_p(h_size_Disaster)
+                )
+                self.com.g_textSum_DisasterFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_DisasterFile)
 
-        '''
-        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
-        self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
-        '''
+            # 警戒情報
+            if (h_size_TargetMesh != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_CautionAnnounce)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_TargetMesh.encode("sjis")),
+                    c_void_p(h_size_TargetMesh)
+                )
+                self.com.g_textSum_TargetMeshFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_TargetMeshFile)
 
-        if (self.isProc == True):
-            self.run()  # multiprocess
+            '''
+            if(h_DisasterFile != None):
+                del self.com.g_textline_DisasterFile[:]
+                gc.collect()
+                self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+                self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+    
+            if(h_TargetMeshFile != None):
+                del self.com.g_textline_TargetMeshFile[:]
+                gc.collect()
+                self.com.g_textline_TargetMeshFile = h_TargetMeshFile[:].split("\n")
+                self.com.g_textSum_TargetMeshFile = len(self.com.g_textline_TargetMeshFile)
+                '''
+
+            '''
+            self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+            self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+            self.com.g_textSum_TargetMeshFile = self.com.Store_DataFile(self.com.g_TargetMeshFile, self.com.g_textline_TargetMeshFile)
+            '''
+
+            if (self.isProc == True):
+                self.run()  # multiprocess
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeContourByMesh-init",  " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeContourByMesh-init", sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path + ",meshNo=" + self.meshNo

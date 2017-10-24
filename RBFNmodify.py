@@ -9,8 +9,12 @@ import multiprocessing
 from multiprocessing import sharedctypes
 #from multiprocessing.sharedctypes import synchronized
 #from multiprocessing import Process, Value, Array  #Manager
+import threading
+import time
 import gc
 from ctypes import *
+from ctypes import wintypes
+
 import com_functions
 import clsRainfall
 import clsContour
@@ -36,6 +40,25 @@ def Testing(
         #a_aaa = h_DisasterFile
         print(h_m)
         #h_DisasterFile.value = 666
+    except Exception as exp:
+        a_strErr = " ".join(map(str, exp.args))
+    except:
+        a_strErr = sys.exc_info()
+
+def SetText_ListBox(
+    h_self,
+    h_listBox,
+    h_row,
+    h_col,
+    h_msg
+):
+    try:
+        h_listBox.SetItem(h_row , h_col, h_msg)
+        h_listBox.SetItemTextColour(h_row, wx.BLUE)
+        h_listBox.Refresh(True)
+        h_listBox.Update()
+        h_self.Refresh()
+        h_self.Update()
     except Exception as exp:
         a_strErr = " ".join(map(str, exp.args))
     except:
@@ -150,6 +173,19 @@ class Main(wx.Frame):
 
         self.Maximize()
         self.Show(True)
+
+        #共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapCreate = self.g_shmlib.PyShmMapCreate
+        self.PyShmMapCreate.argtypes = [c_char_p, c_char_p, c_void_p, c_void_p, c_void_p, c_void_p]
+        self.PyShmMapCreate.restype = c_int
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p, c_void_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
+        self.PyShmMapClose = self.g_shmlib.PyShmMapClose
+        self.PyShmMapClose.argtypes = [c_void_p, c_void_p, c_void_p]
+        self.PyShmMapClose.restype = c_int
+
 
     def _click_button_11_1(self, event):
         global g_System_Title
@@ -797,9 +833,98 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "start")
 
+        a_iRet = 0
+
+        #共有メモリ
+        # 災害情報
+        a_key_Disaster = "shmkey_Disaster"
+        a_csv_Disaster = com.g_DisasterFileName
+        a_shmKey_Disaster = c_char_p(a_key_Disaster.encode("sjis"))
+        a_fName_Disaster = c_char_p(a_csv_Disaster.encode("sjis"))
+        a_size_Disaster = c_void_p(0)
+        a_hFile_Disaster = c_void_p(0)
+        a_mapping_Disaster = c_void_p(0)
+        a_pshared_Disaster = c_void_p(0)
+
+        # 警戒情報
+        a_key_CautionAnnounce = "shmkey_CautionAnnounce"
+        a_csv_CautionAnnounce = com.g_CautionAnnounceFileName
+        a_shmKey_CautionAnnounce = c_char_p(a_key_CautionAnnounce.encode("sjis"))
+        a_fName_CautionAnnounce = c_char_p(a_csv_CautionAnnounce.encode("sjis"))
+        a_size_CautionAnnounce = c_void_p(0)
+        a_hFile_CautionAnnounce = c_void_p(0)
+        a_mapping_CautionAnnounce = c_void_p(0)
+        a_pshared_CautionAnnounce = c_void_p(0)
+
+        # 気温
+        a_key_Temperature = "shmkey_Temperature"
+        a_csv_Temperature = ""
+        a_shmKey_Temperature = c_char_p(a_key_Temperature.encode("sjis"))
+        a_fName_Temperature = c_char_p(a_csv_Temperature.encode("sjis"))
+        a_size_Temperature = c_void_p(0)
+        a_hFile_Temperature = c_void_p(0)
+        a_mapping_Temperature = c_void_p(0)
+        a_pshared_Temperature = c_void_p(0)
+
+        # 全降雨
+        a_key_Rainfall = "shmkey_Rainfall"
+        a_csv_Rainfall = ""
+        a_shmKey_Rainfall = c_char_p(a_key_Rainfall.encode("sjis"))
+        a_fName_Rainfall = c_char_p(a_csv_Rainfall.encode("sjis"))
+        a_size_Rainfall = c_void_p(0)
+        a_hFile_Rainfall = c_void_p(0)
+        a_mapping_Rainfall = c_void_p(0)
+        a_pshared_Rainfall = c_void_p(0)
+        a_key_SoilRain = "shmkey_SoilRain"
+        a_csv_SoilRain = ""
+        a_shmKey_SoilRain = c_char_p(a_key_SoilRain.encode("sjis"))
+        a_fName_SoilRain = c_char_p(a_csv_SoilRain.encode("sjis"))
+        a_size_SoilRain = c_void_p(0)
+        a_hFile_SoilRain = c_void_p(0)
+        a_mapping_SoilRain = c_void_p(0)
+        a_pshared_SoilRain = c_void_p(0)
+
+        # 予測的中率
+        a_key_Rainfall1 = "shmkey_Rainfall1"
+        a_csv_Rainfall1 = ""
+        a_shmKey_Rainfall1 = c_char_p(a_key_Rainfall1.encode("sjis"))
+        a_fName_Rainfall1 = c_char_p(a_csv_Rainfall1.encode("sjis"))
+        a_size_Rainfall1 = c_void_p(0)
+        a_hFile_Rainfall1 = c_void_p(0)
+        a_mapping_Rainfall1 = c_void_p(0)
+        a_pshared_Rainfall1 = c_void_p(0)
+        a_key_SoilRain1 = "shmkey_SoilRain1"
+        a_csv_SoilRain1 = ""
+        a_shmKey_SoilRain1 = c_char_p(a_key_SoilRain1.encode("sjis"))
+        a_fName_SoilRain1 = c_char_p(a_csv_SoilRain1.encode("sjis"))
+        a_size_SoilRain1 = c_void_p(0)
+        a_hFile_SoilRain1 = c_void_p(0)
+        a_mapping_SoilRain1 = c_void_p(0)
+        a_pshared_SoilRain1 = c_void_p(0)
+
         try:
             # RBFNデータ入力
 
+            # 災害情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_Disaster,
+                a_fName_Disaster,
+                byref(a_size_Disaster),
+                byref(a_hFile_Disaster),
+                byref(a_mapping_Disaster),
+                byref(a_pshared_Disaster)
+            )
+            # 警戒情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_CautionAnnounce,
+                a_fName_CautionAnnounce,
+                byref(a_size_CautionAnnounce),
+                byref(a_hFile_CautionAnnounce),
+                byref(a_mapping_CautionAnnounce),
+                byref(a_pshared_CautionAnnounce)
+            )
+
+            '''
             # 災害情報
             a_DisasterFile = None
             a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
@@ -814,6 +939,7 @@ class Main(wx.Frame):
             #a_CautionAnnounceFile = multiprocessing.Value(c_wchar_p, a_buf)
             a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
             #print(a_DisasterFile.value)
+            '''
 
             #for a_year in range(com.g_TargetStartYear, com.g_TargetStartYear + 2):
             for a_year in range(com.g_TargetStartYear, com.g_TargetEndYear + 1):
@@ -822,10 +948,21 @@ class Main(wx.Frame):
                 #気温情報
                 a_TemperatureFile = None
                 a_TemperatureFileName = com.g_OutPath + "\\" + com.g_TemperatureFileSId + str(a_year) + com.g_TemperatureFileEId
+                a_fName_Temperature = c_char_p(a_TemperatureFileName.encode("sjis"))
+                a_iRet = self.PyShmMapCreate(
+                    a_shmKey_Temperature,
+                    a_fName_Temperature,
+                    byref(a_size_Temperature),
+                    byref(a_hFile_Temperature),
+                    byref(a_mapping_Temperature),
+                    byref(a_pshared_Temperature)
+                )
+                '''
                 a_buf = com.Store_DataFile_all(a_TemperatureFileName)
                 if (a_buf != None):
                     #a_TemperatureFile = multiprocessing.Value(c_wchar_p, a_buf)
                     a_TemperatureFile = multiprocessing.Array("u", a_buf)
+                    '''
 
                 # 全降雨
                 a_RainfallFileName = com.g_OutPath + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
@@ -834,6 +971,25 @@ class Main(wx.Frame):
                 a_RainfallFileName1 = com.g_OutPathReal + "\\" + com.g_RainfallFileSId + str(a_year) + com.g_RainfallFileEId
                 a_SoilRainFileName1 = com.g_OutPathReal + "\\" + com.g_SoilrainFileSId + str(a_year) + com.g_SoilrainFileEId
 
+                a_fName_Rainfall = c_char_p(a_RainfallFileName.encode("sjis"))
+                a_iRet = self.PyShmMapCreate(
+                    a_shmKey_Rainfall,
+                    a_fName_Rainfall,
+                    byref(a_size_Rainfall),
+                    byref(a_hFile_Rainfall),
+                    byref(a_mapping_Rainfall),
+                    byref(a_pshared_Rainfall)
+                )
+                a_fName_SoilRain = c_char_p(a_SoilRainFileName.encode("sjis"))
+                a_iRet = self.PyShmMapCreate(
+                    a_shmKey_SoilRain,
+                    a_fName_SoilRain,
+                    byref(a_size_SoilRain),
+                    byref(a_hFile_SoilRain),
+                    byref(a_mapping_SoilRain),
+                    byref(a_pshared_SoilRain)
+                )
+                '''
                 a_RainfallFile = None
                 a_buf = com.Store_DataFile_all(a_RainfallFileName)
                 #a_RainfallFile = multiprocessing.Value(c_wchar_p, a_buf)
@@ -845,14 +1001,35 @@ class Main(wx.Frame):
 
                 a_RainfallFile1 = None
                 a_SoilRainFile1 = None
+                '''
 
                 if com.g_RainKind != 0:
+                    a_fName_Rainfall1 = c_char_p(a_RainfallFileName1.encode("sjis"))
+                    a_iRet = self.PyShmMapCreate(
+                        a_shmKey_Rainfall1,
+                        a_fName_Rainfall1,
+                        byref(a_size_Rainfall1),
+                        byref(a_hFile_Rainfall1),
+                        byref(a_mapping_Rainfall1),
+                        byref(a_pshared_Rainfall1)
+                    )
+                    a_fName_SoilRain1 = c_char_p(a_SoilRainFileName1.encode("sjis"))
+                    a_iRet = self.PyShmMapCreate(
+                        a_shmKey_SoilRain1,
+                        a_fName_SoilRain1,
+                        byref(a_size_SoilRain1),
+                        byref(a_hFile_SoilRain1),
+                        byref(a_mapping_SoilRain1),
+                        byref(a_pshared_SoilRain1)
+                    )
+                    '''
                     a_buf = com.Store_DataFile_all(a_RainfallFileName1)
                     #a_RainfallFile1 = multiprocessing.Value(c_wchar_p, a_buf)
                     a_RainfallFile1 = multiprocessing.Array("u", a_buf)
                     a_buf = com.Store_DataFile_all(a_SoilRainFileName1)
                     #a_SoilRainFile1 = multiprocessing.Value(c_wchar_p, a_buf)
                     a_SoilRainFile1 = multiprocessing.Array("u", a_buf)
+                    '''
 
                 a_meshSum = len(g_meshList_target)
 
@@ -915,23 +1092,45 @@ class Main(wx.Frame):
                                              g_meshList_target
                                          ))
                                          '''
-
                         a_proc = multiprocessing.Process(target=clsRainfall.MakeAllRainfallDataByMesh,
                                          args=(
                                              a_proc_num,
                                              com.g_strIni,
-                                             a_DisasterFile,
-                                             a_CautionAnnounceFile,
-                                             a_TemperatureFile,
-                                             a_RainfallFile,
-                                             a_SoilRainFile,
-                                             a_RainfallFile1,
-                                             a_SoilRainFile1,
+                                             a_key_Disaster,
+                                             a_size_Disaster.value,
+                                             a_key_CautionAnnounce,
+                                             a_size_CautionAnnounce.value,
+                                             a_key_Temperature,
+                                             a_size_Temperature.value,
+                                             a_key_Rainfall,
+                                             a_size_Rainfall.value,
+                                             a_key_SoilRain,
+                                             a_size_SoilRain.value,
+                                             a_key_Rainfall1,
+                                             a_size_Rainfall1.value,
+                                             a_key_SoilRain1,
+                                             a_size_SoilRain1.value,
                                              a_year,
                                              a_cnt,
                                              g_meshList_target
                                          ))
-
+                        '''
+                        a_proc = multiprocessing.Process(target=clsRainfall.MakeAllRainfallDataByMesh,
+                                                         args=(
+                                                             a_proc_num,
+                                                             com.g_strIni,
+                                                             a_DisasterFile,
+                                                             a_CautionAnnounceFile,
+                                                             a_TemperatureFile,
+                                                             a_RainfallFile,
+                                                             a_SoilRainFile,
+                                                             a_RainfallFile1,
+                                                             a_SoilRainFile1,
+                                                             a_year,
+                                                             a_cnt,
+                                                             g_meshList_target
+                                                         ))
+                                                         '''
 
                         a_procs.append(a_proc)
 
@@ -955,14 +1154,66 @@ class Main(wx.Frame):
                         self.g_listBox_11.Update()
                         self.Update()
 
+                    if (self.IsMaximized() == True):
+                        self.Maximize(False)
+                        self.Maximize(True)
+                    else:
+                        self.Maximize(True)
+                        self.Maximize(False)
+
                     print('All process is ended.')
 
                     a_sum = a_cnt_max
+
+                # 気温
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_Temperature,
+                    a_mapping_Temperature,
+                    a_pshared_Temperature
+                )
+                # 全降雨
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_Rainfall,
+                    a_mapping_Rainfall,
+                    a_pshared_Rainfall
+                )
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_SoilRain,
+                    a_mapping_SoilRain,
+                    a_pshared_SoilRain
+                )
+                # 予測適中率
+                if com.g_RainKind != 0:
+                    a_iRet = self.PyShmMapClose(
+                        a_hFile_Rainfall1,
+                        a_mapping_Rainfall1,
+                        a_pshared_Rainfall1
+                    )
+                    a_iRet = self.PyShmMapClose(
+                        a_hFile_SoilRain1,
+                        a_mapping_SoilRain1,
+                        a_pshared_SoilRain1
+                    )
 
         except Exception as exp:
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData_proc', " ".join(map(str, exp.args)))
         except:
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeAllRainfallData_proc', sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                # 共有メモリ
+                # 災害情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_Disaster,
+                    a_mapping_Disaster,
+                    a_pshared_Disaster
+                )
+                # 警戒情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_CautionAnnounce,
+                    a_mapping_CautionAnnounce,
+                    a_pshared_CautionAnnounce
+                )
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeAllRainfallData_proc', "end")
 
@@ -1102,20 +1353,57 @@ class Main(wx.Frame):
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "start")
 
+        #共有メモリ
+        # 災害情報
+        a_key_Disaster = "shmkey_Disaster"
+        a_csv_Disaster = com.g_DisasterFileName
+        a_shmKey_Disaster = c_char_p(a_key_Disaster.encode("sjis"))
+        a_fName_Disaster = c_char_p(a_csv_Disaster.encode("sjis"))
+        a_size_Disaster = c_void_p(0)
+        a_hFile_Disaster = c_void_p(0)
+        a_mapping_Disaster = c_void_p(0)
+        a_pshared_Disaster = c_void_p(0)
+
+        # 対象メッシュ情報
+        a_key_TargetMesh = "shmkey_TargetMesh"
+        a_csv_TargetMesh = com.g_TargetMeshFile
+        a_shmKey_TargetMesh = c_char_p(a_key_TargetMesh.encode("sjis"))
+        a_fName_TargetMesh = c_char_p(a_csv_TargetMesh.encode("sjis"))
+        a_size_TargetMesh = c_void_p(0)
+        a_hFile_TargetMesh = c_void_p(0)
+        a_mapping_TargetMesh = c_void_p(0)
+        a_pshared_TargetMesh = c_void_p(0)
+
         try:
+            # 災害情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_Disaster,
+                a_fName_Disaster,
+                byref(a_size_Disaster),
+                byref(a_hFile_Disaster),
+                byref(a_mapping_Disaster),
+                byref(a_pshared_Disaster)
+            )
+            # 警戒情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_TargetMesh,
+                a_fName_TargetMesh,
+                byref(a_size_TargetMesh),
+                byref(a_hFile_TargetMesh),
+                byref(a_mapping_TargetMesh),
+                byref(a_pshared_TargetMesh)
+            )
+
+            '''
             # 災害情報
             a_DisasterFile = None
             a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
             a_DisasterFile = multiprocessing.Array("u", a_buf)
-            '''
-            # 警戒情報
-            a_buf = com.Store_DataFile_all(com.g_CautionAnnounceFileName)
-            a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
-            '''
             # 対象メッシュ情報
             a_TargetMeshFile = None
             a_buf = com.Store_DataFile_all(com.g_TargetMeshFile)
             a_TargetMeshFile = multiprocessing.Array("u", a_buf)
+            '''
 
             '''
             # 災害情報
@@ -1164,7 +1452,9 @@ class Main(wx.Frame):
                     self.g_listBox_13_1.SetItemTextColour(a_index, wx.RED)
                     #self.g_listBox_13_1.Select(a_index, 1)
                     #self.SetScrollPos(wx.VERTICAL, a_index)
+                    self.g_listBox_13_1.Refresh(True)
                     self.g_listBox_13_1.Update()
+                    self.Refresh(True)
                     self.Update()
 
                     '''
@@ -1192,14 +1482,30 @@ class Main(wx.Frame):
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
-                                         a_DisasterFile,
-                                         a_TargetMeshFile,
+                                         a_key_Disaster,
+                                         a_size_Disaster.value,
+                                         a_key_TargetMesh,
+                                         a_size_TargetMesh.value,
                                          a_meshNo,
                                          0,
                                          0,
                                          0,
                                          -1
                                      ))
+                    '''
+                    a_proc = multiprocessing.Process(target=clsContour.MakeContourByMesh,
+                                                     args=(
+                                                         a_proc_num,
+                                                         com.g_strIni,
+                                                         a_DisasterFile,
+                                                         a_TargetMeshFile,
+                                                         a_meshNo,
+                                                         0,
+                                                         0,
+                                                         0,
+                                                         -1
+                                                     ))
+                                                     '''
 
                     a_procs.append(a_proc)
 
@@ -1211,10 +1517,25 @@ class Main(wx.Frame):
                     a_proc.terminate()
 
                 for a_i in range(a_sum, a_cnt_max):
+                    '''
+                    a_th = threading.Thread(name=str(a_i), target=SetText_ListBox, args=(self, self.g_listBox_13_1, a_i, 3, "抽出処理が完了しました。"))
+                    a_th.start()
+                    '''
+                    ''''''
                     self.g_listBox_13_1.SetItem(a_i , 3, "抽出処理が完了しました。")
                     self.g_listBox_13_1.SetItemTextColour(a_i, wx.BLUE)
+                    self.g_listBox_13_1.Refresh(True)
                     self.g_listBox_13_1.Update()
+                    self.Refresh(True)
                     self.Update()
+                    #time.sleep(3)
+                    ''''''
+                if (self.IsMaximized() == True):
+                    self.Maximize(False)
+                    self.Maximize(True)
+                else:
+                    self.Maximize(True)
+                    self.Maximize(False)
 
                 print('All process is ended.')
 
@@ -1224,6 +1545,21 @@ class Main(wx.Frame):
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour_proc', " ".join(map(str, exp.args)))
         except:
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeContour_proc', sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                # 共有メモリ
+                # 災害情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_Disaster,
+                    a_mapping_Disaster,
+                    a_pshared_Disaster
+                )
+                # 対象メッシュ情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_TargetMesh,
+                    a_mapping_TargetMesh,
+                    a_pshared_TargetMesh
+                )
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeContour_proc', "end")
 
@@ -1293,8 +1629,49 @@ class Main(wx.Frame):
     def _makeFigure(self):
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "start")
 
-        try:
 
+        #共有メモリ
+        # 災害情報
+        a_key_Disaster = "shmkey_Disaster"
+        a_csv_Disaster = com.g_DisasterFileName
+        a_shmKey_Disaster = c_char_p(a_key_Disaster.encode("sjis"))
+        a_fName_Disaster = c_char_p(a_csv_Disaster.encode("sjis"))
+        a_size_Disaster = c_void_p(0)
+        a_hFile_Disaster = c_void_p(0)
+        a_mapping_Disaster = c_void_p(0)
+        a_pshared_Disaster = c_void_p(0)
+
+        # 警戒情報
+        a_key_CautionAnnounce = "shmkey_CautionAnnounce"
+        a_csv_CautionAnnounce = com.g_CautionAnnounceFileName
+        a_shmKey_CautionAnnounce = c_char_p(a_key_CautionAnnounce.encode("sjis"))
+        a_fName_CautionAnnounce = c_char_p(a_csv_CautionAnnounce.encode("sjis"))
+        a_size_CautionAnnounce = c_void_p(0)
+        a_hFile_CautionAnnounce = c_void_p(0)
+        a_mapping_CautionAnnounce = c_void_p(0)
+        a_pshared_CautionAnnounce = c_void_p(0)
+
+        try:
+            # 災害情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_Disaster,
+                a_fName_Disaster,
+                byref(a_size_Disaster),
+                byref(a_hFile_Disaster),
+                byref(a_mapping_Disaster),
+                byref(a_pshared_Disaster)
+            )
+            # 警戒情報
+            a_iRet = self.PyShmMapCreate(
+                a_shmKey_CautionAnnounce,
+                a_fName_CautionAnnounce,
+                byref(a_size_CautionAnnounce),
+                byref(a_hFile_CautionAnnounce),
+                byref(a_mapping_CautionAnnounce),
+                byref(a_pshared_CautionAnnounce)
+            )
+
+            '''
             # 災害情報
             a_DisasterFile = None
             a_buf = com.Store_DataFile_all(com.g_DisasterFileName)
@@ -1303,6 +1680,7 @@ class Main(wx.Frame):
             a_CautionAnnounceFile = None
             a_buf = com.Store_DataFile_all(com.g_CautionAnnounceFileName)
             a_CautionAnnounceFile = multiprocessing.Array("u", a_buf)
+            '''
 
             self.g_listBox_13_2.SetItem(0, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(0, wx.RED)
@@ -1311,7 +1689,10 @@ class Main(wx.Frame):
             # 全降雨の超過数
             # 非発生降雨の超過数
             # 発生降雨の超過数
-            self._makeOverRainfall(a_DisasterFile)
+            self._makeOverRainfall(
+                a_key_Disaster,
+                a_size_Disaster.value
+            )
             self._makeOverRainfallMix()
             self.g_listBox_13_2.SetItem(0, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
@@ -1397,7 +1778,12 @@ class Main(wx.Frame):
             self.Update()
             # ④実質災害捕捉率
             # 年毎メッシュ単位の算出結果
-            self._makeOverRainfall2(a_DisasterFile, a_CautionAnnounceFile)
+            self._makeOverRainfall2(
+                a_key_Disaster,
+                a_size_Disaster.value,
+                a_key_CautionAnnounce,
+                a_size_CautionAnnounce.value
+            )
             # 警戒発表中災害発生件数
             # 警戒発表中災害発生降雨数
             self._makeOverRainfallMix2()
@@ -1439,7 +1825,10 @@ class Main(wx.Frame):
             self.g_listBox_13_2.Update()
             self.Update()
             # ⑥RBFN越のリードタイム
-            self._makeOverRainfall3_2(a_DisasterFile)
+            self._makeOverRainfall3_2(
+                a_key_Disaster,
+                a_size_Disaster.value
+            )
             self._makeOverRainfallMix3_2()
             self.g_listBox_13_2.SetItem(10, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
@@ -1476,6 +1865,21 @@ class Main(wx.Frame):
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeFigure', " ".join(map(str, exp.args)))
         except:
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeFigure', sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                # 共有メモリ
+                # 災害情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_Disaster,
+                    a_mapping_Disaster,
+                    a_pshared_Disaster
+                )
+                # 警戒情報
+                a_iRet = self.PyShmMapClose(
+                    a_hFile_CautionAnnounce,
+                    a_mapping_CautionAnnounce,
+                    a_pshared_CautionAnnounce
+                )
 
         com.Outputlog(com.g_LOGMODE_INFORMATION, '_makeFigure', "end")
 
@@ -1632,7 +2036,8 @@ class Main(wx.Frame):
 
     def _makeOverRainfall(
             self,
-            h_DisasterFile
+            h_key_Disaster,
+            h_size_Disaster
     ):
         global com
         global g_meshList_check
@@ -1670,7 +2075,8 @@ class Main(wx.Frame):
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
-                                         h_DisasterFile,
+                                         h_key_Disaster,
+                                         h_size_Disaster,
                                          a_meshNo,
                                          0,
                                          0,
@@ -1697,8 +2103,10 @@ class Main(wx.Frame):
 
     def _makeOverRainfall2(
             self,
-            h_DisasterFile,
-            h_CautionAnnounceFile,
+            h_key_Disaster,
+            h_size_Disaster,
+            h_key_CautionAnnounce,
+            h_size_CautionAnnounce
     ):
         global com
         global g_meshList_check
@@ -1728,8 +2136,10 @@ class Main(wx.Frame):
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
-                                         h_DisasterFile,
-                                         h_CautionAnnounceFile,
+                                         h_key_Disaster,
+                                         h_size_Disaster.value,
+                                         h_key_CautionAnnounce,
+                                         h_size_CautionAnnounce,
                                          a_mlist,
                                          0,
                                          0,
@@ -1833,7 +2243,8 @@ class Main(wx.Frame):
 
     def _makeOverRainfall3_2(
             self,
-            h_DisasterFile
+            h_key_Disaster,
+            h_size_Disaster
     ):
         global com
         global g_meshList_check
@@ -1863,7 +2274,8 @@ class Main(wx.Frame):
                                      args=(
                                          a_proc_num,
                                          com.g_strIni,
-                                         h_DisasterFile,
+                                         h_key_Disaster,
+                                         h_size_Disaster,
                                          a_mlist,
                                          0,
                                          0,
@@ -2413,14 +2825,22 @@ class Main(wx.Frame):
         self.g_panel_23 = wx.Panel(self, wx.ID_ANY)
 
     def _onClose(self, event):
+        a_iRet = 0
         if (wx.MessageBox("プログラムを終了します。\nよろしいですか？", g_System_Title, wx.YES_NO) == wx.YES):
+            if (self.g_shmlib != None):
+                # 共有メモリ
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
+
             self.Destroy()
 
     def _onPaint(self, event):
         #dc = wx.PaintDC(self)
         #dc.DrawBitmap(self., 0, 0, True)
-        self.Refresh()
+        self.Refresh(True)
         self.Update()
+        #com.Outputlog(com.g_LOGMODE_INFORMATION, '_onPaint', "completed.")
 
     '''
     def _recalcLimit(self):

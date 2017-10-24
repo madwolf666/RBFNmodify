@@ -6,9 +6,11 @@ import os
 import datetime
 import math
 import csv
-import com_functions
 import threading
 import gc
+from ctypes import *
+from ctypes import wintypes
+import com_functions
 
 # 警報発表頻度を作成する
 class MakeAlarmAnnounce():
@@ -1158,8 +1160,10 @@ class MakeOverRainfall2():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
-                 h_DisasterFile,
-                 h_CautionAnnounceFile,
+                 h_key_Disaster,
+                 h_size_Disaster,
+                 h_key_CautionAnnounce,
+                 h_size_CautionAnnounce,
                  h_meshList,
                  h_unReal,
                  h_soilMin,
@@ -1180,24 +1184,61 @@ class MakeOverRainfall2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        if(h_DisasterFile != None):
-            del self.com.g_textline_DisasterFile[:]
-            gc.collect()
-            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
-            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        # 共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
 
-        if(h_CautionAnnounceFile != None):
-            del self.com.g_textline_CautionAnnounceFile[:]
-            gc.collect()
-            self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile[:].split("\n")
-            self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+        try:
+            # 災害情報
+            if (h_size_Disaster != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Disaster)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Disaster.encode("sjis")),
+                    c_void_p(h_size_Disaster)
+                )
+                self.com.g_textSum_DisasterFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_DisasterFile)
 
-        '''
-        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
-        '''
+            # 警戒情報
+            if (h_size_CautionAnnounce != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_CautionAnnounce)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_CautionAnnounce.encode("sjis")),
+                    c_void_p(h_size_CautionAnnounce)
+                )
+                self.com.g_textSum_TargetMeshFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_TargetMeshFile)
 
-        self.run()  # multiprocess
+            '''
+            if(h_DisasterFile != None):
+                del self.com.g_textline_DisasterFile[:]
+                gc.collect()
+                self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+                self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+    
+            if(h_CautionAnnounceFile != None):
+                del self.com.g_textline_CautionAnnounceFile[:]
+                gc.collect()
+                self.com.g_textline_CautionAnnounceFile = h_CautionAnnounceFile[:].split("\n")
+                self.com.g_textSum_CautionAnnounceFile = len(self.com.g_textline_CautionAnnounceFile)
+                '''
+
+            '''
+            self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+            self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+            '''
+
+            self.run()  # multiprocess
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall2-init",  " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall2-init", sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
@@ -1478,7 +1519,8 @@ class MakeOverRainfall3_2():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
-                 h_DisasterFile,
+                 h_key_Disaster,
+                 h_size_Disaster,
                  h_meshList,
                  h_unReal,
                  h_soilMin,
@@ -1499,18 +1541,46 @@ class MakeOverRainfall3_2():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        if(h_DisasterFile != None):
-            del self.com.g_textline_DisasterFile[:]
-            gc.collect()
-            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
-            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        # 共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
 
-        '''
-        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
-        '''
+        try:
+            # 災害情報
+            if (h_size_Disaster != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Disaster)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Disaster.encode("sjis")),
+                    c_void_p(h_size_Disaster)
+                )
+                self.com.g_textSum_DisasterFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_DisasterFile)
 
-        self.run()  # multiprocess
+            '''
+            if(h_DisasterFile != None):
+                del self.com.g_textline_DisasterFile[:]
+                gc.collect()
+                self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+                self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+                '''
+
+            '''
+            self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+            self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+            '''
+
+            self.run()  # multiprocess
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall3_2-init",  " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall3_2-init", sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path
@@ -2086,7 +2156,8 @@ class MakeOverRainfallByMesh():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
-                 h_DisasterFile,
+                 h_key_Disaster,
+                 h_size_Disaster,
                  h_meshNo,
                  h_unReal,
                  h_soilMin,
@@ -2130,18 +2201,46 @@ class MakeOverRainfallByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
-        if(h_DisasterFile != None):
-            del self.com.g_textline_DisasterFile[:]
-            gc.collect()
-            self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
-            self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+        # 共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
 
-        '''
-        self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
-        self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
-        '''
+        try:
+            # 災害情報
+            if (h_size_Disaster != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Disaster)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Disaster.encode("sjis")),
+                    c_void_p(h_size_Disaster)
+                )
+                self.com.g_textSum_DisasterFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_DisasterFile)
 
-        self.run()  # multiprocess
+            '''
+            if(h_DisasterFile != None):
+                del self.com.g_textline_DisasterFile[:]
+                gc.collect()
+                self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
+                self.com.g_textSum_DisasterFile = len(self.com.g_textline_DisasterFile)
+                '''
+
+            '''
+            self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
+            self.com.g_textSum_CautionAnnounceFile = self.com.Store_DataFile(self.com.g_CautionAnnounceFileName, self.com.g_textline_CautionAnnounceFile)
+            '''
+
+            self.run()  # multiprocess
+        except Exception as exp:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfallByMesh-init",  " ".join(map(str, exp.args)))
+            #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
+        except:
+            self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfallByMesh-init", sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path + ",meshNo=" + self.meshNo

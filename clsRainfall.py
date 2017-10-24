@@ -5,11 +5,12 @@ import sys
 import os
 import datetime
 import csv
-import com_functions
 import threading
 import gc
 from multiprocessing import Value
 from ctypes import *
+from ctypes import wintypes
+import com_functions
 
 #class Thread_MakeAllRainfallDataByMesh(threading.Thread):
 class MakeAllRainfallDataByMesh():
@@ -44,6 +45,28 @@ class MakeAllRainfallDataByMesh():
     def __init__(self,
                  h_proc_num,
                  h_ini_path,
+                 h_key_Disaster,
+                 h_size_Disaster,
+                 h_key_CautionAnnounce,
+                 h_size_CautionAnnounce,
+                 h_key_Temperature,
+                 h_size_Temperature,
+                 h_key_Rainfall,
+                 h_size_Rainfall,
+                 h_key_SoilRain,
+                 h_size_SoilRain,
+                 h_key_Rainfall1,
+                 h_size_Rainfall1,
+                 h_key_SoilRain1,
+                 h_size_SoilRain1,
+                 h_year,
+                 h_meshIdx,
+                 h_meshList
+                 ):
+        '''
+    def __init__(self,
+                 h_proc_num,
+                 h_ini_path,
                  h_DisasterFile,
                  h_CautionAnnounceFile,
                  h_TemperatureFile,
@@ -55,6 +78,7 @@ class MakeAllRainfallDataByMesh():
                  h_meshIdx,
                  h_meshList
                  ):
+                 '''
 
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
@@ -105,10 +129,79 @@ class MakeAllRainfallDataByMesh():
         #引数を取得
         self.com.GetEnvData(h_ini_path)
 
+        # 共有メモリ
+        self.g_shmlib = windll.LoadLibrary(".\\bin\\rbfnshmctl.dll")
+        self.PyShmMapRead = self.g_shmlib.PyShmMapRead
+        self.PyShmMapRead.argtypes = [c_char_p, c_void_p]
+        self.PyShmMapRead.restype = c_char_p
+
         try:
+            #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  str(h_year))
+
+            # 災害情報
+            if (h_size_Disaster != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Disaster)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Disaster.encode("sjis")),
+                    c_void_p(h_size_Disaster)
+                )
+                self.com.g_textSum_DisasterFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_DisasterFile)
+
+            # 警戒情報
+            if (h_size_CautionAnnounce != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_CautionAnnounce)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_CautionAnnounce.encode("sjis")),
+                    c_void_p(h_size_CautionAnnounce)
+                )
+                self.com.g_textSum_CautionAnnounceFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_CautionAnnounceFile)
+
+            # 気温
+            if (h_size_Temperature != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Temperature)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Temperature.encode("sjis")),
+                    c_void_p(h_size_Temperature)
+                )
+                self.com.g_textSum_TargetMeshFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_TargetMeshFile)
+
+            # 全降雨
+            if (h_size_Rainfall != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Rainfall)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_Rainfall.encode("sjis")),
+                    c_void_p(h_size_Rainfall)
+                )
+                self.com.g_textSum_RainfallFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_RainfallFile)
+            if (h_size_SoilRain != None):
+                #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_SoilRain)
+                a_cpyMem = self.PyShmMapRead(
+                    c_char_p(h_key_SoilRain.encode("sjis")),
+                    c_void_p(h_size_SoilRain)
+                )
+                self.com.g_textSum_SoilRainFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_SoilRainFile)
+
+            #予測適中率
+            if self.com.g_RainKind != 0:
+                if (h_size_Rainfall1 != None):
+                    #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_Rainfall1)
+                    a_cpyMem = self.PyShmMapRead(
+                        c_char_p(h_key_Rainfall1.encode("sjis")),
+                        c_void_p(h_size_Rainfall1)
+                    )
+                    self.com.g_textSum_RainfallFile1 = self.com.Store_Shm(a_cpyMem, self.com.g_textline_RainfallFile1)
+                if (h_size_SoilRain1 != None):
+                    #self.com.Outputlog(self.com.g_LOGMODE_INFORMATION, "MakeAllRainfallDataByMesh-init",  h_key_SoilRain1)
+                    a_cpyMem = self.PyShmMapRead(
+                        c_char_p(h_key_SoilRain1.encode("sjis")),
+                        c_void_p(h_size_SoilRain1)
+                    )
+                    self.com.g_textSum_SoilRainFile1 = self.com.Store_Shm(a_cpyMem, self.com.g_textline_SoilRainFile1)
+
+            '''
             # 災害情報
             if (h_DisasterFile != None):
-                #print(h_DisasterFile[:])
+                #print(h_DisasterFile.value[0])
                 del self.com.g_textline_DisasterFile[:]
                 gc.collect()
                 self.com.g_textline_DisasterFile = h_DisasterFile[:].split("\n")
@@ -149,6 +242,7 @@ class MakeAllRainfallDataByMesh():
                     gc.collect()
                     self.com.g_textline_SoilRainFile1 = h_SoilRainFile1[:].split("\n")
                     self.com.g_textSum_SoilRainFile1 = len(self.com.g_textline_SoilRainFile1)
+                    '''
 
             '''
             self.com.g_textSum_DisasterFile = self.com.Store_DataFile(self.com.g_DisasterFileName, self.com.g_textline_DisasterFile)
@@ -186,6 +280,11 @@ class MakeAllRainfallDataByMesh():
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
         except:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-init", sys.exc_info())
+        finally:
+            if (self.g_shmlib != None):
+                kernel32 = WinDLL("kernel32", use_last_error=True)
+                kernel32.FreeLibrary.argtypes = [wintypes.HMODULE]
+                kernel32.FreeLibrary(self.g_shmlib._handle)
 
     def run(self):
         a_strErr = "ini_path=" + self.com.ini_path +  ",Year=" + str(self.year) + ",meshIdx=" + str(self.meshIdx)
