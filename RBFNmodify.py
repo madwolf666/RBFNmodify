@@ -1154,12 +1154,7 @@ class Main(wx.Frame):
                         self.g_listBox_11.Update()
                         self.Update()
 
-                    if (self.IsMaximized() == True):
-                        self.Maximize(False)
-                        self.Maximize(True)
-                    else:
-                        self.Maximize(True)
-                        self.Maximize(False)
+                    self._refresh_self()
 
                     print('All process is ended.')
 
@@ -1530,12 +1525,7 @@ class Main(wx.Frame):
                     self.Update()
                     #time.sleep(3)
                     ''''''
-                if (self.IsMaximized() == True):
-                    self.Maximize(False)
-                    self.Maximize(True)
-                else:
-                    self.Maximize(True)
-                    self.Maximize(False)
+                self._refresh_self()
 
                 print('All process is ended.')
 
@@ -1686,6 +1676,7 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(0, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 全降雨の超過数
             # 非発生降雨の超過数
             # 発生降雨の超過数
@@ -1698,22 +1689,26 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(0, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(1, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(1, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             #災害捕捉率
             self._makeDisasterSupplement()
             self.g_listBox_13_2.SetItem(1, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(1, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(2, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(2, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 空振り率
             self._makeWiff()
             # 空振り率2
@@ -1722,11 +1717,13 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(2, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(3, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(3, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 空振り頻度
             self._makeWhiffFrequency()
             # 空振り頻度2
@@ -1735,33 +1732,39 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(3, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(4, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(4, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 空振り時間
             self._makeWhiffTime()
             self.g_listBox_13_2.SetItem(4, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(4, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(5, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(5, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 警報発表頻度
             self._makeAlarmAnnounce()
             self.g_listBox_13_2.SetItem(5, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(5, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(6, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(6, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # 9)実質災害捕捉率
             # 災害捕捉率【降雨数】
             self._makeDisasterSupplement9_1()
@@ -1771,11 +1774,13 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(6, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(7, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(7, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ④実質災害捕捉率
             # 年毎メッシュ単位の算出結果
             self._makeOverRainfall2(
@@ -1796,11 +1801,13 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(7, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(8, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(8, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ②土砂災害警戒情報のリードタイム
             self._makeOverRainfall3_1()
             self._makeOverRainfallMix3_1()
@@ -1808,22 +1815,26 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(8, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(9, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(9, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ③土砂災害警戒情報の発表頻度
             self._makeCautionAnnounceFrequencyOverOccurRainFallNum()
             self.g_listBox_13_2.SetItem(9, 3, "集計処理が完了しました。")
             self.g_listBox_13_2.SetItemTextColour(9, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(10, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(10, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ⑥RBFN越のリードタイム
             self._makeOverRainfall3_2(
                 a_key_Disaster,
@@ -1834,11 +1845,13 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(10, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(11, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(11, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ⑧予測適中率
             if (com.g_RainKind != 0):
                 self._makeOverRainfall8()
@@ -1848,11 +1861,13 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(11, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
             self.g_listBox_13_2.SetItem(12, 3, "処理中......")
             self.g_listBox_13_2.SetItemTextColour(12, wx.RED)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
             # ⑨NIGeDaS、NIGeDaSⅡ
             self._makeNIGeDaS()
             self._makeNIGeDaS_NonOccurCalc()
@@ -1860,6 +1875,7 @@ class Main(wx.Frame):
             self.g_listBox_13_2.SetItemTextColour(12, wx.BLUE)
             self.g_listBox_13_2.Update()
             self.Update()
+            self._refresh_self()
 
         except Exception as exp:
             com.Outputlog(com.g_LOGMODE_ERROR, '_makeFigure', " ".join(map(str, exp.args)))
@@ -2847,6 +2863,14 @@ class Main(wx.Frame):
         Call GetRecalcLimitData(Me, a_strTmp, a_soilMin, a_rainMax)
         Call RecalcLimitByMesh(Me, Me.Picture1, Me.Picture2, a_sTFolder, a_soilMin, a_rainMax, 1, a_meshList2)
         '''
+
+    def _refresh_self(self):
+        if (self.IsMaximized() == True):
+            self.Maximize(False)
+            self.Maximize(True)
+        else:
+            self.Maximize(True)
+            self.Maximize(False)
 
     def _select_listBox_21_1(self, event):
         global g_meshSum_list
