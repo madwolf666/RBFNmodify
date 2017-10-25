@@ -14,13 +14,14 @@ import com_functions
 
 # 警報発表頻度を作成する
 class MakeAlarmAnnounce():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -107,13 +108,14 @@ class MakeAlarmAnnounce():
 
 # 発表頻度を作成する
 class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -202,13 +204,14 @@ class MakeCautionAnnounceFrequencyOverOccurRainFallNum():
 
 # 災害捕捉率を作成する
 class MakeCautionAnnounceRateOccurNum():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -289,13 +292,14 @@ class MakeCautionAnnounceRateOccurNum():
 
 # 災害捕捉率を作成する
 class MakeCautionAnnounceRateOccurRainFallNum():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -376,13 +380,14 @@ class MakeCautionAnnounceRateOccurRainFallNum():
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -489,13 +494,14 @@ class MakeDisasterSupplement():
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement9_1():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -601,13 +607,14 @@ class MakeDisasterSupplement9_1():
 
 # 災害捕捉率を作成する
 class MakeDisasterSupplement9_2():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -713,13 +720,14 @@ class MakeDisasterSupplement9_2():
 
 # 降雨超過数を作成する
 class MakeForecastPredictive():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -883,14 +891,15 @@ class MakeForecastPredictive():
 
 # 降雨超過数を作成する
 class MakeNIGeDaS():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -1020,14 +1029,15 @@ class MakeNIGeDaS():
 
 # 降雨超過数を作成する
 class MakeNIGeDaS_NonOccurCalc():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -1157,18 +1167,19 @@ class MakeNIGeDaS_NonOccurCalc():
 
 # 降雨超過数を作成する
 class MakeOverRainfall2():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_key_Disaster,
-                 h_size_Disaster,
-                 h_key_CautionAnnounce,
-                 h_size_CautionAnnounce,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_key_Disaster,
+            h_size_Disaster,
+            h_key_CautionAnnounce,
+            h_size_CautionAnnounce,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -1207,7 +1218,7 @@ class MakeOverRainfall2():
                     c_char_p(h_key_CautionAnnounce.encode("sjis")),
                     c_void_p(h_size_CautionAnnounce)
                 )
-                self.com.g_textSum_TargetMeshFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_TargetMeshFile)
+                self.com.g_textSum_CautionAnnounceFile = self.com.Store_Shm(a_cpyMem, self.com.g_textline_CautionAnnounceFile)
 
             '''
             if(h_DisasterFile != None):
@@ -1229,6 +1240,11 @@ class MakeOverRainfall2():
             '''
 
             self.run()  # multiprocess
+
+            del self.com.g_textline_DisasterFile[:]
+            del self.com.g_textline_CautionAnnounceFile[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall2-init",  " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
@@ -1447,14 +1463,15 @@ class MakeOverRainfall2():
 
 # 降雨超過数を作成する
 class MakeOverRainfall3_1():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -1516,16 +1533,17 @@ class MakeOverRainfall3_1():
 
 # 降雨超過数を作成する
 class MakeOverRainfall3_2():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_key_Disaster,
-                 h_size_Disaster,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_key_Disaster,
+            h_size_Disaster,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -1571,6 +1589,10 @@ class MakeOverRainfall3_2():
             '''
 
             self.run()  # multiprocess
+
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfall3_2-init",  " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
@@ -1864,15 +1886,16 @@ class MakeOverRainfall3_2():
 
 # 降雨超過数を作成する
 class MakeOverRainfall8():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_kind,
-                 h_meshList,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_kind,
+            h_meshList,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -2153,16 +2176,17 @@ class MakeOverRainfall8():
 #class Thread_MakeOverRainfallByMesh(threading.Thread):
 # 降雨超過数を作成する
 class MakeOverRainfallByMesh():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_key_Disaster,
-                 h_size_Disaster,
-                 h_meshNo,
-                 h_unReal,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_key_Disaster,
+            h_size_Disaster,
+            h_meshNo,
+            h_unReal,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -2231,6 +2255,10 @@ class MakeOverRainfallByMesh():
             '''
 
             self.run()  # multiprocess
+
+            del self.com.g_textline_DisasterFile[:]
+            gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeOverRainfallByMesh-init",  " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')
@@ -3337,13 +3365,14 @@ class MakeOverRainfallByMesh():
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3475,13 +3504,14 @@ class MakeOverRainfallMix():
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix2():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3553,13 +3583,14 @@ class MakeOverRainfallMix2():
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix3_1():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3621,13 +3652,14 @@ class MakeOverRainfallMix3_1():
 
 # 降雨超過数を作成する
 class MakeOverRainfallMix3_2():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3772,13 +3804,14 @@ class MakeOverRainfallMix8():
 
 # 空振り率を作成する
 class MakeWhiff():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3877,13 +3910,14 @@ class MakeWhiff():
 
 # 空振り率を作成する
 class MakeWhiff_New():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -3984,13 +4018,14 @@ class MakeWhiff_New():
 
 # 空振り頻度を作成する
 class MakeWhiffFrequency():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -4077,13 +4112,14 @@ class MakeWhiffFrequency():
 
 # 空振り頻度を作成する
 class MakeWhiffFrequency_New():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 
@@ -4170,13 +4206,14 @@ class MakeWhiffFrequency_New():
 
 # 空振り時間を作成する
 class MakeWhiffTime():
-    def __init__(self,
-                 h_proc_num,
-                 h_ini_path,
-                 h_meshList,
-                 h_soilMin,
-                 h_rainMax
-                 ):
+    def __init__(
+            self,
+            h_proc_num,
+            h_ini_path,
+            h_meshList,
+            h_soilMin,
+            h_rainMax
+    ):
         #threading.Thread.__init__(self)
         #super(Thread_MakeOverRainfallByMesh, self).__init__()
 

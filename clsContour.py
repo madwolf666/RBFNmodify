@@ -156,6 +156,11 @@ class MakeContourByMesh():
 
             if (self.isProc == True):
                 self.run()  # multiprocess
+
+                del self.com.g_textline_DisasterFile[:]
+                del self.com.g_textline_TargetMeshFile[:]
+                gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeContourByMesh-init",  " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')

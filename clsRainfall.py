@@ -275,6 +275,16 @@ class MakeAllRainfallDataByMesh():
 
             if (self.isProc == True):
                 self.run()   # multiprocess
+
+                del self.com.g_textline_DisasterFile[:]
+                del self.com.g_textline_CautionAnnounceFile[:]
+                del self.com.g_textline_TargetMeshFile[:]
+                del self.com.g_textline_RainfallFile[:]
+                del self.com.g_textline_SoilRainFile[:]
+                del self.com.g_textline_RainfallFile1[:]
+                del self.com.g_textline_SoilRainFile1[:]
+                gc.collect()
+
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "MakeAllRainfallDataByMesh-init",  " ".join(map(str, exp.args)))
             #self.com.Outputlog(self.com.g_LOGMODE_TRACE1, 'run', 'end')

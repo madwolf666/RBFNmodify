@@ -1134,12 +1134,17 @@ class Main(wx.Frame):
 
                         a_procs.append(a_proc)
 
+                        #self.g_listBox_11.Append(str(a_year))
                         self.g_listBox_11.InsertItem(a_count + a_cnt, str(a_year))
                         self.g_listBox_11.SetItem(a_count + a_cnt, 1, str(a_cnt + 1) + "/" + str(a_meshSum))
                         self.g_listBox_11.SetItem(a_count + a_cnt, 2, a_meshNo)
                         self.g_listBox_11.SetItem(a_count + a_cnt, 3, "処理中......")
                         self.g_listBox_11.SetItemTextColour(a_count + a_cnt, wx.RED)
+                        #self.g_listBox_11.Select(a_count + a_cnt)
+                        #self.g_listBox_11.cur = a_count + a_cnt
                         self.g_listBox_11.Update()
+
+                    self._refresh_self()
 
                     for a_proc in a_procs:
                         a_proc.start()
@@ -1503,6 +1508,8 @@ class Main(wx.Frame):
                                                      '''
 
                     a_procs.append(a_proc)
+
+                self._refresh_self()
 
                 for a_proc in a_procs:
                     a_proc.start()
@@ -2153,7 +2160,7 @@ class Main(wx.Frame):
                                          a_proc_num,
                                          com.g_strIni,
                                          h_key_Disaster,
-                                         h_size_Disaster.value,
+                                         h_size_Disaster,
                                          h_key_CautionAnnounce,
                                          h_size_CautionAnnounce,
                                          a_mlist,
@@ -2688,6 +2695,7 @@ class Main(wx.Frame):
         self.g_listBox_11.InsertColumn(2, "メッシュ番号", width=150)
         self.g_listBox_11.InsertColumn(3, "状態", width=500)
         self.g_listBox_11.SetPosition(wx.Point(4, 50))
+        #self.g_listBox_11.Bind(wx.EVT_LIST_ITEM_SELECTED, self._onSelect_listBox_11)
 
     # RBFN出力値の抽出処理
     def _makePanel_13(self):
@@ -2858,6 +2866,12 @@ class Main(wx.Frame):
         self.Update()
         #com.Outputlog(com.g_LOGMODE_INFORMATION, '_onPaint', "completed.")
 
+
+    def _onSelect_listBox_11(self, event):
+        self.g_listBox_11.SetFocusFromKbd()
+        self.g_listBox_11.SetFocus()
+        #self.g_listBox_11.SetScrollPos(wx.VERTICAL, self.g_listBox_11.GetItemCount() - 1, True)
+
     '''
     def _recalcLimit(self):
         Call GetRecalcLimitData(Me, a_strTmp, a_soilMin, a_rainMax)
@@ -2865,12 +2879,22 @@ class Main(wx.Frame):
         '''
 
     def _refresh_self(self):
+        '''
+        a_size_src = self.GetSize()
+        self.SetSize(a_size_src.width - 1, a_size_src.height - 1)
+        self.SetSize(a_size_src.width, a_size_src.height)
+        '''
+
+        self.Iconize(True)
+        self.Iconize(False)
+        '''
         if (self.IsMaximized() == True):
             self.Maximize(False)
             self.Maximize(True)
         else:
             self.Maximize(True)
             self.Maximize(False)
+            '''
 
     def _select_listBox_21_1(self, event):
         global g_meshSum_list
