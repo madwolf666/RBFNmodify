@@ -17,7 +17,8 @@ from ctypes import wintypes
 
 import com_functions
 import clsRainfall
-import clsContour
+import clsContour_pil as clsContour
+#import clsContour_cv2 as clsContour
 import clsFigure
 import clsBlock
 

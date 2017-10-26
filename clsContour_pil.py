@@ -1751,6 +1751,7 @@ class MakeContourByMesh():
             # 既往CLの取り込み
             if (self.com.g_PastKind == 0):
                 # 取り込みなし
+                #a_i = 0
                 self._drawContour(self.com.g_ContourReviseSymbol, self.com.g_Action_MakeContourSnake, a_img, -1, 0, -1, 0, h_meshNo)
                 self._saveContourImage(self.com.g_ContourSnakeSymbol, a_img)
             else:
