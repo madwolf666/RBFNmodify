@@ -10,6 +10,7 @@ import gc
 from multiprocessing import Value
 from ctypes import *
 from ctypes import wintypes
+import pandas as pd
 import com_functions
 
 #class Thread_MakeAllRainfallDataByMesh(threading.Thread):
@@ -386,46 +387,46 @@ class MakeAllRainfallDataByMesh():
                 while a_line:
                     a_split = a_line.split(',')
                 '''
-            a_csv_obj = csv.reader(open(a_sFileName, 'r', encoding='shift_jis'))
-            a_csv_data = [ v for v in a_csv_obj]
-            for a_cntCsv in range(1, len(a_csv_data)):
-                a_split = a_csv_data[a_cntCsv]
-                if (a_split[8] == '*'):
-                    a_nowTime = a_split[1] + '/' + a_split[2] + '/' + a_split[3] + ' ' + a_split[4]
-                    a_dt = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
-                    # 30分データ取込
-                    if (self.com.g_TimeKind == 1):
-                        # 30分の場合
-                        a_dt += datetime.timedelta(minutes=-30)
-                    else:
-                        # 1時間の場合
-                        a_dt += datetime.timedelta(hours=-1)
-                    #a_strTmp = a_dt.strftime('%Y/%m/%d %H:%M')
-                    a_strTmp = str(a_dt.year) + "/" + str(a_dt.month) + "/" + str(a_dt.day) + " " + str(a_dt.hour) + ":" + str(a_dt.minute).rjust(2, '0')
+            a_csv_data = []
+            a_csv_len, a_csv_data = self.com.Store_DataFile_pandas(a_sFileName)
+            # 発生降雨フラグが'*'のものｗ抽出する
+            for a_row in a_csv_data[a_csv_data['発生降雨フラグ'] == '*'].iterrows():
+                a_split = a_row[1]
+                a_nowTime = str(a_split[1]) + '/' + str(a_split[2]) + '/' + str(a_split[3]) + ' ' + str(a_split[4])
+                a_dt = datetime.datetime.strptime(a_nowTime, '%Y/%m/%d %H:%M')
+                # 30分データ取込
+                if (self.com.g_TimeKind == 1):
+                    # 30分の場合
+                    a_dt += datetime.timedelta(minutes=-30)
+                else:
+                    # 1時間の場合
+                    a_dt += datetime.timedelta(hours=-1)
+                #a_strTmp = a_dt.strftime('%Y/%m/%d %H:%M')
+                a_strTmp = str(a_dt.year) + "/" + str(a_dt.month) + "/" + str(a_dt.day) + " " + str(a_dt.hour) + ":" + str(a_dt.minute).rjust(2, '0')
 
-                    if (a_prevTime != a_strTmp):
-                        # 異なる一連の降雨となる。
-                        a_findDIndex[0].append(a_cnt)
-                        if (a_findDSum == 0):
-                            a_findDIndex.append(a_cnt)
-                            a_findDIndex.append(float(a_split[7]))
-                            a_findDIndex.append(0)
-                            a_findDIndex.append(float(a_split[7]))
-                        else:
-                            a_findDIndex[1].append(a_cnt)
-                            a_findDIndex[2].append(float(a_split[7]))
-                            a_findDIndex[3].append(0)
-                            a_findDIndex[4].append(float(a_split[7]))
-                        a_findDSum = a_findDSum + 1
+                if (a_prevTime != a_strTmp):
+                    # 異なる一連の降雨となる。
+                    a_findDIndex[0].append(a_cnt)
+                    if (a_findDSum == 0):
+                        a_findDIndex.append(a_cnt)
+                        a_findDIndex.append(float(a_split[7]))
+                        a_findDIndex.append(0)
+                        a_findDIndex.append(float(a_split[7]))
                     else:
-                        a_findDIndex[1][a_findDSum - 1] = a_cnt
-                        a_findDIndex[2][a_findDSum - 1] = float(a_findDIndex[2][a_findDSum - 1]) + float(a_split[7])
-                        # 最高気温の算出
-                        if (float(a_findDIndex[4][a_findDSum - 1]) < float(a_split[7])):
-                            a_findDIndex[4][a_findDSum - 1] = float(a_split[7])
+                        a_findDIndex[1].append(a_cnt)
+                        a_findDIndex[2].append(float(a_split[7]))
+                        a_findDIndex[3].append(0)
+                        a_findDIndex[4].append(float(a_split[7]))
+                    a_findDSum = a_findDSum + 1
+                else:
+                    a_findDIndex[1][a_findDSum - 1] = a_cnt
+                    a_findDIndex[2][a_findDSum - 1] = float(a_findDIndex[2][a_findDSum - 1]) + float(a_split[7])
+                    # 最高気温の算出
+                    if (float(a_findDIndex[4][a_findDSum - 1]) < float(a_split[7])):
+                        a_findDIndex[4][a_findDSum - 1] = float(a_split[7])
 
-                    a_prevTime = a_nowTime
-                    #a_line = a_sr.readline().rstrip('\r\n')
+                a_prevTime = a_nowTime
+                #a_line = a_sr.readline().rstrip('\r\n')
             #a_sr.close()
 
             del a_csv_data
@@ -474,30 +475,27 @@ class MakeAllRainfallDataByMesh():
                 a_sFileName = self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_FindChainOccurRainfall0Symbol + str(h_year) + ".csv"
 
             a_sw = open(a_sFileName, 'w', encoding='shift_jis')
+            # 一連の降雨数を書き込んでおく。
+            # 気温情報を書き込む。
+            a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum2) + self.com.SetTemperatureInfo() + '\n')
             a_cnt = 0
-            while  (a_cnt < self.com.g_textSum_AllRainfall):  #for a_cnt in range(0, self.com.g_textSum_AllRainfall):
+            while (a_cnt < self.com.g_textSum_AllRainfall):
+                a_split = self.com.g_textline_AllRainfall.ix[a_cnt]
                 a_IsOccur = False
-                if (a_cnt == 0):
-                    # 一連の降雨数を書き込んでおく。
-                    # 気温情報を書き込む。
-                    a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum2) + self.com.SetTemperatureInfo() + '\n')
-                else:
-                    # 1行分の読み込み
-                    a_split = self.com.g_textline_AllRainfall[a_cnt].split(',')
-                    for a_cntD in range(0, a_findDSum2):
-                        if (int(a_findDIndex2[0][a_cntD]) == a_cnt):
-                            for a_cnt2 in range(int(a_findDIndex2[0][a_cntD]), int(a_findDIndex2[1][a_cntD] + 1)):
-                                #a_sw.write(self.com.g_textline_AllRainfall[a_cnt2] + ',*\n')
-                                self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt2])
-                                a_sw.write(',*\n')
-                            a_cnt = int(a_findDIndex2[1][a_cntD])
-                            a_IsOccur = True
-                            break
+                # 1行分の読み込み
+                for a_cntD in range(0, a_findDSum2):
+                    if (int(a_findDIndex2[0][a_cntD]) == a_cnt):
+                        for a_cnt2 in range(int(a_findDIndex2[0][a_cntD]), int(a_findDIndex2[1][a_cntD] + 1)):
+                            self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt2], 8)
+                            a_sw.write(',*\n')
+                        a_cnt = int(a_findDIndex2[1][a_cntD])
+                        a_IsOccur = True
+                        break
 
-                    if (a_IsOccur == False):
-                        #a_sw.write(self.com.g_textline_AllRainfall[a_cnt] + ',\n')
-                        self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt])
-                        a_sw.write(',\n')
+                if (a_IsOccur == False):
+                    self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt], 8)
+                    a_sw.write(',\n')
+
                 a_cnt += 1
             a_sw.close()
 
@@ -527,11 +525,9 @@ class MakeAllRainfallDataByMesh():
                 a_sFileName = self.com.g_OutPath + '\\' + str(h_meshNo) + '\\' + self.com.g_AllRainfall0Symbol + str(h_year) + '.csv'
 
             # 一連の降雨のインデックスを退避する。
-            a_cnt = 1
-            while (a_cnt < self.com.g_textSum_AllRainfall):   # for a_cnt in range(1, self.com.g_textSum_AllRainfall):
-                #print('①a_cnt=' + str(a_cnt))
-                #a_split = self.com.g_textline_AllRainfall[a_cnt].split(',')
-                a_split = self.com.g_textline_AllRainfall[a_cnt]
+            a_cnt = 0
+            while (a_cnt < self.com.g_textSum_AllRainfall):
+                a_split = self.com.g_textline_AllRainfall.ix[a_cnt]
                 if (float(a_split[5]) > 0):
                     #print('a_split[5]=' + a_split[5])
                     # 降雨がある場合
@@ -559,29 +555,25 @@ class MakeAllRainfallDataByMesh():
                 a_sFileName = self.com.g_OutPath + '\\' + str(h_meshNo) + '\\' + self.com.g_FindChainOccurRainfall0Symbol + str(h_year) + '.csv'
 
             a_sw = open(a_sFileName, 'w', encoding='shift_jis')
+            # 一連の降雨数を書き込んでおく。
+            # 気温情報を書き込む。
+            a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
             a_cnt = 0
-            while (a_cnt < self.com.g_textSum_AllRainfall):   #for a_cnt in range(0, self.com.g_textSum_AllRainfall):
+            while (a_cnt < self.com.g_textSum_AllRainfall):
+                a_split = self.com.g_textline_AllRainfall.ix[a_cnt]
                 a_IsOccur = False
-                if (a_cnt == 0):
-                    # 一連の降雨数を書き込んでおく。
-                    # 気温情報を書き込む。
-                    a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
-                else:
-                    #a_split = self.com.g_textline_AllRainfall[a_cnt].split(',')
-                    a_split = self.com.g_textline_AllRainfall[a_cnt]
-                    for a_cntD in range(0, a_findDSum):
-                        if (int(a_findDIndex[1][a_cntD]) == a_cnt):
-                            for a_cnt2 in range(int(a_findDIndex[1][a_cntD]), int(a_findDIndex[2][a_cntD] + 1)):
-                                #a_sw.write(self.com.g_textline_AllRainfall[a_cnt2] + ',*\n')
-                                self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt2])
-                                a_sw.write(',*\n')
-                            a_cnt = int(a_findDIndex[2][a_cntD])
-                            a_IsOccur = True
-                            break
-                    if (a_IsOccur == False):
-                        #a_sw.write(self.com.g_textline_AllRainfall[a_cnt] + ',\n')
-                        self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt])
-                        a_sw.write(',\n')
+                for a_cntD in range(0, a_findDSum):
+                    if (int(a_findDIndex[1][a_cntD]) == a_cnt):
+                        for a_cnt2 in range(int(a_findDIndex[1][a_cntD]), int(a_findDIndex[2][a_cntD] + 1)):
+                            self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt2], 8)
+                            a_sw.write(',*\n')
+                        a_cnt = int(a_findDIndex[2][a_cntD])
+                        a_IsOccur = True
+                        break
+                if (a_IsOccur == False):
+                    self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt], 8)
+                    a_sw.write(',\n')
+
                 a_cnt += 1
             a_sw.close()
 
@@ -603,22 +595,20 @@ class MakeAllRainfallDataByMesh():
         try:
             # 災害発生箇所のインデックスを退避する。
             a_findDSum = 0
-            a_cnt = 1
-            while (a_cnt < self.com.g_textSum_FindOccurRainfall):   #for a_cnt in range(1, self.com.g_textSum_FindOccurRainfall):
-                #a_split = self.com.g_textline_FindOccurRainfall[a_cnt].split(',')
-                a_split = self.com.g_textline_FindOccurRainfall[a_cnt]
+            a_cnt = 0
+            while (a_cnt < self.com.g_textSum_FindOccurRainfall):
+                a_split = self.com.g_textline_FindOccurRainfall.ix[a_cnt]
                 if (a_split[8] == "*"):
                     a_sIdx = a_cnt  # 最初のindex
                     a_eIdx = a_cnt  # 最後のindex
-                    a_mSTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
+                    a_mSTime = datetime.datetime.strptime(str(a_split[1]) + "/" + str(a_split[2]) + "/" + str(a_split[3]) + " " + str(a_split[4]), '%Y/%m/%d %H:%M')
                     a_mETime = None
                     # 次の非発生降雨まで
                     while(a_split[8] == "*"):
                         a_eIdx = a_cnt
-                        a_mETime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
+                        a_mETime = datetime.datetime.strptime(str(a_split[1]) + "/" + str(a_split[2]) + "/" + str(a_split[3]) + " " + str(a_split[4]), '%Y/%m/%d %H:%M')
                         a_cnt += 1
-                        #a_split = self.com.g_textline_FindOccurRainfall[a_cnt].split(',')
-                        a_split = self.com.g_textline_FindOccurRainfall[a_cnt]
+                        a_split = self.com.g_textline_FindOccurRainfall.ix[a_cnt]
 
                     #a_cnt -= 1  # デクリメント⇒これがあるとVB.NETと異なる結果になる？
                     a_IsOccur = False
@@ -628,8 +618,8 @@ class MakeAllRainfallDataByMesh():
                         #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
                         if (a_splitD[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
-                            a_sTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
-                            a_eTime = datetime.datetime.strptime(a_splitD[5] + "/" + a_splitD[6] + "/" + a_splitD[7] + " " + a_splitD[8], '%Y/%m/%d %H:%M')
+                            a_sTime = datetime.datetime.strptime(str(a_splitD[1]) + "/" + str(a_splitD[2]) + "/" + str(a_splitD[3]) + " " + str(a_splitD[4]), '%Y/%m/%d %H:%M')
+                            a_eTime = datetime.datetime.strptime(str(a_splitD[5]) + "/" + str(a_splitD[6]) + "/" + str(a_splitD[7]) + " " + str(a_splitD[8]), '%Y/%m/%d %H:%M')
                             # 解除の日時はチェックする必要なし？
                             if ((a_sTime >= a_mSTime) and (a_sTime <= a_mETime)):
                                 # 年月日時が警戒発表の範囲内
@@ -641,23 +631,18 @@ class MakeAllRainfallDataByMesh():
                         # 警戒情報が災害発生降雨の範囲外
                         for a_cntD in range(a_sIdx, a_eIdx + 1):
                             # a_cntはa_cntDの間違いでは？
-                            #self.com.g_textline_FindOccurRainfall[a_cnt].replace('*', '')
-                            self.com.Replace_TextLine(self.com.g_textline_FindOccurRainfall[a_cntD], '*', '')
-                a_cnt += 1
+                            self.com.Replace_TextLine(self.com.g_textline_FindOccurRainfall.ix[a_cntD], '*', '')
+            a_cnt += 1
 
             # 結果出力ファイルを開く
             a_sw = open(self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_FindCautionAnnounceOccurRainFallSymbol + str(h_year) + ".csv", 'w', encoding='shift_jis')
-            for a_cnt in range(0, self.com.g_textSum_FindOccurRainfall):
-                a_IsOccur = False
-                if (a_cnt == 0):
-                    # 災害発生降雨数を書き込んでおく。
-                    # 気温情報を書き込む。
-                    a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
-                else:
-                    # 1行分の読み込み
-                    #a_sw.write(self.com.g_textline_FindOccurRainfall[a_cnt] + '\n')
-                    self.com.Write_TextLine(a_sw, self.com.g_textline_FindOccurRainfall[a_cnt])
-                    a_sw.write('\n')
+            # 気温情報を書き込む。
+            a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
+            for a_row in self.com.g_textSum_FindOccurRainfall.iterrows():
+                # 1行分の読み込み
+                a_split = a_row[1]
+                self.com.Write_TextLine_pandas(a_sw, a_split, 9)
+                a_sw.write('\n')
 
             a_sw.close()
 
@@ -677,24 +662,22 @@ class MakeAllRainfallDataByMesh():
             a_sw.write('メッシュNo.,年（警戒）,月（警戒）,日（警戒）,時（警戒）,年（災害）,月（災害）,日（災害）,時（災害）,リードタイム' + self.com.SetTemperatureInfo() + '\n')
             # 災害発生箇所のインデックスを退避する。
             a_findDSum = 0
-            a_cnt = 1
-            while (a_cnt < self.com.g_textSum_FindOccurRainfall):   #for a_cnt in range(1, self.com.g_textSum_FindOccurRainfall):
-                #a_split = self.com.g_textline_FindOccurRainfall[a_cnt].split(',')
-                a_split = self.com.g_textline_FindOccurRainfall[a_cnt]
+            a_cnt = 0
+            while (a_cnt < self.com.g_textSum_FindOccurRainfall):
+                a_split = self.com.g_textline_FindOccurRainfall.ix[a_cnt]
                 if (a_split[8] == "*"):
                     a_sIdx = a_cnt  # 最初のindex
                     a_eIdx = a_cnt  # 最後のindex
-                    a_mSTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
+                    a_mSTime = datetime.datetime.strptime(str(a_split[1]) + "/" + str(a_split[2]) + "/" + str(a_split[3]) + " " + str(a_split[4]), '%Y/%m/%d %H:%M')
                     a_mETime = None
                     a_fFlagD2 = False
                     a_fFlagD = False
                     # 次の非発生降雨まで
                     while(a_split[8] == "*"):
                         a_eIdx = a_cnt
-                        a_mETime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
+                        a_mETime = datetime.datetime.strptime(str(a_split[1]) + "/" + str(a_split[2]) + "/" + str(a_split[3]) + " " + str(a_split[4]), '%Y/%m/%d %H:%M')
                         a_cnt += 1
-                        #a_split = self.com.g_textline_FindOccurRainfall[a_cnt].split(',')
-                        a_split = self.com.g_textline_FindOccurRainfall[a_cnt]
+                        a_split = self.com.g_textline_FindOccurRainfall.ix[a_cnt]
 
                     a_cnt -= 1  # デクリメント
 
@@ -708,14 +691,14 @@ class MakeAllRainfallDataByMesh():
                         #a_splitD2 = self.com.g_textline_DisasterFile[a_cntD2]
                         if (a_splitD2[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
-                            a_tmpTime = datetime.datetime.strptime(a_splitD2[1] + "/" + a_splitD2[2] + "/" + a_splitD2[3] + " " + a_splitD2[4], '%Y/%m/%d %H:%M')
+                            a_tmpTime = datetime.datetime.strptime(str(a_splitD2[1]) + "/" + str(a_splitD2[2]) + "/" + str(a_splitD2[3]) + " " + str(a_splitD2[4]), '%Y/%m/%d %H:%M')
                             if (a_tmpTime >= a_mSTime) and (a_tmpTime <= a_mETime):
                                 if (a_fFlagD2 == True):
                                     if (a_tmpTime < a_TimeD2):
                                         a_TimeD2 = a_tmpTime
                                         if (len(a_splitD2) >= 10):
                                             # 実時刻あり
-                                            a_OccurTime = datetime.datetime.strptime(a_splitD2[6] + "/" + a_splitD2[7] + "/" + a_splitD2[8] + " " + a_splitD2[9], '%Y/%m/%d %H:%M')
+                                            a_OccurTime = datetime.datetime.strptime(str(a_splitD2[6]) + "/" + str(a_splitD2[7]) + "/" + str(a_splitD2[8]) + " " + str(a_splitD2[9]), '%Y/%m/%d %H:%M')
                                         else:
                                             # 実時刻なし
                                             a_OccurTime = a_tmpTime
@@ -723,7 +706,7 @@ class MakeAllRainfallDataByMesh():
                                     a_TimeD2 = a_tmpTime
                                     if (len(a_splitD2) >= 10):
                                         # 実時刻あり
-                                        a_OccurTime = datetime.datetime.strptime(a_splitD2[6] + "/" + a_splitD2[7] + "/" + a_splitD2[8] + " " + a_splitD2[9], '%Y/%m/%d %H:%M')
+                                        a_OccurTime = datetime.datetime.strptime(str(a_splitD2[6]) + "/" + str(a_splitD2[7]) + "/" + str(a_splitD2[8]) + " " + str(a_splitD2[9]), '%Y/%m/%d %H:%M')
                                     else:
                                         # 実時刻なし
                                         a_OccurTime = a_tmpTime
@@ -739,14 +722,14 @@ class MakeAllRainfallDataByMesh():
                         #a_splitD = self.com.g_textline_CautionAnnounceFile[a_cntD]
                         if (a_splitD[0].strip() == h_meshNo):
                             # メッシュ番号が同じ
-                            a_tmpTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
+                            a_tmpTime = datetime.datetime.strptime(str(a_splitD[1]) + "/" + str(a_splitD[2]) + "/" + str(a_splitD[3]) + " " + str(a_splitD[4]), '%Y/%m/%d %H:%M')
                             if (a_tmpTime >= a_mSTime) and (a_tmpTime <= a_mETime):
                                 if (a_fFlagD == True):
                                     if (a_tmpTime < a_TimeD2):
                                         a_TimeD = a_tmpTime
                                         if (len(a_splitD) >= 13):
                                             # 実時刻あり
-                                            a_CautionTime = datetime.datetime.strptime(a_splitD[9] + "/" + a_splitD[10] + "/" + a_splitD[11] + " " + a_splitD[12], '%Y/%m/%d %H:%M')
+                                            a_CautionTime = datetime.datetime.strptime(str(a_splitD[9]) + "/" + str(a_splitD[10]) + "/" + str(a_splitD[11]) + " " + str(a_splitD[12]), '%Y/%m/%d %H:%M')
                                         else:
                                             # 実時刻なし
                                             a_CautionTime = a_tmpTime
@@ -754,7 +737,7 @@ class MakeAllRainfallDataByMesh():
                                     a_TimeD = a_tmpTime
                                     if (len(a_splitD) >= 13):
                                         # 実時刻あり
-                                        a_CautionTime = datetime.datetime.strptime(a_splitD[9] + "/" + a_splitD[10] + "/" + a_splitD[11] + " " + a_splitD[12], '%Y/%m/%d %H:%M')
+                                        a_CautionTime = datetime.datetime.strptime(str(a_splitD[9]) + "/" + str(a_splitD[10]) + "/" + str(a_splitD[11]) + " " + str(a_splitD[12]), '%Y/%m/%d %H:%M')
                                     else:
                                         # 実時刻なし
                                         a_CautionTime = a_tmpTime
@@ -802,8 +785,7 @@ class MakeAllRainfallDataByMesh():
 
             for a_cnt in range(h_idx + 1, h_textSum):
                 # 1行分の読み込み
-                #a_split = h_textline[a_cnt].split(',')
-                a_split = h_textline[a_cnt]
+                a_split = h_textline.ix[a_cnt]
                 if (float(a_split[5]) <= 0):
                     # 雨量がない場合
                     a_IsNonOccur += 1
@@ -845,10 +827,10 @@ class MakeAllRainfallDataByMesh():
             a_occurTime = None   # 実況雨量・予測雨量
             a_findDSum = 0
             a_findDIndex = [[]]
-            for a_cnt in range(1, self.com.g_textSum_AllRainfall):
-                #a_split = self.com.g_textline_AllRainfall[a_cnt].split(',')
-                a_split = self.com.g_textline_AllRainfall[a_cnt]
-                a_rainTime = datetime.datetime.strptime(a_split[1] + "/" + a_split[2] + "/" + a_split[3] + " " + a_split[4], '%Y/%m/%d %H:%M')
+            a_cnt = 0
+            while (a_cnt < self.com.g_textSum_AllRainfall):
+                a_split = self.com.g_textline_AllRainfall.ix[a_cnt]
+                a_rainTime = datetime.datetime.strptime(str(a_split[1]) + "/" + str(a_split[2]) + "/" + str(a_split[3]) + " " + str(a_split[4]), '%Y/%m/%d %H:%M')
                 #print(a_rainTime)
                 for a_cntD in range(1, self.com.g_textSum_DisasterFile):
                     a_splitD = self.com.g_textline_DisasterFile[a_cntD].split(',')
@@ -861,13 +843,13 @@ class MakeAllRainfallDataByMesh():
                             # 実況雨量・予測雨量の取り込み
                             if (self.com.g_RainKind == 0):
                                 # 実況雨量
-                                a_occurTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
+                                a_occurTime = datetime.datetime.strptime(str(a_splitD[1]) + "/" + str(a_splitD[2]) + "/" + str(a_splitD[3]) + " " + str(a_splitD[4]), '%Y/%m/%d %H:%M')
                             else:
                                 # 予測雨量
-                                a_occurTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
+                                a_occurTime = datetime.datetime.strptime(str(a_splitD[1]) + "/" + str(a_splitD[2]) + "/" + str(a_splitD[3]) + " " + str(a_splitD[4]), '%Y/%m/%d %H:%M')
                         else:
                             # 実況雨量
-                            a_occurTime = datetime.datetime.strptime(a_splitD[1] + "/" + a_splitD[2] + "/" + a_splitD[3] + " " + a_splitD[4], '%Y/%m/%d %H:%M')
+                            a_occurTime = datetime.datetime.strptime(str(a_splitD[1]) + "/" + str(a_splitD[2]) + "/" + str(a_splitD[3]) + " " + str(a_splitD[4]), '%Y/%m/%d %H:%M')
                         #print(a_occurTime)
                         # 実況雨量・予測雨量の取り込み---↓
                         if (a_rainTime == a_occurTime):
@@ -881,6 +863,7 @@ class MakeAllRainfallDataByMesh():
                                 a_findDIndex[2].append(a_cnt)
                             a_findDSum = a_findDSum + 1
                             break
+                a_cnt += 1
 
             # 災害発生箇所のインデックスを元に前後24時間の無降雨を検出する。
             #print('a_findDSum=' + str(a_findDSum))
@@ -899,42 +882,35 @@ class MakeAllRainfallDataByMesh():
                 a_sFileName = self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_FindOccurRainfall0Symbol + str(h_year) + ".csv"
 
             a_sw = open(a_sFileName, 'w', encoding='shift_jis')
-            #print('self.com.g_textSum_AllRainfall=' + str(self.com.g_textSum_AllRainfall))
+            # 災害発生降雨数を書き込んでおく。
+            # 気温情報を書き込む。
+            a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
             a_cnt = 0
-            while (a_cnt < self.com.g_textSum_AllRainfall):   #for a_cnt in range(0, self.com.g_textSum_AllRainfall):
-                #print('①a_cnt=' + str(a_cnt))
+            while (a_cnt < self.com.g_textSum_AllRainfall):
+                a_split = self.com.g_textline_AllRainfall.ix[a_cnt]
                 a_IsOccur = False
-                if (a_cnt == 0):
-                    # 災害発生降雨数を書き込んでおく。
-                    # 気温情報を書き込む。
-                    a_sw.write('データ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,発生降雨フラグ,' + str(a_findDSum) + self.com.SetTemperatureInfo() + '\n')
-                else:
-                    # 1行分の読み込み
-                    #a_split = self.com.g_textline_AllRainfall[a_cnt].split(',')
-                    a_split = self.com.g_textline_AllRainfall[a_cnt]
-                    for a_cntD in range(0,a_findDSum):
-                        if (a_findDIndex[1][a_cntD] == a_cnt):
-                            for a_cnt2 in range(a_findDIndex[1][a_cntD], a_findDIndex[2][a_cntD] + 1):
-                                #a_sw.write(self.com.g_textline_AllRainfall[a_cnt2] + ",*\n")
-                                self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt2])
-                                a_sw.write(",*\n")
-                            a_cnt = a_findDIndex[2][a_cntD]
-                            #print('②a_cnt=' + str(a_cnt))
-                            a_IsOccur = True
-                            break
+                # 1行分の読み込み
+                for a_cntD in range(0,a_findDSum):
+                    if (a_findDIndex[1][a_cntD] == a_cnt):
+                        for a_cnt2 in range(a_findDIndex[1][a_cntD], a_findDIndex[2][a_cntD] + 1):
+                            self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt2], 8)
+                            a_sw.write(",*\n")
+                        a_cnt = a_findDIndex[2][a_cntD]
+                        #print('②a_cnt=' + str(a_cnt))
+                        a_IsOccur = True
+                        break
 
-                    if (a_IsOccur == False):
-                        #a_sw.write(self.com.g_textline_AllRainfall[a_cnt] + ",\n")
-                        self.com.Write_TextLine(a_sw, self.com.g_textline_AllRainfall[a_cnt])
-                        a_sw.write(',\n')
+                if (a_IsOccur == False):
+                    self.com.Write_TextLine_pandas(a_sw, self.com.g_textline_AllRainfall.ix[a_cnt], 8)
+                    a_sw.write(',\n')
+
                 a_cnt += 1
             a_sw.close()
 
             del a_findDIndex[:]
             gc.collect()
 
-            #self.com.Store_FindOccurRainfall(a_sFileName)
-            self.com.g_textSum_FindOccurRainfall = self.com.Store_DataFile(a_sFileName, self.com.g_textline_FindOccurRainfall)
+            self.com.g_textSum_FindOccurRainfall, self.com.g_textline_FindOccurRainfall = self.com.Store_DataFile_pandas(a_sFileName)
 
         except Exception as exp:
             self.com.Outputlog(self.com.g_LOGMODE_ERROR, "_findOccurRainfallByMesh", a_strErr + "," + " ".join(map(str, exp.args)))
@@ -959,7 +935,7 @@ class MakeAllRainfallDataByMesh():
             for a_cnt in range(h_idx - 1, 1, -1):
                 # 1行分の読み込み
                 #a_split = h_textline[a_cnt].split(',')
-                a_split = h_textline[a_cnt]
+                a_split = h_textline.ix[a_cnt]
                 if (float(a_split[5]) <= 0):
                     # 雨量がない場合
                     a_IsNonOccur = a_IsNonOccur + 1
@@ -1342,8 +1318,7 @@ class MakeAllRainfallDataByMesh():
                 gc.collect()
                 '''
 
-            #self.com.Store_AllRainfall(a_sFileNameW)
-            self.com.g_textSum_AllRainfall = self.com.Store_DataFile(a_sFileNameW, self.com.g_textline_AllRainfall)
+            self.com.g_textSum_AllRainfall, self.com.g_textline_AllRainfall = self.com.Store_DataFile_pandas(a_sFileNameW)
             # 一連の降雨の自動検出を行う
             self._findChainOccurRainfallByMesh(h_year, h_kind, a_meshNo)  #⑧予測的中率
             if self.com.g_TemperatureKind == 1 or self.com.g_TemperatureKind == 2:
@@ -1388,8 +1363,8 @@ class MakeAllRainfallDataByMesh():
             else:
                 a_sFileName = self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_FindChainOccurRainfall0Symbol + str(h_year) + ".csv"
             #a_sr = open(a_sFileName, 'r', encoding='shift_jis')
-            a_csv_obj = csv.reader(open(a_sFileName, 'r', encoding='shift_jis'))
-            a_csv_data = [ v for v in a_csv_obj]
+            a_csv_data = []
+            a_csv_len, a_csv_data = self.com.Store_DataFile_pandas(a_sFileName)
 
             # 土壌雨量指数ファイルを開く。
             if (h_kind == 0):
@@ -1410,19 +1385,22 @@ class MakeAllRainfallDataByMesh():
             while a_textline:
                 a_split = a_textline.split(',')
                 '''
-            a_sw.write('データ番号,一連降雨のデータ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,' + str(a_csv_data[0][9]) + self.com.SetTemperatureInfo() + '\n')
-            for a_cntCsv in range(1, len(a_csv_data)):
-                a_split = a_csv_data[a_cntCsv]
-                if (a_split[8] == "*"):
-                    a_cnt = a_cnt + 1
-                    # 発生降雨フラグがある場合
-                    a_sw.write(a_split[0] + "," + str(a_cnt) + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + '\n')
-                    #a_textline = a_sr.readline().rstrip('\r\n')
+            a_sw.write('データ番号,一連降雨のデータ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,' + str(a_csv_data.columns[9]) + self.com.SetTemperatureInfo() + '\n')
+            # 発生降雨フラグが'*'のものｗ抽出する
+            for a_row in a_csv_data[
+                        (a_csv_data['発生降雨フラグ'] == a_csv_data['発生降雨フラグ']) &
+                        (a_csv_data['発生降雨フラグ'] == '*')].iterrows():
+                a_split = a_row[1]
+                a_cnt = a_cnt + 1
+                # 発生降雨フラグがある場合
+                a_sw.write(
+                    str(a_split[0]) + "," + str(a_cnt) + "," + str(a_split[1]) + "," + str(a_split[2]) + "," + str(a_split[3]) + "," + str(a_split[4]) + "," + str(a_split[5]) + "," + str(a_split[6]) + "," + str(a_split[7]) + '\n')
+                #a_textline = a_sr.readline().rstrip('\r\n')
 
             a_sw.close()
             #a_sr.close()
 
-            del a_csv_data[:]
+            del a_csv_data
             gc.collect()
             a_csv_obj = None
 
@@ -1530,14 +1508,14 @@ class MakeAllRainfallDataByMesh():
             a_sw = open(self.com.g_OutPath + "\\" + str(h_meshNo) + "\\" + self.com.g_NonOccurRainfallSymbol + str(h_year) + ".csv", 'w',encoding='shift_jis')
             a_sw.write('データ番号,RBFN用非発生降雨のデータ番号,年,月,日,時,解析雨量,土壌雨量指数,気温' + self.com.SetTemperatureInfo() + '\n')
             a_cnt = 0
-            for a_cntFOR in range(1, self.com.g_textSum_FindOccurRainfall):
-                a_textline = self.com.g_textline_FindOccurRainfall[a_cntFOR]
-                #a_split = a_textline.split(',')
-                a_split = a_textline
-                if (a_split[8] != "*"):
-                    a_cnt += 1
-                    # 発生降雨フラグがない場合
-                    a_sw.write(a_split[0] + "," + str(a_cnt) + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + '\n')
+            # 発生降雨フラグが'*'以外のものを抽出する
+            for a_row in self.com.g_textline_FindOccurRainfall[
+                        (self.com.g_textline_FindOccurRainfall['発生降雨フラグ'] == self.com.g_textline_FindOccurRainfall['発生降雨フラグ']) == False
+                        ].iterrows():
+                a_split = a_row[1]
+                a_cnt += 1
+                # 発生降雨フラグがない場合
+                a_sw.write(a_split[0] + "," + str(a_cnt) + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7] + '\n')
 
             a_sw.close()
         except Exception as exp:
@@ -1572,23 +1550,26 @@ class MakeAllRainfallDataByMesh():
             a_outLine = []
             a_rainSum = 0
             #print('self.com.g_textSum_FindOccurRainfall=' + str(self.com.g_textSum_FindOccurRainfall))
-            for a_cntFOR in range(1, self.com.g_textSum_FindOccurRainfall):
-                a_textline = self.com.g_textline_FindOccurRainfall[a_cntFOR]
-                #a_split = a_textline.split(',')
-                a_split = a_textline
+
+            # 発生降雨フラグが'*'のものｗ抽出する
+            for a_row in self.com.g_textline_FindOccurRainfall[
+                        (self.com.g_textline_FindOccurRainfall['発生降雨フラグ'] == self.com.g_textline_FindOccurRainfall['発生降雨フラグ']) &
+                        (self.com.g_textline_FindOccurRainfall['発生降雨フラグ'] == '*')
+                        ].iterrows():
+                a_split = a_row[1]
                 a_now_DataNo = int(a_split[0])  # データ番号
-                if (a_split[8] == "*"):
-                    a_cnt += 1
 
-                    # 発生降雨フラグがある場合
-                    a_outLine.append(a_split[0] + "," + str(a_cnt) + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7])
-                    if (a_prev_DataNo == 0):
+                a_cnt += 1
+
+                # 発生降雨フラグがある場合
+                a_outLine.append(a_split[0] + "," + str(a_cnt) + "," + a_split[1] + "," + a_split[2] + "," + a_split[3] + "," + a_split[4] + "," + a_split[5] + "," + a_split[6] + "," + a_split[7])
+                if (a_prev_DataNo == 0):
+                    a_rainSum += 1
+                else:
+                    if ((a_prev_DataNo + 1) < a_now_DataNo):
                         a_rainSum += 1
-                    else:
-                        if ((a_prev_DataNo + 1) < a_now_DataNo):
-                            a_rainSum += 1
 
-                    a_prev_DataNo = a_now_DataNo
+                a_prev_DataNo = a_now_DataNo
 
             a_sw.write('データ番号,災害発生降雨のデータ番号,年,月,日,時,解析雨量,土壌雨量指数,気温,' + str(a_rainSum) + self.com.SetTemperatureInfo() + '\n')
             for a_cnt2 in range(0, a_cnt):

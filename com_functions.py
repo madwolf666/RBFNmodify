@@ -8,6 +8,7 @@ import math
 import gc
 #from multiprocessing import Process, Manager
 from ctypes import *
+import pandas as pd
 
 class ComFunctions:
     g_LOG_FILENAME = "rbfnmdf"
@@ -1557,6 +1558,24 @@ class ComFunctions:
 
         return a_buf
 
+    def Store_DataFile_pandas(self, h_fileName):
+        a_strErr = "filename=" + h_fileName
+        self.Outputlog(self.g_LOGMODE_TRACE1, 'Store_DataFile_pandas', a_strErr)
+
+        a_len = 0
+        a_textLine = []
+        try:
+            # pandasの場合、ヘッダはリストの数に含まれない
+            a_textLine = pd.read_csv(h_fileName, engine="python", delimiter=",", encoding="shift-jis")
+            a_len = len(a_textLine)
+        except Exception as exp:
+            #self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile', a_strErr + str(exp.args[0]))
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile_pandas', a_strErr + "," + " ".join(map(str, exp.args)))
+        except:
+            self.Outputlog(self.g_LOGMODE_ERROR, 'Store_DataFile_pandas', a_strErr + "," + sys.exc_info())
+
+        return a_len, a_textLine
+
     # 共有メモリ退避
     def Store_Shm(self, h_cpyMem, h_textline):
         a_strErr = ""
@@ -1796,4 +1815,13 @@ class ComFunctions:
         for a_iw in range(0, len(h_textline)):
             if (a_iw > 0):
                 h_sw.write(',')
-            h_sw.write(h_textline[a_iw])
+            h_sw.write(str(h_textline[a_iw]))
+
+    def Write_TextLine_pandas(self, h_sw, h_textline, h_len):
+        for a_iw in range(0, h_len):
+            if (a_iw > 0):
+                h_sw.write(',')
+            if (h_textline[a_iw] == h_textline[a_iw]):
+                h_sw.write(str(h_textline[a_iw]))
+            else:
+                h_sw.write("")
