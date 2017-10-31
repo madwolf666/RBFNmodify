@@ -19,7 +19,8 @@ import com_functions
 import clsRainfall_gen as clsRainfall
 #pandasの処理は遅い
 #import clsRainfall_pandas as clsRainfall
-import clsContour_pil as clsContour
+import clsContour_w32 as clsContour
+#import clsContour_pil as clsContour
 #OpenCVの機能には制限がかなりある
 #import clsContour_cv2 as clsContour
 import clsFigure
